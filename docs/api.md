@@ -20,6 +20,6 @@ Example action:
 {"task_id":"task-alice-001","tool":"read_document","arguments":{"document_id":"report-alice-001"}}
 ```
 
-Outcomes distinguish policy decisions (`ALLOW`, `DENY`, `REQUIRE_APPROVAL`) from states (`READY`, `PENDING_APPROVAL`, `EXECUTING`, `SUCCEEDED`, `UNKNOWN`, and terminal rejection/failure states). HTTP 401 means unauthenticated, 403 means denied, 409 means idempotency/state conflict, 413 means oversized input, 422 means invalid schema, and 503 means a required tool service is unavailable.
+Outcomes distinguish policy decisions (`ALLOW`, `DENY`, `REQUIRE_APPROVAL`) from states (`READY`, `PENDING_APPROVAL`, `EXECUTING`, `SUCCEEDED`, `UNKNOWN`, and terminal rejection/failure states). HTTP 401 means unauthenticated, 403 means denied, 409 means idempotency/state conflict, 413 means oversized input, 422 means invalid schema, 429 means the per-agent action or pending-approval budget is exhausted, and 503 means a required tool service is unavailable. Existing idempotent retries return their original result without consuming an additional action-budget slot.
 
 The internal `tool-sandbox` API is service-token protected and is not published to the host. It supports only fixed registered tools and simulated artifacts/outbox; it never accepts URLs, paths, SQL, or shell commands from the agent.

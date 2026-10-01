@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from gateway.app.core import Gateway, GatewayError, load_policy, token_hash
+from gateway.app.core import Gateway, GatewayError, Principal, load_policy, token_hash
 
 
 class MockGateway(Gateway):
@@ -99,6 +99,33 @@ class GatewayTests(unittest.TestCase):
             self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}, "role": "admin"}, "y")
         self.assertEqual(self.g.calls, [])
 
+    def test_reader_role_cannot_create_summary(self):
+        reader = Principal("reader-only", "agent", "report-reader", "alice", "north", "task-alice-001")
+        result = self.g.create_action(reader, {"task_id": "task-alice-001", "tool": "save_summary", "arguments": {"document_id": "report-alice-001", "content": "fictional"}}, "reader-summary")
+        self.assertEqual(result["decision"], "DENY")
+        self.assertIn("ROLE_FORBIDS_TOOL", result["reason_codes"])
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.g.calls))
+
+    def test_unregistered_tool_is_rejected_before_side_effect(self):
+        with self.assertRaises(GatewayError) as err:
+            self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "shell", "arguments": {}}, "unknown-tool")
+        self.assertEqual((err.exception.status, err.exception.code), (403, "TOOL_NOT_REGISTERED"))
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.g.calls))
+
+    def test_unregistered_and_path_like_resource_ids_are_denied(self):
+        for index, document_id in enumerate(("../alice.txt", "%2e%2e%2falice.txt", "C:\\secrets.txt")):
+            result = self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": document_id}}, f"path-id-{index}")
+            self.assertEqual(result["decision"], "DENY")
+            self.assertIn("RESOURCE_NOT_REGISTERED", result["reason_codes"])
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.g.calls))
+
+    def test_non_registered_destinations_never_reach_the_tool(self):
+        for index, destination in enumerate(("https://example.invalid", "127.0.0.1", "recipient@example.invalid")):
+            result = self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "send_report", "arguments": {"artifact_id": "artifact-1", "destination_id": destination}}, f"destination-{index}")
+            self.assertEqual(result["decision"], "DENY")
+            self.assertIn("DESTINATION_NOT_REGISTERED", result["reason_codes"])
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.g.calls))
+
     def test_allow_executes_once_and_idempotency_conflict_is_rejected(self):
         body = {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}}
         first = self.g.create_action(self.alice, body, "same-key")
@@ -122,6 +149,61 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(done["state"], "SUCCEEDED")
         self.assertEqual(self.g.execute(self.alice, pending["action_id"])["state"], "SUCCEEDED")
         self.assertEqual(sum(1 for _, p, _ in self.g.calls if p == "/internal/execute"), 1)
+
+    def test_rejected_approval_cannot_execute(self):
+        pending = self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "send_report", "arguments": {"artifact_id": "artifact-1", "destination_id": "internal-review-outbox"}}, "reject-approval")
+        self.assertEqual(self.g.decide(self.reviewer, pending["approval_id"], "reject")["state"], "REJECTED")
+        with self.assertRaises(GatewayError):
+            self.g.execute(self.alice, pending["action_id"])
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.g.calls))
+
+    def test_expired_approval_cannot_execute(self):
+        pending = self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "send_report", "arguments": {"artifact_id": "artifact-1", "destination_id": "internal-review-outbox"}}, "expired-approval")
+        self.g.decide(self.reviewer, pending["approval_id"], "approve")
+        self.g.db.execute("UPDATE approvals SET expires=? WHERE id=?", (0, pending["approval_id"]))
+        with self.assertRaises(GatewayError) as err:
+            self.g.execute(self.alice, pending["action_id"])
+        self.assertEqual(err.exception.code, "APPROVAL_INVALID")
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.g.calls))
+
+    def test_policy_version_change_invalidates_approval(self):
+        pending = self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "send_report", "arguments": {"artifact_id": "artifact-1", "destination_id": "internal-review-outbox"}}, "policy-version")
+        self.g.decide(self.reviewer, pending["approval_id"], "approve")
+        self.g.policy["version"] = "demo-v2-test"
+        with self.assertRaises(GatewayError) as err:
+            self.g.execute(self.alice, pending["action_id"])
+        self.assertEqual(err.exception.code, "APPROVAL_SNAPSHOT_CHANGED")
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.g.calls))
+
+    def test_client_cannot_forge_approval_state(self):
+        body = {"task_id": "task-alice-001", "tool": "send_report", "arguments": {"artifact_id": "artifact-1", "destination_id": "internal-review-outbox"}, "approved": True}
+        with self.assertRaises(GatewayError) as err:
+            self.g.create_action(self.alice, body, "forged-approval")
+        self.assertEqual(err.exception.code, "INVALID_REQUEST")
+        self.assertEqual(self.g.db.execute("SELECT COUNT(*) AS n FROM approvals").fetchone()["n"], 0)
+
+    def test_call_and_pending_approval_budgets_have_no_extra_side_effects(self):
+        self.g.policy["limits"]["actions_per_minute"] = 1
+        body = {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}}
+        first = self.g.create_action(self.alice, body, "budget-first")
+        self.assertEqual(first["state"], "SUCCEEDED")
+        with self.assertRaises(GatewayError) as err:
+            self.g.create_action(self.alice, body, "budget-over")
+        self.assertEqual((err.exception.status, err.exception.code), (429, "ACTION_RATE_LIMITED"))
+        self.assertEqual(self.g.db.execute("SELECT COUNT(*) AS n FROM actions").fetchone()["n"], 1)
+        self.assertEqual(sum(1 for _, path, _ in self.g.calls if path == "/internal/execute"), 1)
+
+        other = MockGateway()
+        alice = other.authenticate("a" * 40)
+        other.policy["limits"]["pending_approvals_per_principal"] = 1
+        report = {"task_id": "task-alice-001", "tool": "send_report", "arguments": {"artifact_id": "artifact-1", "destination_id": "internal-review-outbox"}}
+        other.create_action(alice, report, "budget-approval-first")
+        with self.assertRaises(GatewayError) as err:
+            other.create_action(alice, report, "budget-approval-over")
+        self.assertEqual((err.exception.status, err.exception.code), (429, "PENDING_APPROVAL_LIMIT"))
+        self.assertEqual(other.db.execute("SELECT COUNT(*) AS n FROM approvals").fetchone()["n"], 1)
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in other.calls))
+        other.db.close()
 
     def test_reviewer_sees_exact_snapshot_and_only_own_tenant(self):
         body = {"task_id": "task-alice-001", "tool": "send_report", "arguments": {"artifact_id": "artifact-1", "destination_id": "internal-review-outbox"}}
@@ -173,6 +255,8 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(result["verdict"], "SUSPICIOUS")
         action = self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-bob-001"}}, "after-inspection")
         self.assertEqual(action["decision"], "DENY")
+        safe = self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}}, "safe-after-denial")
+        self.assertEqual(safe["state"], "SUCCEEDED")
 
     def test_inspection_audit_escapes_controls_and_omits_untrusted_text(self):
         decoy = "FAKE_SECRET_SENTINEL_0123456789"
@@ -189,6 +273,16 @@ class GatewayTests(unittest.TestCase):
             results = list(pool.map(lambda _: self.g.create_action(self.alice, body, "concurrent-key"), range(20)))
         self.assertEqual(len({r["action_id"] for r in results}), 1)
         self.assertEqual(sum(1 for _, p, _ in self.g.calls if p == "/internal/execute"), 1)
+
+    def test_same_idempotency_key_is_isolated_between_agents(self):
+        alice = self.g.create_action(self.alice, {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}}, "shared-key")
+        bob = self.g.create_action(self.bob, {"task_id": "task-bob-001", "tool": "read_document", "arguments": {"document_id": "report-bob-001"}}, "shared-key")
+        self.assertNotEqual(alice["action_id"], bob["action_id"])
+        self.assertEqual(self.g.db.execute("SELECT principal FROM actions WHERE id=?", (alice["action_id"],)).fetchone()["principal"], self.alice.id)
+        self.assertEqual(self.g.db.execute("SELECT principal FROM actions WHERE id=?", (bob["action_id"],)).fetchone()["principal"], self.bob.id)
+        with self.assertRaises(GatewayError):
+            self.g.action(self.alice, bob["action_id"])
+        self.assertEqual(sum(1 for _, path, _ in self.g.calls if path == "/internal/execute"), 2)
 
 
 if __name__ == "__main__":

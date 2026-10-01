@@ -109,7 +109,8 @@ def load_policy(path: str | Path = DEFAULT_POLICY_PATH) -> dict[str, Any]:
     if not isinstance(policy["destinations"], list) or any(not isinstance(x, str) or not x for x in policy["destinations"]):
         raise RuntimeError("Policy destinations must be strings")
     limits = policy["limits"]
-    if not isinstance(limits, dict) or set(limits) != {"request_bytes", "argument_string_chars", "approval_seconds"} or any(type(v) is not int or v <= 0 for v in limits.values()):
+    required_limits = {"request_bytes", "argument_string_chars", "approval_seconds", "actions_per_minute", "pending_approvals_per_principal"}
+    if not isinstance(limits, dict) or set(limits) != required_limits or any(type(v) is not int or v <= 0 for v in limits.values()):
         raise RuntimeError("Policy limits are missing or invalid")
     if not policy["tools"].get("send_report", {}).get("requires_approval", False):
         raise RuntimeError("send_report must require reviewer approval")
@@ -292,19 +293,31 @@ class Gateway:
         req_hash = digest(body)
         # PostgreSQL advisory locking closes the cross-process check-then-insert race.
         idem_lock_key = "idempotency:" + canonical([p.id, body["task_id"], idem]).decode("utf-8")
-        with self.lock, self.db.advisory_lock(idem_lock_key):
+        with self.lock, self.db.advisory_lock("action-budget:" + p.id), self.db.advisory_lock(idem_lock_key):
             prior = self.db.execute("SELECT * FROM actions WHERE principal=? AND task=? AND idem_key=?", (p.id, body["task_id"], idem)).fetchone()
             if prior:
                 if prior["request_hash"] != req_hash:
                     raise GatewayError(409, "IDEMPOTENCY_CONFLICT", "Idempotency-Key was used with different content")
                 return self.action(p, prior["id"])
+            now = time.time()
+            recent = self.db.execute("SELECT COUNT(*) AS count FROM actions WHERE principal=? AND created>=?", (p.id, now - 60)).fetchone()["count"]
+            if recent >= self.policy["limits"]["actions_per_minute"]:
+                raise GatewayError(429, "ACTION_RATE_LIMITED", "Action request budget exceeded")
+            if body["tool"] == "send_report" and not reasons:
+                pending = self.db.execute(
+                    "SELECT COUNT(*) AS count FROM approvals a JOIN actions x ON x.id=a.action_id "
+                    "WHERE x.principal=? AND a.state IN ('PENDING','APPROVED') AND a.expires>?",
+                    (p.id, now),
+                ).fetchone()["count"]
+                if pending >= self.policy["limits"]["pending_approvals_per_principal"]:
+                    raise GatewayError(429, "PENDING_APPROVAL_LIMIT", "Pending approval budget exceeded")
             aid, trace, eid = str(uuid.uuid4()), str(uuid.uuid4()), str(uuid.uuid4())
             decision = "DENY" if reasons else ("REQUIRE_APPROVAL" if self.policy["tools"][body["tool"]].get("requires_approval", False) else "ALLOW")
             state = "DENIED" if reasons else ("PENDING_APPROVAL" if decision == "REQUIRE_APPROVAL" else "READY")
             approval_id = str(uuid.uuid4()) if decision == "REQUIRE_APPROVAL" else None
             self.db.execute("BEGIN IMMEDIATE")
             try:
-                self.db.execute("INSERT INTO actions VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (aid, p.id, body["task_id"], body["tool"], json.dumps(body["arguments"], ensure_ascii=False), req_hash, idem, decision, state, json.dumps(reasons), self._policy_version(), trace, eid, approval_id, time.time()))
+                self.db.execute("INSERT INTO actions VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (aid, p.id, body["task_id"], body["tool"], json.dumps(body["arguments"], ensure_ascii=False), req_hash, idem, decision, state, json.dumps(reasons), self._policy_version(), trace, eid, approval_id, now))
                 if approval_id:
                     snap = self._approval_snapshot(p, body["task_id"], body["tool"], body["arguments"])
                     self.db.execute("INSERT INTO approvals VALUES(?,?,?,?,?,?,?)", (approval_id, aid, digest(snap), "PENDING", None, time.time() + self.policy["limits"]["approval_seconds"], None))

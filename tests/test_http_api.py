@@ -5,6 +5,7 @@ import unittest
 from http.server import ThreadingHTTPServer
 
 from gateway.app.main import Handler
+from gateway.app.core import token_hash
 from tests.test_gateway import MockGateway
 
 
@@ -56,6 +57,50 @@ class HttpApiTests(unittest.TestCase):
         status, done = self.request("POST", f"/v1/actions/{pending['action_id']}/execute", token="a" * 40)
         self.assertEqual(status, 200)
         self.assertEqual(done["state"], "SUCCEEDED")
+
+    def test_agent_token_cannot_approve_and_pending_state_is_unchanged(self):
+        pending = self.gateway.create_action(self.gateway.authenticate("a" * 40), {"task_id": "task-alice-001", "tool": "send_report", "arguments": {"artifact_id": "artifact-1", "destination_id": "internal-review-outbox"}}, "reviewer-only")
+        status, body = self.request("POST", f"/v1/approvals/{pending['approval_id']}/decision", {"decision": "approve"}, "a" * 40)
+        self.assertEqual(status, 403)
+        self.assertEqual(body["error"], "REVIEWER_REQUIRED")
+        approval_state = self.gateway.db.execute("SELECT state FROM approvals WHERE id=?", (pending["approval_id"],)).fetchone()["state"]
+        self.assertEqual(approval_state, "PENDING")
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.gateway.calls))
+
+    def test_revoked_agent_credential_cannot_execute_approved_action(self):
+        pending = self.gateway.create_action(self.gateway.authenticate("a" * 40), {"task_id": "task-alice-001", "tool": "send_report", "arguments": {"artifact_id": "artifact-1", "destination_id": "internal-review-outbox"}}, "revoke-after-approve")
+        self.request("POST", f"/v1/approvals/{pending['approval_id']}/decision", {"decision": "approve"}, "r" * 40)
+        self.gateway.db.execute("UPDATE token_registry SET revoked=? WHERE token_hash=?", (1.0, token_hash("a" * 40)))
+        status, _ = self.request("POST", f"/v1/actions/{pending['action_id']}/execute", token="a" * 40)
+        self.assertEqual(status, 401)
+        action = self.gateway.db.execute("SELECT state FROM actions WHERE id=?", (pending["action_id"],)).fetchone()
+        self.assertEqual(action["state"], "APPROVED")
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.gateway.calls))
+
+    def test_missing_typed_and_extra_arguments_are_rejected_without_actions(self):
+        invalid_bodies = (
+            {"task_id": "task-alice-001", "tool": "read_document"},
+            {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": 42}},
+            {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001", "command": "run"}},
+            {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}, "role": "admin"},
+        )
+        for index, body in enumerate(invalid_bodies):
+            status, _ = self.request("POST", "/v1/actions", body, "a" * 40, f"invalid-shape-{index}")
+            self.assertEqual(status, 422)
+        self.assertEqual(self.gateway.db.execute("SELECT COUNT(*) AS n FROM actions").fetchone()["n"], 0)
+        self.assertFalse(any(path == "/internal/execute" for _, path, _ in self.gateway.calls))
+
+    def test_action_budget_returns_http_429_without_an_extra_tool_call(self):
+        self.gateway.policy["limits"]["actions_per_minute"] = 1
+        body = {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}}
+        status, first = self.request("POST", "/v1/actions", body, "a" * 40, "http-budget-first")
+        self.assertEqual(status, 200)
+        self.assertEqual(first["state"], "SUCCEEDED")
+        status, limited = self.request("POST", "/v1/actions", body, "a" * 40, "http-budget-over")
+        self.assertEqual(status, 429)
+        self.assertEqual(limited["error"], "ACTION_RATE_LIMITED")
+        self.assertEqual(self.gateway.db.execute("SELECT COUNT(*) AS n FROM actions").fetchone()["n"], 1)
+        self.assertEqual(sum(1 for _, path, _ in self.gateway.calls if path == "/internal/execute"), 1)
 
     def test_audit_is_append_only_at_application_database_layer(self):
         self.gateway.create_action(self.gateway.authenticate("a" * 40), {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}}, "audit-trigger")

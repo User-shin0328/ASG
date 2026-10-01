@@ -165,8 +165,7 @@ networks:
     internal: true
   admin_net:
     internal: true
-  # Docker cannot forward host ports into an internal-only network. Keep the
-  # Gateway on internal networks and give only the dashboard a host-facing path.
+  # Docker Desktop requires a non-internal bridge for host port forwarding.
   dashboard_host_net:
     driver: bridge
 

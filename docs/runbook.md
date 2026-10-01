@@ -35,7 +35,7 @@ Use `bob` or `reviewer` instead of `alice` to rotate those credentials. The data
 
 The short-lived `token-admin` profile writes the mounted local `.env`; it uses a read-only container with only the `DAC_OVERRIDE` capability to support host file permissions. It joins only the internal data network and does not publish ports. Keep normal Gateway and agent containers unprivileged.
 
-`config/policy.yaml` is YAML 1.2 written in JSON-compatible syntax so the runtime can parse it with Python's standard library. Startup rejects missing fields, unknown fields, invalid limits, a non-DENY default, or a report-submission rule without reviewer approval. Policy version, tool roles, argument fields, destinations, limits, and approval duration are loaded from this file.
+`config/policy.yaml` is YAML 1.2 written in JSON-compatible syntax so the runtime can parse it with Python's standard library. Startup rejects missing fields, unknown fields, invalid limits, a non-DENY default, or a report-submission rule without reviewer approval. Policy version, tool roles, argument fields, destinations, request/argument limits, the 60-second per-agent action budget, the pending-approval budget, and approval duration are loaded from this file. Budget exhaustion returns HTTP 429 before an action or tool side effect is recorded. Idempotent retries of an existing action return the existing action and do not consume another budget slot.
 
 Gateway tool-service calls time out after 3 seconds by default. `TOOL_REQUEST_TIMEOUT_SECONDS` can override this from greater than 0 through 60 seconds; invalid values stop Gateway startup before it opens the database. The fault-injection Compose overlay uses 45 seconds only to provide a controlled restart window in the isolated test stack.
 

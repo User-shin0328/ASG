@@ -1,5 +1,5 @@
 {
-  "version": "demo-v1",
+  "version": "demo-v2",
   "default": "DENY",
   "decisions": ["ALLOW", "DENY", "REQUIRE_APPROVAL"],
   "tools": {
@@ -23,6 +23,8 @@
   "limits": {
     "request_bytes": 24000,
     "argument_string_chars": 8000,
-    "approval_seconds": 900
+    "approval_seconds": 900,
+    "actions_per_minute": 5000,
+    "pending_approvals_per_principal": 5
   }
 }
