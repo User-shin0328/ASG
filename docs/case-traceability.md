@@ -51,15 +51,15 @@ The matrix is complete as a traceability document; local v1.0 acceptance is stil
 | N06 | No host-control capabilities/socket/mounts | PASS-local | Effective capability, mount, socket, and read-only-root checks in `docs/test-plan.md` |
 | I01 | Known direct malicious instruction is detected | PASS-local | Deterministic scanner and frozen synthetic evaluations |
 | I02 | Indirect document instruction is inspected | PASS-local | Assigned injection fixture and actual-model adapter; content withheld after inspection |
-| I03 | Quoted training text false-positive rate | PARTIAL | Synthetic held-out v4 includes benign families; one author-created set only |
-| I04 | Multilingual/spacing variants | PARTIAL | Synthetic Korean/English variants exist; broad language coverage is not established |
+| I03 | Quoted training text false-positive rate | PASS-local | Frozen held-out v5: quoted-incident and security-training families produced 0/10 false positives for the semantic classifier; the full author-created set measured 90% recall and 2% false-positive rate. See `evaluation/results/llm-classifier-v5-heldout/`; not an independent benchmark |
+| I04 | Multilingual/spacing variants | PASS-local | Frozen v5 includes Korean, English, Japanese, Spanish, French, and spaced variants; semantic classifier detected 5/5 malicious multilingual-spacing cases. Deterministic rules missed most of this family; see `evaluation/results/rules-v5-heldout/` and `llm-classifier-v5-heldout/` |
 | I05 | Clear/failed inspection does not grant tool permission | PASS-local | `tests/test_gateway.py::test_prompt_inspection_does_not_grant_authorization` |
 | I06 | Inspection timeout/error fails closed | PASS-local | `tests/test_llm_adapter.py::test_optional_classifier_transport_failure_fails_closed` |
 | F01 | Database unavailable before execution | PASS-local | Isolated Compose returned 503, no tool counter change, recovered after restart |
 | F02 | Tool commit with lost Gateway response | PASS-local | Fault proxy and receipt lookup recovered the same execution and one receipt |
 | F03 | Gateway restart while executing | PASS-local | Fault proxy/restart recovered the same execution ID and one receipt |
 | F04 | Invalid policy prevents readiness/actions | PASS-local | Unit and isolated Compose startup rejection |
-| F05 | Secret-like text/log controls are safely handled | PARTIAL | Unit-level sanitized audit check; production log pipeline not verified |
+| F05 | Secret-like text/log controls are safely handled | PASS-local | Unit sanitized-audit test plus live Docker request containing a synthetic CR/LF marker; marker and current credentials were absent from Gateway/tool-sandbox Docker logs. No external log collector is part of this Compose deployment |
 | F06 | Application role cannot alter audit history | PASS-local | Unit/API guard and live PostgreSQL privilege rejection |
 | E01 | Read document and save summary | PASS-local | Full-stack local HTTP flow and actual host-model integration |
 | E02 | Submit, approve, execute, and receipt | PASS-local | Full-stack local HTTP flow; simulated outbox only |
@@ -67,15 +67,15 @@ The matrix is complete as a traceability document; local v1.0 acceptance is stil
 | E04 | Reviewer UI, approval, and export | PARTIAL | Audit export was browser-verified; approval/execute used the authenticated dashboard proxy API, but the approval-button click was not separately exercised |
 | L01 | Actual model completes normal work | PASS-local | Host Ollama model adapter and preregistered matrix, synthetic local inputs |
 | L02 | Actual model receives malicious document | PASS-local | Preregistered model matrix; synthetic virtual tools, no live Gateway effect |
-| L03 | Malformed/unsupported model tool call is rejected | PARTIAL | Adapter parser tests cover malformed/unknown calls; actual-model malformed generation not established |
-| L04 | Model loop/stop obeys task budget | PARTIAL | Turn/tool budgets are implemented; dedicated real-model exhaustion run not recorded |
+| L03 | Malformed/unsupported model tool call is rejected | PASS-local | `tests.test_llm_adapter.LlmAdapterTests.test_unsupported_model_tool_call_stops_before_gateway_action` injects an unsupported model response into the host adapter and proves it exits before any `/v1/actions` call. This is a boundary test, not a claim that Qwen generated the invalid tool |
+| L04 | Model loop/stop obeys task budget | PASS-local | Real Qwen run with `--max-turns 1` returned `TURN_BUDGET_EXHAUSTED` after one tool call; artifact and outbox deltas were zero. See `evaluation/results/llm-agent-budget-2026-10-02.json` |
 | B01 | Normal read load | PASS-local | 3 × 1,200 reads at 20 requests/second in `docs/test-plan.md` |
 | B02 | Denial load without policy bypass | PASS-local | 1,200/1,200 cross-tenant requests denied; tool counter unchanged |
 | B03 | Oversized request/resource boundary | PASS-local | 576/576 expected 413/422 responses in 180-second local soak |
 | B04 | Concurrent approved execution remains single-use | PASS-local | 20 concurrent executions yielded one receipt in isolated Compose |
 | R01 | Initialize in a fresh environment | PASS-local | Commit `4f5b35a` source snapshot, newly generated ignored credentials, pulled base images, and new Compose volumes initialized successfully on the same Windows host |
 | R02 | Repeat initialization preserves local secrets | PASS-local | `tests/test_init_demo.py::test_reinitialization_preserves_existing_credentials_and_database_secrets` |
-| R03 | Source, Git history, and images contain no secrets | PARTIAL | Source, tracked history, and five image `/app` trees scanned; base-image filesystems are not scanned |
+| R03 | Source, Git history, and images contain no secrets | PASS-local | Source and tracked history scans plus `docker export` scans of all seven merged image filesystems found zero matches for four configured high-confidence patterns. See `evaluation/results/image-filesystem-scan-2026-10-02.json`; mounted volumes and other secret classes are outside this scan |
 | R04 | Six final demos can be followed from public docs | PARTIAL | All six scenarios replayed on commit `4f5b35a` with fresh credentials/volumes; reviewer decision used the authenticated dashboard proxy API rather than clicking the UI button |
 | R05 | Commit, CI, and report identify the same local version | PARTIAL | Local Python CI equivalents passed on commit `4f5b35a`, and its fresh-volume Compose reproduction plus six demos are recorded. Remote workflow execution remains pending while GitHub publication is held |
 

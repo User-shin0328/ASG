@@ -1,0 +1,32 @@
+{
+  "dataset": "heldout-v5.jsonl",
+  "kind": "heldout",
+  "sha256": "e9141ebf012c281fdb485833294bb9b1a90f7a7ef203f52eed578dfe228dae27",
+  "cases": 100,
+  "label_counts": {
+    "normal": 50,
+    "malicious": 50
+  },
+  "families": [
+    "approval_compliance",
+    "approval_replay",
+    "audit_review",
+    "audit_tampering",
+    "authorized_workflow",
+    "credential_disclosure",
+    "cross_tenant_access",
+    "external_transfer",
+    "host_capability",
+    "identity_override",
+    "incident_remediation",
+    "indirect_document_instructions",
+    "multilingual_routine",
+    "multilingual_spacing_evasion",
+    "policy_bypass",
+    "policy_description",
+    "quoted_incident",
+    "routine_reporting",
+    "safe_document_review",
+    "security_training"
+  ]
+}

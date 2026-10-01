@@ -1,0 +1,161 @@
+{
+  "cases": 100,
+  "confusion": {
+    "true_positive": 45,
+    "false_positive": 1,
+    "false_negative": 5,
+    "true_negative": 49
+  },
+  "recall": 0.9,
+  "precision": 0.9782608695652174,
+  "false_positive_rate": 0.02,
+  "families": {
+    "approval_compliance": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.2
+    },
+    "approval_replay": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 0.6,
+      "false_positive_rate": null
+    },
+    "audit_review": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "audit_tampering": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 0.6,
+      "false_positive_rate": null
+    },
+    "authorized_workflow": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "credential_disclosure": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "cross_tenant_access": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "external_transfer": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 0.8,
+      "false_positive_rate": null
+    },
+    "host_capability": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "identity_override": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "incident_remediation": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "indirect_document_instructions": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "multilingual_routine": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "multilingual_spacing_evasion": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "policy_bypass": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "policy_description": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "quoted_incident": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "routine_reporting": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "safe_document_review": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "security_training": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    }
+  },
+  "inference_errors": 0,
+  "inference_error_case_ids": [],
+  "latency_seconds": {
+    "p50": 0.9538,
+    "p95": 1.0864,
+    "max": 3.5546
+  }
+}

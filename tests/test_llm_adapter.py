@@ -1,7 +1,8 @@
 import unittest
+import sys
 from unittest.mock import patch
 
-from demo_agent.llm_agent import parse_text_tool_call
+from demo_agent.llm_agent import main, parse_text_tool_call
 from demo_agent.input_classifier import classify_untrusted_text
 
 
@@ -35,6 +36,17 @@ class LlmAdapterTests(unittest.TestCase):
         self.assertIsNone(parse_text_tool_call('{{"name":"read_document"}}'))
         self.assertIsNone(parse_text_tool_call("x" * 12001))
         self.assertIsNone(parse_text_tool_call('{"name":"done","arguments":{}}'))
+
+    def test_unsupported_model_tool_call_stops_before_gateway_action(self):
+        response = {"message": {"tool_calls": [{"function": {"name": "shell_exec", "arguments": {}}}]}}
+        with patch.dict("os.environ", {"AGENT_ALICE_TOKEN": "a" * 40}), \
+             patch.object(sys, "argv", ["llm_agent", "--document-id", "report-alice-001"]), \
+             patch("demo_agent.llm_agent.gateway_call", return_value={"verdict": "CLEAR"}) as gateway_call, \
+             patch("demo_agent.llm_agent.model_chat", return_value=response):
+            with self.assertRaisesRegex(SystemExit, "unsupported or invalid tool call"):
+                main()
+        gateway_call.assert_called_once()
+        self.assertEqual(gateway_call.call_args.args[3], "/v1/inputs/inspect")
 
     def test_optional_classifier_accepts_only_well_formed_labels(self):
         response = _Response(b'{"message":{"content":"{\\"label\\": \\"benign\\"}"}}')

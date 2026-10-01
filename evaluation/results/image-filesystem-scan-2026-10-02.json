@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-02",
+  "source_commit": "4f5b35a",
+  "method": "docker create + docker export; inspect every regular file in each merged container filesystem",
+  "patterns": ["private-key", "provider-token", "github-token", "aws-access-key"],
+  "images": {
+    "gateway": {"image_id": "sha256:602a168de7bc2db70df69e2c2f523f13c94a105c5ac175aeace1c2f0e4ee7125", "filesystem_bytes": 142318080, "matches": 0},
+    "migrate": {"image_id": "sha256:52115c1c2850636278cb5ddae2a9e8ff974d7016427522c908f69351170f79a5", "filesystem_bytes": 142318080, "matches": 0},
+    "token-admin": {"image_id": "sha256:5495f81e1cc3a077fc8a8d6156d91a8d463ec6ee7e25cb642e202f47a6ea781c", "filesystem_bytes": 142318080, "matches": 0},
+    "postgres": {"image_id": "sha256:cf9556d5a53a3457bc7e996d5819f789368af1682844649abf5a0094a2679fce", "filesystem_bytes": 299676672, "matches": 0},
+    "tool-sandbox": {"image_id": "sha256:572f60969c6a9afb33707a1779eb2ccc563a8557326253e412279aa5f68faebf", "filesystem_bytes": 119954432, "matches": 0},
+    "dashboard": {"image_id": "sha256:76fd54f49a3797c9c9899d2dcbf8a8ecfa43ac2ad0508a178a8a28f2854b976f", "filesystem_bytes": 119935488, "matches": 0},
+    "demo-agent": {"image_id": "sha256:ace84ab80637766b212eb27d366623d938f958facb09b7be2546caf64da163a2", "filesystem_bytes": 119987712, "matches": 0}
+  },
+  "aggregate_filesystem_bytes": 1086508544,
+  "aggregate_matches": 0,
+  "limitations": ["Only the four configured high-confidence patterns were checked.", "Docker export does not include mounted volume contents.", "The scan is not a general vulnerability or malware scan."]
+}
