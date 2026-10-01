@@ -73,11 +73,11 @@ The matrix is complete as a traceability document; local v1.0 acceptance is stil
 | B02 | Denial load without policy bypass | PASS-local | 1,200/1,200 cross-tenant requests denied; tool counter unchanged |
 | B03 | Oversized request/resource boundary | PASS-local | 576/576 expected 413/422 responses in 180-second local soak |
 | B04 | Concurrent approved execution remains single-use | PASS-local | 20 concurrent executions yielded one receipt in isolated Compose |
-| R01 | Initialize in a fresh environment | PASS-local | Commit `87a5c2a` source snapshot, newly generated ignored credentials, pulled base images, and new Compose volumes initialized successfully on the same Windows host |
+| R01 | Initialize in a fresh environment | PASS-local | Commit `4f5b35a` source snapshot, newly generated ignored credentials, pulled base images, and new Compose volumes initialized successfully on the same Windows host |
 | R02 | Repeat initialization preserves local secrets | PASS-local | `tests/test_init_demo.py::test_reinitialization_preserves_existing_credentials_and_database_secrets` |
 | R03 | Source, Git history, and images contain no secrets | PARTIAL | Source, tracked history, and five image `/app` trees scanned; base-image filesystems are not scanned |
-| R04 | Six final demos can be followed from public docs | PARTIAL | All six scenarios replayed on commit `87a5c2a` with fresh credentials/volumes; reviewer decision used the authenticated dashboard proxy API rather than clicking the UI button |
-| R05 | Commit, CI, and report identify the same local version | PARTIAL | Local Python/Compose CI equivalents passed on commit `87a5c2a`; after these evidence-document updates, one final local commit and rerun remain. Remote CI is pending while publication is held |
+| R04 | Six final demos can be followed from public docs | PARTIAL | All six scenarios replayed on commit `4f5b35a` with fresh credentials/volumes; reviewer decision used the authenticated dashboard proxy API rather than clicking the UI button |
+| R05 | Commit, CI, and report identify the same local version | PARTIAL | Local Python CI equivalents passed on commit `4f5b35a`, and its fresh-volume Compose reproduction plus six demos are recorded. Remote workflow execution remains pending while GitHub publication is held |
 
 ## Acceptance impact
 

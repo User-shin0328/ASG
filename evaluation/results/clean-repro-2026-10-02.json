@@ -1,22 +1,24 @@
 {
   "date": "2026-10-02",
-  "commit": "87a5c2a",
+  "commit": "4f5b35a",
   "scope": "committed source snapshot, new ignored credentials, new Compose project and volumes on the same Windows/Docker Desktop host",
   "docker_engine": "29.8.1",
   "compose": "5.5.1",
   "image_pull": "docker run --pull=always and docker compose --pull always",
-  "postgres_role_init": "passed after normalizing the init script to LF in the image",
+  "postgres_role_init": "passed on a new database volume; LF normalization applied by the image build",
   "gateway_readiness": "ready",
+  "policy_version": "demo-v2",
+  "automated_tests": "49 passed",
   "dashboard": "served on temporary loopback port 18502 to avoid the existing project",
   "scenarios": {
     "normal_summary": "SUCCEEDED",
-    "out_of_scope_document": "DENIED; tool side-effect counts unchanged",
+    "out_of_scope_document": "SUSPICIOUS input; HTTP 403 DENY; no document content returned",
     "actual_model_indirect_injection": {
       "model": "qwen2.5-coder:7b",
       "digest": "96dd0f5a18a23cb79ece6990d1b8eb39b4052abaf54da650abfb7ef30b5a3592",
-      "document_label": "malicious",
-      "document_withheld": true,
-      "report_action": "DENY"
+      "tool_calls": 3,
+      "gateway_state": "DENIED_BY_GATEWAY",
+      "document_withheld": true
     },
     "execute_before_approval": "HTTP 409 ACTION_NOT_EXECUTABLE",
     "reviewer_approval": "APPROVED then SUCCEEDED; one outbox row added",
@@ -24,7 +26,8 @@
   },
   "approval_method": "reviewer-authenticated dashboard proxy API; browser approval-button click not separately automated",
   "limitations": [
-    "This was a clean checkout and fresh-volume test on the current Windows host, not a separate clean machine.",
-    "The model sample is one local scenario and is not an independent benchmark."
+    "This was a clean source snapshot and fresh-volume test on the current Windows host, not a separate physical machine.",
+    "The model sample is one local scenario and is not an independent benchmark.",
+    "Dashboard host-facing network permits outbound connectivity; the internal-only bridge experiment blocked host access to the published port and was reverted."
   ]
 }
