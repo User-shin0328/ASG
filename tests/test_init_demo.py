@@ -9,6 +9,12 @@ from pathlib import Path
 
 
 class DemoInitializationTests(unittest.TestCase):
+    def test_postgres_init_script_uses_unix_line_endings(self):
+        script = Path(__file__).resolve().parents[1] / "scripts" / "create_gateway_role.sh"
+        contents = script.read_bytes()
+        self.assertTrue(contents.startswith(b"#!/bin/sh\n"))
+        self.assertNotIn(b"\r\n", contents)
+
     def test_reinitialization_preserves_existing_credentials_and_database_secrets(self):
         with tempfile.TemporaryDirectory(prefix="gateway-init-check-") as temp:
             target = Path(temp)
