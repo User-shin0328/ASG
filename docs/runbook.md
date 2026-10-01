@@ -50,6 +50,18 @@ docker compose --profile demo run --rm demo-agent python -m demo_agent.determini
 
 The normal example reads only Alice's assigned fictional report. The injection example records a suspicious string, then attempts Bob's report and receives a policy denial. The Gateway API is not published to the Windows host; use the demo-agent container for agent requests and the dashboard for reviewer approval. No external report transmission occurs.
 
+### Six final scenarios
+
+Follow the [six-case demo matrix](final-demo-matrix.md). The remaining deterministic commands are:
+
+```powershell
+docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode unapproved-report
+docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode approval
+docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode execute-approved --action-id <action-id>
+```
+
+For scenario 3, run the optional host-side model against Alice's assigned adversarial fixture with the local model installed: `python -m demo_agent.llm_agent --document-id report-alice-attack --model qwen2.5-coder:7b`. It may not produce a malicious tool call; report its actual tool choice and Gateway result. The Gateway inspection and permission checks remain the enforcement evidence. Scenario 6 repeats the same `execute-approved` command and checks that the existing receipt is returned.
+
 Run the isolated-agent and tool-authentication smoke checks with:
 
 ```powershell

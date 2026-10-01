@@ -24,6 +24,8 @@ See [the runbook](docs/runbook.md). Initialize ignored local credentials and dat
 
 Run the code-level suite with `python -m unittest discover -v`.
 
+The six final demo scenarios and their expected outcomes are listed in the [demo matrix](docs/final-demo-matrix.md). They use fictional documents and the local simulated outbox only.
+
 ## Architecture and limits
 
 Read [architecture](docs/architecture.md), [threat model](docs/threat-model.md), [API contract](docs/api.md), [requirements traceability](docs/requirements.md), and the [preregistered model study](evaluation/agent-matrix-preregistration-2026-10-01.md). Gateway state uses PostgreSQL at runtime; SQLite is retained as the fast unit-test adapter, while the tool sandbox uses SQLite for simulated receipts and outbox. Local Docker verified read and reviewer-approved submit paths. A separate host-run model adapter was measured against a virtual in-memory tool harness; those mock-policy results do not replace the live Gateway's enforcement. The dashboard alone joins a host-facing network so its UI can bind to loopback; that network gives the dashboard container outbound network capability, which is not yet restricted. No real email, firewall, shell, arbitrary HTTP, or SQL tool is included. Local acceptance gaps and limits are listed in the [assessment](docs/final-local-acceptance.md).
