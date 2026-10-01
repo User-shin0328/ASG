@@ -1,0 +1,181 @@
+name: ai-agent-security-gateway
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: postgres/Dockerfile
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: gateway
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password, gateway_db_password]
+    networks: [data_net]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gateway"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    command: ["python", "-m", "gateway.migrate"]
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: gateway
+      DATABASE_ADMIN_USER: postgres
+      DATABASE_ADMIN_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
+    networks: [data_net]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    environment:
+      GATEWAY_HOST: 0.0.0.0
+      GATEWAY_PORT: 8000
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: gateway
+      DATABASE_USER: gateway_app
+      DATABASE_PASSWORD_FILE: /run/secrets/gateway_db_password
+      POLICY_FILE: /app/config/policy.yaml
+      TOOL_URL: http://tool-sandbox:8001
+      AGENT_ALICE_TOKEN: ${AGENT_ALICE_TOKEN:?Run init_demo.py first}
+      AGENT_BOB_TOKEN: ${AGENT_BOB_TOKEN:?Run init_demo.py first}
+      REVIEWER_TOKEN: ${REVIEWER_TOKEN:?Run init_demo.py first}
+      TOOL_SERVICE_TOKEN: ${TOOL_SERVICE_TOKEN:?Run init_demo.py first}
+    secrets: [gateway_db_password]
+    networks: [agent_net, tool_net, admin_net, data_net]
+    read_only: true
+    tmpfs: [/tmp]
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      tool-sandbox:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  token-admin:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    command: ["python", "/app/scripts/rotate_demo_token.py"]
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: gateway
+      DATABASE_ADMIN_USER: postgres
+      DATABASE_ADMIN_PASSWORD_FILE: /run/secrets/postgres_password
+      DEMO_ENV_FILE: /workspace/.env
+    secrets: [postgres_password]
+    networks: [data_net]
+    volumes: ["./.env:/workspace/.env"]
+    read_only: true
+    tmpfs: [/tmp]
+    user: "0:0"
+    cap_drop: [ALL]
+    cap_add: [DAC_OVERRIDE]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: [admin]
+    restart: "no"
+
+  tool-sandbox:
+    build:
+      context: .
+      dockerfile: tool_sandbox/Dockerfile
+    environment:
+      TOOL_DATABASE_PATH: /data/tool.sqlite3
+      TOOL_SERVICE_TOKEN: ${TOOL_SERVICE_TOKEN:?Run init_demo.py first}
+    networks: [tool_net]
+    volumes: [tool_data:/data]
+    read_only: true
+    tmpfs: [/tmp]
+    user: "10002:10002"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health/live', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: dashboard/Dockerfile
+    environment:
+      DASHBOARD_PORT: 8501
+      GATEWAY_URL: http://gateway:8000
+    ports:
+      - "127.0.0.1:18501:8501"
+    networks: [admin_net, dashboard_host_net]
+    read_only: true
+    user: "10003:10003"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      gateway:
+        condition: service_healthy
+    restart: unless-stopped
+
+  demo-agent:
+    build:
+      context: .
+      dockerfile: demo_agent/Dockerfile
+    environment:
+      GATEWAY_URL: http://gateway:8000
+      AGENT_ALICE_TOKEN: ${AGENT_ALICE_TOKEN:?Run init_demo.py first}
+    networks: [agent_net]
+    read_only: true
+    tmpfs: [/tmp]
+    user: "10004:10004"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    profiles: [demo]
+
+networks:
+  data_net:
+    internal: true
+  agent_net:
+    internal: true
+  tool_net:
+    internal: true
+  admin_net:
+    internal: true
+  # Docker cannot forward host ports into an internal-only network. Keep the
+  # Gateway on internal networks and give only the dashboard a host-facing path.
+  dashboard_host_net:
+    driver: bridge
+
+volumes:
+  tool_data:
+  postgres_data:
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+  gateway_db_password:
+    file: ./secrets/gateway_db_password.txt

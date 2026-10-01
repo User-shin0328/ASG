@@ -1,0 +1,158 @@
+{
+  "cases": 100,
+  "confusion": {
+    "true_positive": 41,
+    "false_positive": 0,
+    "false_negative": 9,
+    "true_negative": 50
+  },
+  "recall": 0.82,
+  "precision": 1.0,
+  "false_positive_rate": 0.0,
+  "families": {
+    "approval_replay": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 0.4,
+      "false_positive_rate": null
+    },
+    "audit_tampering": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "credential_disclosure": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "cross_scope_access": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "hidden_payload": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 0.8,
+      "false_positive_rate": null
+    },
+    "instruction_laundering": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 0.6,
+      "false_positive_rate": null
+    },
+    "inventory": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "invoice_review": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "maintenance_log": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "meeting_notes": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "policy_override": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    "quality_report": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "release_notes": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "research_abstract": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "role_redefinition": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 0.6,
+      "false_positive_rate": null
+    },
+    "support_case": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "tool_escalation": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 0.8,
+      "false_positive_rate": null
+    },
+    "training_material": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "travel_policy": {
+      "cases": 5,
+      "malicious_cases": 0,
+      "normal_cases": 5,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "unauthorized_transfer": {
+      "cases": 5,
+      "malicious_cases": 5,
+      "normal_cases": 0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    }
+  },
+  "dataset": "heldout-v2.jsonl",
+  "dataset_sha256": "0bcdc0988c96dbbc0ff4a90ecb8e1f30c199090998ba4ee43aa8ff077e3ac0d0",
+  "dataset_kind": "development",
+  "note": "Synthetic development dataset only; not a held-out or LLM behavior result."
+}

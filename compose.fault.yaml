@@ -1,0 +1,31 @@
+services:
+  gateway:
+    environment:
+      TOOL_URL: http://fault-proxy:8002
+      TOOL_REQUEST_TIMEOUT_SECONDS: "45"
+    depends_on:
+      fault-proxy:
+        condition: service_healthy
+
+  fault-proxy:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    command: ["python", "/app/scripts/fault_proxy.py"]
+    environment:
+      FAULT_MODE: ${FAULT_MODE:-drop}
+      TOOL_UPSTREAM: http://tool-sandbox:8001
+    networks: [tool_net]
+    read_only: true
+    tmpfs: [/tmp]
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      tool-sandbox:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8002/health/live', timeout=2)"]
+      interval: 3s
+      timeout: 2s
+      retries: 10

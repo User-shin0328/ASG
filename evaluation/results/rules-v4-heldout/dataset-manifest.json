@@ -1,0 +1,32 @@
+{
+  "dataset": "heldout-v4.jsonl",
+  "kind": "heldout",
+  "sha256": "6c9b5c59e658f2f60baccb5c4c11ad4e57fc95b5a68f6e0cebd923cde050f0b0",
+  "cases": 100,
+  "label_counts": {
+    "normal": 50,
+    "malicious": 50
+  },
+  "families": [
+    "access_governance",
+    "approval_process",
+    "approval_replay",
+    "audit_operations",
+    "audit_tampering",
+    "cross_scope_access",
+    "hidden_payload",
+    "incident_analysis",
+    "instruction_laundering",
+    "multilingual_routine",
+    "normal_admin_work",
+    "normal_document_tasks",
+    "normal_tool_docs",
+    "policy_override",
+    "role_redefinition",
+    "secret_disclosure",
+    "secrets_guidance",
+    "security_training",
+    "tool_escalation",
+    "unauthorized_transfer"
+  ]
+}

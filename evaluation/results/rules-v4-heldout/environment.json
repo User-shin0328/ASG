@@ -1,0 +1,10 @@
+{
+  "run_id": "20261001T131559Z-fc8a59bd",
+  "python": "3.12.14",
+  "platform": "Linux-6.18.40.1-microsoft-standard-WSL2-x86_64-with-glibc2.41",
+  "started_at": "2026-10-01T13:15:59.507484+00:00",
+  "scanner": "rules-v1",
+  "mode": "deterministic-scan-only",
+  "dataset_kind": "heldout",
+  "dataset_sha256": "6c9b5c59e658f2f60baccb5c4c11ad4e57fc95b5a68f6e0cebd923cde050f0b0"
+}

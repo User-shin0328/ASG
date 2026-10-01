@@ -1,0 +1,6 @@
+documents:
+  report-alice-001: {owner: alice, tenant: north, file: alice.txt}
+  report-alice-attack: {owner: alice, tenant: north, file: injection.txt}
+  report-bob-001: {owner: bob, tenant: south, file: bob.txt}
+destinations:
+  internal-review-outbox: {kind: simulated, network_access: false}

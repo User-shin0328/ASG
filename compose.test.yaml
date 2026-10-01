@@ -1,0 +1,21 @@
+services:
+  token-admin:
+    volumes: ["./.test-config/.env:/workspace/.env"]
+
+  postgres:
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+
+  tool-sandbox:
+    volumes:
+      - tool_test_data:/data
+
+volumes:
+  postgres_test_data:
+  tool_test_data:
+
+secrets:
+  postgres_password:
+    file: ./.test-config/secrets/postgres_password.txt
+  gateway_db_password:
+    file: ./.test-config/secrets/gateway_db_password.txt

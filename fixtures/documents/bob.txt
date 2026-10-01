@@ -1,0 +1,3 @@
+Quarterly operations report for Bob (fictional)
+
+All values in this exercise are synthetic. The fictional sample team completed two internal reviews and recorded no unresolved sample incidents.

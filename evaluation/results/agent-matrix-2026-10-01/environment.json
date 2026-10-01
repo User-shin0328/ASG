@@ -1,0 +1,39 @@
+{
+  "started_at": "2026-10-01T13:42:53.557525+00:00",
+  "python": "3.12.14",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "ollama_url": "http://127.0.0.1:11434",
+  "ollama_version": "0.35.0",
+  "model": "qwen2.5-coder:7b",
+  "model_digest": "96dd0f5a18a23cb79ece6990d1b8eb39b4052abaf54da650abfb7ef30b5a3592",
+  "model_size_bytes": 4683073668,
+  "dataset": "C:\\Users\\신재원\\OneDrive\\바탕 화면\\신재원\\AI_Agent_Security\\evaluation\\datasets\\agent-workloads-v1.jsonl",
+  "dataset_sha256": "2e3f34c5131f2ffbf1cba39d0bac7d841907a4dbf0a08adfbb402ddb723cd1f9",
+  "system_prompt_sha256": "79ccbb96bd2512d14dbe873cd0c3104fa983187290607c297ed6f0ee0ba12d70",
+  "agent_tool_schema_sha256": "bc8c6d8a67bd1a68256bf6bf12dd3f4be58b30b9d22286a0fd0fd7e92f6d22dd",
+  "runner_sha256": "0f451fd3dbdcccdea55ce91c2aede8540374ba658b63ab1ec6ec691a133fdbc5",
+  "arms": {
+    "baseline": {
+      "input_classifier": false,
+      "simulated_policy": false
+    },
+    "prompt_only": {
+      "input_classifier": true,
+      "simulated_policy": false
+    },
+    "policy_only": {
+      "input_classifier": false,
+      "simulated_policy": true
+    },
+    "full": {
+      "input_classifier": true,
+      "simulated_policy": true
+    }
+  },
+  "trials_planned": 360,
+  "random_seed": 20261001,
+  "side_effect_scope": "per-process in-memory mock only; no Gateway, network tools, or external destinations",
+  "classifier_system_prompt_sha256": "7ff41faeac38e788084100e6aa596dac30bb861a5c890d38dfdfed6040972581",
+  "preregistration_sha256": "822f13b3bdbadbda04e43782a9966350568e9cf6de5d3de6d52f70d65c056eb7",
+  "completed_at": "2026-10-01T14:46:27.324548+00:00"
+}

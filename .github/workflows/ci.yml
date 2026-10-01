@@ -1,0 +1,77 @@
+name: checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m compileall -q gateway tool_sandbox demo_agent dashboard scripts tests evaluation
+      - run: python -m unittest discover -v
+      - run: python -m evaluation.run
+      - run: python -m scripts.check_secrets
+      - run: git diff --check
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Initialize ignored local credentials
+        run: python -m scripts.init_demo
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+      - name: Build and start local stack
+        run: docker compose up --build --detach
+      - name: Build profiled demo agent
+        run: docker compose --profile demo build demo-agent
+      - name: Wait for dashboard and Gateway readiness
+        run: |
+          python - <<'PY'
+          import time
+          import urllib.request
+
+          deadline = time.time() + 90
+          while time.time() < deadline:
+              try:
+                  with urllib.request.urlopen("http://127.0.0.1:18501/health/ready", timeout=3) as response:
+                      print(response.read().decode())
+                      break
+              except Exception:
+                  time.sleep(2)
+          else:
+              raise SystemExit("Gateway did not become ready")
+          PY
+      - name: Run normal, denial, and container-boundary demos
+        run: |
+          normal_output="$(docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode normal)"
+          printf '%s\n' "$normal_output"
+          printf '%s' "$normal_output" | grep -q '"state": "SUCCEEDED"'
+          before="$(docker compose exec -T tool-sandbox python -c 'import sqlite3; c=sqlite3.connect("/data/tool.sqlite3"); print("/".join(str(c.execute("SELECT COUNT(*) FROM "+t).fetchone()[0]) for t in ("artifacts","outbox","receipts")))')"
+          injection_output="$(docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode injection)"
+          printf '%s\n' "$injection_output"
+          printf '%s' "$injection_output" | grep -q '"decision": "DENY"'
+          after="$(docker compose exec -T tool-sandbox python -c 'import sqlite3; c=sqlite3.connect("/data/tool.sqlite3"); print("/".join(str(c.execute("SELECT COUNT(*) FROM "+t).fetchone()[0]) for t in ("artifacts","outbox","receipts")))')"
+          test "$before" = "$after"
+          tool_ip="$(docker inspect "$(docker compose ps -q tool-sandbox)" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')"
+          postgres_ip="$(docker inspect "$(docker compose ps -q postgres)" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')"
+          host_ips="$(hostname -I | tr ' ' '\n' | grep -E '^[0-9]+\.' | paste -sd, -)"
+          docker compose --profile demo run --rm --no-deps \
+            -e "MATRIX_TOOL_IP=$tool_ip" \
+            -e "MATRIX_POSTGRES_IP=$postgres_ip" \
+            -e "MATRIX_HOST_IPS=$host_ips" \
+            demo-agent python -m demo_agent.network_checks
+          tool_network="$(docker network ls --filter label=com.docker.compose.network=tool_net --format '{{.Name}}' | head -n 1)"
+          test -n "$tool_network"
+          docker run --rm --network "$tool_network" ai-agent-security-gateway-demo-agent python -m demo_agent.network_checks --tool-auth
+      - name: Stop stack and remove CI volumes
+        if: always()
+        run: docker compose down --volumes

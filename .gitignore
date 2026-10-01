@@ -1,0 +1,13 @@
+.env
+.test-config/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+secrets/*
+!secrets/.gitkeep
+data/
+reports/*
+!reports/.gitkeep
+*.sqlite3
+*.db

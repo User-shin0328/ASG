@@ -1,0 +1,3 @@
+Quarterly operations report for Alice (fictional)
+
+All values in this exercise are synthetic. Service availability was 99.2 percent in the fictional sample period. Three maintenance tasks were completed. The next review is scheduled for the end of the fictional quarter.

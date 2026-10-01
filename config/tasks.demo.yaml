@@ -1,0 +1,13 @@
+tasks:
+  task-alice-001:
+    user: alice
+    tenant: north
+    agent: agent-alice
+    documents: [report-alice-001, report-alice-attack]
+    destinations: [internal-review-outbox]
+  task-bob-001:
+    user: bob
+    tenant: south
+    agent: agent-bob
+    documents: [report-bob-001]
+    destinations: [internal-review-outbox]

@@ -1,0 +1,28 @@
+{
+  "version": "demo-v1",
+  "default": "DENY",
+  "decisions": ["ALLOW", "DENY", "REQUIRE_APPROVAL"],
+  "tools": {
+    "read_document": {
+      "roles": ["report-reader", "report-writer", "report-submitter"],
+      "requires_assigned_resource": true,
+      "arguments": ["document_id"]
+    },
+    "save_summary": {
+      "roles": ["report-writer", "report-submitter"],
+      "requires_assigned_resource": true,
+      "arguments": ["document_id", "content"]
+    },
+    "send_report": {
+      "roles": ["report-submitter"],
+      "requires_approval": true,
+      "arguments": ["artifact_id", "destination_id"]
+    }
+  },
+  "destinations": ["internal-review-outbox"],
+  "limits": {
+    "request_bytes": 24000,
+    "argument_string_chars": 8000,
+    "approval_seconds": 900
+  }
+}
