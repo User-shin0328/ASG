@@ -12,11 +12,27 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Audit locked Python dependencies
+        uses: pypa/gh-action-pip-audit@v1.1.0
+        with:
+          inputs: requirements.lock
       - run: python -m compileall -q gateway tool_sandbox demo_agent dashboard scripts tests evaluation
-      - run: python -m unittest discover -v
-      - run: python -m evaluation.run
+      - name: Run unit tests
+        run: |
+          mkdir -p reports/ci
+          python -m unittest discover -v 2>&1 | tee reports/ci/unittest.log
+      - name: Run development evaluation
+        run: python -m evaluation.run --output-dir reports/ci/development-evaluation
       - run: python -m scripts.check_secrets
       - run: git diff --check
+      - name: Upload test and evaluation evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: local-ci-evidence
+          path: reports/ci/
+          if-no-files-found: ignore
+          retention-days: 14
 
   compose:
     runs-on: ubuntu-latest
@@ -33,6 +49,46 @@ jobs:
         run: docker compose up --build --detach
       - name: Build profiled demo agent
         run: docker compose --profile demo build demo-agent
+      - name: Scan Gateway image for known vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ai-agent-security-gateway-gateway:latest
+          scan-type: image
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+      - name: Scan tool sandbox image for known vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ai-agent-security-gateway-tool-sandbox:latest
+          scan-type: image
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+      - name: Scan dashboard image for known vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ai-agent-security-gateway-dashboard:latest
+          scan-type: image
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+      - name: Scan demo agent image for known vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ai-agent-security-gateway-demo-agent:latest
+          scan-type: image
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+      - name: Scan PostgreSQL image for known vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ai-agent-security-gateway-postgres:latest
+          scan-type: image
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          exit-code: '1'
       - name: Wait for dashboard and Gateway readiness
         run: |
           python - <<'PY'

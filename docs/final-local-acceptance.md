@@ -38,13 +38,14 @@ The core Gateway boundary, approval integrity, idempotency, audit controls, cont
 | Multi-key cross-process stress | Isolated test Compose project with two Gateway containers, 50 unique idempotency keys, and 25 workers | 50/50 HTTP 200, 50 unique action IDs/receipts, and isolated tool counts 0/0/0→50/0/50. Evidence: `evaluation/results/multiprocess-multikey-2026-10-02.json`. |
 | Current local CI-equivalent checks | Implementation/evidence commit `740244b`; this refresh changes documentation only | Python 3.12 compile passed; 58/58 unit tests passed; source secret-pattern scan found no matches; `git diff --check` passed; the running Gateway readiness endpoint returned `ready` with policy `demo-v2`. Development rules evaluation remains recorded at `evaluation/results/dev-v2-2026-10-02/`. |
 | Local Git / publication | Code and evidence are stored in local commits only. No remote is configured. `.env` and generated database secrets are ignored. | Tracked Git history at `740244b` contained 343 reachable blobs and zero matches for four configured high-confidence patterns. Stage 18 remains explicitly held by the user. |
+| CI security checks and evidence retention | `.github/workflows/ci.yml` locally defines a locked dependency audit, critical/high OS and library vulnerability scans for all five built images, and upload of unit-test logs plus development-evaluation artifacts | Workflow source is prepared, but neither action execution nor remote CI can be verified while GitHub publication remains on hold. |
 
 ## Remaining acceptance gates
 
 1. Keep v4-v6 labeled as author-created synthetic evaluations. Rules v2 was tuned using v5, so that result is diagnostic; v6 remains a fresh rules-v2 evaluation but has been observed during semantic prompt iteration. The current-prompt semantic recheck reached 88% recall / 0% FPR on v6, but it is not independent generalization evidence. Any future detector tuning against v6 requires a newly preregistered evaluation set.
 2. L01-L04 remains a separate synthetic study whose policy arms are virtual, not actual Gateway decisions.
 3. Keep production-capacity qualification open. B01 met the local 150 ms p95 target at 20 requests/s, and configured input boundaries passed a 10-minute soak; this is not production capacity certification.
-4. Remote GitHub Actions execution remains pending because the user has held publication and no remote is configured.
+4. Remote GitHub Actions execution remains pending because the user has held publication and no remote is configured. The workflow now defines dependency and image vulnerability scans plus test/evaluation artifact retention, but none of those new remote action steps has executed.
 5. R04 and R05 depend on public documentation and remote CI, which remain unavailable while GitHub publication is held. The local UI and dashboard egress checks are now complete; D01's exact scope is recorded with its evidence.
 6. Stage 18 requires GitHub publication and a matching release tag. It remains on hold per the user's instruction and requires a later explicit go-ahead.
 
