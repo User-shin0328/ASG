@@ -130,15 +130,24 @@ services:
       DASHBOARD_PORT: 8501
       GATEWAY_URL: http://gateway:8000
     ports:
-      - "127.0.0.1:18501:8501"
+      - "127.0.0.1:${DASHBOARD_HOST_PORT:-18501}:8501"
     networks: [admin_net, dashboard_host_net]
     read_only: true
-    user: "10003:10003"
+    # The entrypoint installs a network-namespace egress filter as root,
+    # drops all capabilities, then execs the app as UID/GID 10003.
+    user: "0:0"
     cap_drop: [ALL]
+    cap_add: [NET_ADMIN, SETPCAP, SETUID, SETGID]
     security_opt: [no-new-privileges:true]
     depends_on:
       gateway:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "nft list chain inet dashboard_egress output | grep -q 'policy drop' && python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/health/ready', timeout=2)\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     restart: unless-stopped
 
   demo-agent:

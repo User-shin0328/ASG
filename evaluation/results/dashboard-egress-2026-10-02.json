@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-02",
+  "source_revision": "ab5ae24 plus the working-tree dashboard-egress changes under test",
+  "environment": {
+    "os": "Windows with Docker Desktop",
+    "docker_engine": "29.8.1",
+    "compose_project": "ai-gateway-egress-probe",
+    "compose_project_was_disposable": true,
+    "host_binding": "127.0.0.1:18509"
+  },
+  "control": {
+    "container": "ai-agent-security-gateway-dashboard-1",
+    "destination": "1.1.1.1:443/tcp",
+    "result": "connected"
+  },
+  "filtered_dashboard": {
+    "container": "ai-gateway-egress-probe-dashboard-1",
+    "destination": "1.1.1.1:443/tcp",
+    "result": "timed_out",
+    "firewall": "nftables inet dashboard_egress output policy drop",
+    "allowed_output": [
+      "loopback",
+      "established and related responses",
+      "Docker embedded DNS at 127.0.0.11 over TCP/UDP 53",
+      "resolved Gateway IPv4 address over TCP 8000"
+    ],
+    "app_process": {
+      "uid": 10003,
+      "gid": 10003,
+      "cap_eff": "0000000000000000",
+      "cap_bnd": "0000000000000000"
+    },
+    "loopback_dashboard_http": 200,
+    "authenticated_audit_read_http": 200,
+    "authenticated_pending_approvals_read_http": 200,
+    "internal_gateway_readiness_http": 200,
+    "compose_healthcheck_after_restart": "healthy",
+    "host_ui_http_after_restart": 200,
+    "public_tcp_after_restart": "timed_out"
+  },
+  "limitations": [
+    "The outbound probe covers one public IPv4 TCP destination and port; it is not a complete protocol or destination audit.",
+    "Docker embedded DNS and the internal Gateway are intentionally reachable.",
+    "This does not test protection against a Docker or host administrator."
+  ]
+}

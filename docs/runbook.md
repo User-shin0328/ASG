@@ -39,7 +39,7 @@ The short-lived `token-admin` profile writes the mounted local `.env`; it uses a
 
 Gateway tool-service calls time out after 3 seconds by default. `TOOL_REQUEST_TIMEOUT_SECONDS` can override this from greater than 0 through 60 seconds; invalid values stop Gateway startup before it opens the database. The fault-injection Compose overlay uses 45 seconds only to provide a controlled restart window in the isolated test stack.
 
-Docker cannot publish a port from an internal-only network, so the dashboard also joins `dashboard_host_net`. This gives the dashboard container outbound network capability; its current code serves the UI and calls only the fixed internal Gateway URL, but network-level egress denial is not configured.
+Docker Desktop needs a host-facing bridge for dashboard port forwarding, so the dashboard also joins `dashboard_host_net`. At startup, `dashboard/start.sh` resolves the fixed Gateway address, installs an nftables output chain with default-drop policy, then removes all capabilities and runs the app as UID 10003. The filter permits loopback, established replies to host-initiated connections, Docker's local DNS resolver, and the resolved Gateway IPv4 address on TCP 8000. If firewall setup or Gateway name resolution fails, the dashboard exits before serving the UI. The healthcheck requires both a default-drop chain and a successful local Gateway readiness request.
 
 ## Deterministic demo
 
