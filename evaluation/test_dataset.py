@@ -8,7 +8,7 @@ from evaluation.run import ROOT, load_dataset
 
 class HeldoutDatasetTests(unittest.TestCase):
     def test_heldout_datasets_are_balanced_and_family_separated(self):
-        for name in ("heldout-v1.jsonl", "heldout-v2.jsonl", "heldout-v3.jsonl", "heldout-v4.jsonl", "heldout-v5.jsonl"):
+        for name in ("heldout-v1.jsonl", "heldout-v2.jsonl", "heldout-v3.jsonl", "heldout-v4.jsonl", "heldout-v5.jsonl", "heldout-v6.jsonl"):
             with self.subTest(dataset=name):
                 rows = load_dataset(ROOT / "evaluation/datasets" / name, "heldout")
                 self.assertEqual(len(rows), 100)

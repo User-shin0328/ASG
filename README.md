@@ -2,7 +2,7 @@
 
 A small, fictional security exercise that checks agent identity, task assignment, tool arguments, resource ownership, and human approval before a tool creates a local simulated side effect.
 
-**Current implementation status:** local reference MVP; full plan acceptance is not passed and this is not a v1.0 release. The deterministic regex scanner measured 10% recall / 8% false-positive rate on v4 and 22% / 10% on a new v5 set. The optional local semantic prefilter measured 82% / 4% on v4 and 90% / 2% on v5; both sets are author-created synthetic evaluations, not independent benchmarks. The prefilter is auxiliary and never grants tool permissions. GitHub publication is on hold. See the [local acceptance assessment](docs/final-local-acceptance.md) and [implementation report](docs/evaluation-report.md).
+**Current implementation status:** local reference MVP; full plan acceptance is not passed and this is not a v1.0 release. Rules v2 measured 42% recall / 4% false-positive rate on fresh v6; the optional local semantic prefilter measured 86% / 0% on the same 100-case author-created synthetic set, with no inference errors. This is not an independent benchmark. The prefilter is auxiliary and never grants tool permissions. GitHub publication is on hold. See the [local acceptance assessment](docs/final-local-acceptance.md) and [implementation report](docs/evaluation-report.md).
 
 ## Included
 

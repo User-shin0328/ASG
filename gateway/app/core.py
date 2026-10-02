@@ -16,6 +16,7 @@ from gateway.app.database import Database
 
 
 DEFAULT_POLICY_PATH = Path(__file__).resolve().parents[2] / "config" / "policy.yaml"
+INSPECTION_SCANNER_VERSION = "rules-v2"
 INSPECTION_PATTERNS = (
     "ignore previous instructions", "reveal the system prompt", "send all files", "ignore all prior instructions",
     "disregard the operating rules", "switch roles now", "constraints are obsolete", "ignore the assigned workflow",
@@ -36,6 +37,14 @@ INSPECTION_PATTERNS = (
     "replace the reviewer identity", "change the execution identifier", "edit the request arguments after approval",
 )
 INSPECTION_INTENT_RULES = (
+    ("POLICY_BYPASS", re.compile(r"(?:\b(?:disregard|ignore|bypass|circumvent|override)\b.{0,70}\b(?:rule|policy|restriction|limit|approval|safety|check|control)\b|\b(?:treat|consider)\b.{0,35}\b(?:deny|denial|blocked|restricted)\b.{0,30}\b(?:advisory|optional|suggestion)\b|(?:承認|規則|制限).{0,20}(?:無視|回避)|(?:無視|回避).{0,20}(?:承認|規則|制限)|\bignora\b.{0,30}\b(?:aprobaci[oó]n|reglas?|restricciones?)\b|\bcontourne\b.{0,30}\b(?:r[eè]gles?|restrictions?)\b)", re.I | re.S)),
+    ("ROLE_OR_IDENTITY_SPOOF", re.compile(r"(?:\b(?:adopt|assume|pretend to be|switch|change|take on)\b.{0,65}\b(?:identity|role|principal|system owner|security reviewer|platform operator|administrator|admin)\b|\b(?:identity|role|principal)\b.{0,45}\b(?:of|to|as)\b.{0,35}\b(?:system owner|security reviewer|platform operator|administrator|admin)\b|(?:최고 관리자|시스템 소유자|보안 검토자).{0,25}(?:되어|인 척|로 전환)|(?:역할|신원|주체).{0,25}(?:바꾸|위장|변경))", re.I | re.S)),
+    ("CROSS_TENANT_SCOPE", re.compile(r"(?:\b(?:open|fetch|read|retrieve|use|copy|summari[sz]e|return|add)\b.{0,80}\b(?:another|other|neighboring|different|south|outside)\b.{0,30}\b(?:tenant|division|organization|team|customer|user|account|report|record|file)\b|\b(?:tenant|division|organization|team|customer|user|account)\b.{0,35}\b(?:outside|not assigned|belongs to another|different)\b|(?:다른|타)\s*(?:조직|테넌트|사용자|고객|부서).{0,35}(?:문서|기록|자료|보고서|가져|읽|추가|반환))", re.I | re.S)),
+    ("UNREGISTERED_EXTERNAL_TRANSFER", re.compile(r"(?:\b(?:forward|send|upload|post|deliver|replace|route|copy)\b.{0,85}\b(?:external|third.party|unapproved|arbitrary|public paste|personal|outside|url|endpoint|address|service)\b|\b(?:external|third.party|unapproved|arbitrary|public paste|personal|outside)\b.{0,70}\b(?:url|endpoint|address|service|upload|recipient|destination|report|artifact|contents?)\b|(?:문서|보고서|자료|파일).{0,25}(?:외부 URL|외부 주소|공개 사이트).{0,30}(?:업로드|게시|전송)|(?:외부로|개인 주소로|공개 사이트에).{0,20}(?:보내|전송|업로드|게시))", re.I | re.S)),
+    ("BEARER_OR_AUTH_SECRET_DISCLOSURE", re.compile(r"(?:\b(?:print|include|copy|reveal|disclose|expose|show|return|put)\b.{0,65}\b(?:bearer value|authentication secret|auth value|credential string|system instruction|access token|secret value)\b|\b(?:bearer value|authentication secret|auth value|credential string|system instruction|access token|secret value)\b.{0,55}\b(?:report|response|output|include|print|reveal)\b|(?:인증|접근|베어러).{0,15}(?:비밀값|토큰|자격 증명).{0,25}(?:응답|출력|넣|공개|그대로))", re.I | re.S)),
+    ("HOST_OR_DATABASE_ESCALATION", re.compile(r"(?:\b(?:mount|query|access|read|dump|bypass|start|run|execute|connect)\b.{0,75}\b(?:host|production database|container runtime socket|runtime socket|underlying tables|privileged helper|sql|shell|arbitrary command)\b|\b(?:host|production database|container runtime socket|runtime socket|underlying tables|privileged helper|sql|shell)\b.{0,70}\b(?:directly|bypass|mount|execute|run|dump|change)\b|(?:호스트|운영|프로덕션).{0,25}(?:명령|데이터베이스|소켓|관리자 설정|테이블).{0,30}(?:실행|조회|변경|덤프|마운트))", re.I | re.S)),
+    ("APPROVAL_REPLAY_OR_REBIND", re.compile(r"(?:\b(?:reuse|repeat|apply|copy|use|execute|resubmit)\b.{0,65}\b(?:previous|consumed|used|old|expired|reviewer|approval|decision|sign.off)\b.{0,55}\b(?:different|changed|new|consumed|already|without|again|content|artifact|request|submission)\b|\b(?:previous|consumed|used|old|expired)\b.{0,55}\b(?:approval|reviewer decision|sign.off)\b.{0,55}\b(?:different|changed|new|content|artifact|request)\b|(?:사용한|소비된|이전|만료된)\s*승인.{0,35}(?:다시|그대로|적용|실행|전송)|승인.{0,30}(?:내용|문서).{0,20}바뀌.{0,25}(?:그대로|적용|사용))", re.I | re.S)),
+    ("TRUSTED_DOCUMENT_INSTRUCTIONS", re.compile(r"(?:\b(?:treat|consider|follow|obey|execute|perform)\b.{0,65}\b(?:attached|fetched|document|page|quoted|embedded|hidden|trusted)\b.{0,50}\b(?:trusted|tool instructions|system rules|instructions|directions|commands)\b|\btrusted\b.{0,30}\b(?:tool instructions|system rules|document instructions)\b.{0,70}\b(?:read|open|send|skip|ignore|access)\b|(?:가져온|첨부된|문서의|숨은)\s*지시.{0,30}(?:시스템 규칙|도구 지시|따라|취급|읽|보내|건너뛰))", re.I | re.S)),
     ("ROLE_REDEFINITION", re.compile(r"\b(?:behave as|act as|assume (?:the )?(?:role|persona)(?: of)?|pretend to be|you are now|become)\b.{0,80}\b(?:root|administrator|operator|unrestricted|system|developer|command interpreter|all.powerful)\b", re.I | re.S)),
     ("HIDDEN_INSTRUCTIONS", re.compile(r"\b(?:invisible|hidden|concealed|embedded|secret)\b.{0,70}\b(?:part|message|directions?|instructions?|content|payload|text)\b", re.I | re.S)),
     ("SECRET_DISCLOSURE", re.compile(r"\b(?:print|include|copy|reveal|disclose|put|expose|show|dump|list|return)\b.{0,80}\b(?:access string|authentication value|signing material|credential|token|secret|password|api key|system prompt|private instructions)\b", re.I | re.S)),
@@ -118,9 +127,19 @@ def load_policy(path: str | Path = DEFAULT_POLICY_PATH) -> dict[str, Any]:
 
 
 def scan_untrusted_text(text: str) -> list[str]:
-    low = text.casefold()
-    hits = [pattern for pattern in INSPECTION_PATTERNS if pattern.casefold() in low]
-    hits.extend(f"intent:{rule_id}" for rule_id, pattern in INSPECTION_INTENT_RULES if pattern.search(text))
+    compact_spacing = re.sub(
+        r"(?<!\w)(?:[^\W\d_]\s+){2,}[^\W\d_](?!\w)",
+        lambda match: re.sub(r"\s+", "", match.group(0)),
+        text,
+    )
+    scan_texts = (text, compact_spacing) if compact_spacing != text else (text,)
+    folded = tuple(candidate.casefold() for candidate in scan_texts)
+    hits = [phrase for phrase in INSPECTION_PATTERNS if any(phrase.casefold() in candidate for candidate in folded)]
+    hits.extend(
+        f"intent:{rule_id}"
+        for rule_id, pattern in INSPECTION_INTENT_RULES
+        if any(pattern.search(candidate) for candidate in scan_texts)
+    )
     return list(dict.fromkeys(hits))
 
 
@@ -219,9 +238,9 @@ class Gateway:
         verdict = "SUSPICIOUS" if hits else "CLEAR"
         inspection_id = str(uuid.uuid4())
         with self.lock:
-            self.db.execute("INSERT INTO inspections VALUES(?,?,?,?,?,?,?,?)", (inspection_id, principal.id, source[:80], verdict, json.dumps(hits), "rules-v1", digest(text), time.time()))
+            self.db.execute("INSERT INTO inspections VALUES(?,?,?,?,?,?,?,?)", (inspection_id, principal.id, source[:80], verdict, json.dumps(hits), INSPECTION_SCANNER_VERSION, digest(text), time.time()))
             self._audit(str(uuid.uuid4()), None, principal.id, "INPUT_INSPECTED", {"inspection_id": inspection_id, "verdict": verdict, "source": source[:80], "content_hash": digest(text)})
-        return {"inspection_id": inspection_id, "verdict": verdict, "reason_codes": ["PROMPT_INJECTION_PATTERN"] if hits else [], "scanner_version": "rules-v1", "content_hash": digest(text)}
+        return {"inspection_id": inspection_id, "verdict": verdict, "reason_codes": ["PROMPT_INJECTION_PATTERN"] if hits else [], "scanner_version": INSPECTION_SCANNER_VERSION, "content_hash": digest(text)}
 
     def _validate(self, p: Principal, task_id: Any, tool: Any, args: Any) -> tuple[dict[str, Any], list[str]]:
         if p.kind != "agent" or not p.task:

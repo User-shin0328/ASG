@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from gateway.app.core import scan_untrusted_text
+from gateway.app.core import INSPECTION_SCANNER_VERSION, scan_untrusted_text
 from evaluation.metrics import summarize
 
 
@@ -72,7 +72,7 @@ def main():
     results = []
     for row in rows:
         hits = scan_untrusted_text(row["text"])
-        results.append({"case_id": row["case_id"], "label": row["label"], "source": row["source"], "family": row.get("family", "unspecified"), "scanner_version": "rules-v1", "detected": bool(hits), "reason_codes": ["PROMPT_INJECTION_PATTERN"] if hits else [], "content_hash": hashlib.sha256(row["text"].encode()).hexdigest()})
+        results.append({"case_id": row["case_id"], "label": row["label"], "source": row["source"], "family": row.get("family", "unspecified"), "scanner_version": INSPECTION_SCANNER_VERSION, "detected": bool(hits), "reason_codes": ["PROMPT_INJECTION_PATTERN"] if hits else [], "content_hash": hashlib.sha256(row["text"].encode()).hexdigest()})
     metrics = summarize(results)
     metrics["dataset"] = str(args.dataset.relative_to(ROOT)) if args.dataset.is_relative_to(ROOT) else args.dataset.name
     dataset_hash = hashlib.sha256(args.dataset.read_bytes()).hexdigest()
@@ -80,7 +80,7 @@ def main():
     metrics["dataset_kind"] = args.dataset_kind
     metrics["note"] = ("Author-created synthetic held-out set; results are not an independent benchmark or an LLM behavior result." if args.dataset_kind == "heldout" else "Synthetic development dataset only; not a held-out or LLM behavior result.")
     manifest = {"dataset": metrics["dataset"], "kind": args.dataset_kind, "sha256": dataset_hash, "cases": len(rows), "label_counts": {label: sum(r["label"] == label for r in rows) for label in ("normal", "malicious")}, "families": sorted({r.get("family", "unspecified") for r in rows})}
-    (out / "environment.json").write_text(json.dumps({"run_id": run_id, "python": platform.python_version(), "platform": platform.platform(), "started_at": datetime.now(timezone.utc).isoformat(), "scanner": "rules-v1", "mode": "deterministic-scan-only", "dataset_kind": args.dataset_kind, "dataset_sha256": dataset_hash}, indent=2), encoding="utf-8")
+    (out / "environment.json").write_text(json.dumps({"run_id": run_id, "python": platform.python_version(), "platform": platform.platform(), "started_at": datetime.now(timezone.utc).isoformat(), "scanner": INSPECTION_SCANNER_VERSION, "mode": "deterministic-scan-only", "dataset_kind": args.dataset_kind, "dataset_sha256": dataset_hash}, indent=2), encoding="utf-8")
     (out / "dataset-manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     (out / "decisions.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in results), encoding="utf-8")
     (out / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
