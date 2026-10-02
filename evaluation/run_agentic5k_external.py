@@ -11,13 +11,16 @@ import hashlib
 import json
 import os
 import platform
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
-from demo_agent.input_classifier import SYSTEM_PROMPT, classify_untrusted_text
+import demo_agent.input_classifier as input_classifier
+from demo_agent.input_classifier import classify_untrusted_text
 from evaluation.metrics import summarize
 from gateway.app.core import INSPECTION_SCANNER_VERSION, scan_untrusted_text
 
@@ -25,8 +28,7 @@ from gateway.app.core import INSPECTION_SCANNER_VERSION, scan_untrusted_text
 ROOT = Path(__file__).resolve().parents[1]
 DATASET_ID = "3nesdeniz/agentic-prompt-injection-5k"
 REVISION = "e658d94"
-SPLIT = "test"
-EXPECTED_ROWS = 545
+SPLIT_ROWS = {"train": 3923, "validation": 467, "test": 545}
 PAGE_SIZE = 100
 ROWS_API = "https://datasets-server.huggingface.co/rows"
 
@@ -35,14 +37,32 @@ def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def fetch_rows() -> list[dict]:
+def fetch_json(request: urllib.request.Request) -> dict:
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(request, timeout=45) as response:
+                return json.loads(response.read())
+        except urllib.error.HTTPError as exc:
+            if exc.code not in {429, 500, 502, 503, 504} or attempt == 3:
+                raise
+        except (urllib.error.URLError, TimeoutError):
+            if attempt == 3:
+                raise
+        delay = 2 ** attempt
+        print(f"temporary dataset API failure; retrying in {delay}s", flush=True)
+        time.sleep(delay)
+    raise RuntimeError("dataset API retry loop ended unexpectedly")
+
+
+def fetch_rows(split: str) -> list[dict]:
+    expected_rows = SPLIT_ROWS[split]
     rows: list[dict] = []
     expected_total: int | None = None
-    for offset in range(0, EXPECTED_ROWS, PAGE_SIZE):
+    for offset in range(0, expected_rows, PAGE_SIZE):
         query = urllib.parse.urlencode({
             "dataset": DATASET_ID,
             "config": "default",
-            "split": SPLIT,
+            "split": split,
             "offset": offset,
             "length": PAGE_SIZE,
             "revision": REVISION,
@@ -51,12 +71,11 @@ def fetch_rows() -> list[dict]:
             f"{ROWS_API}?{query}",
             headers={"User-Agent": "AI-Agent-Security-Gateway-evaluation/1.0"},
         )
-        with urllib.request.urlopen(request, timeout=45) as response:
-            page = json.loads(response.read())
+        page = fetch_json(request)
         total = page.get("num_rows_total")
         if expected_total is None:
             expected_total = total
-        if total != expected_total or total != EXPECTED_ROWS:
+        if total != expected_total or total != expected_rows:
             raise SystemExit("Pinned external test split row count changed")
         for wrapped in page.get("rows", []):
             row = wrapped.get("row", {})
@@ -72,10 +91,10 @@ def fetch_rows() -> list[dict]:
                 "family": str(row.get("attack_family", "unknown")),
                 "technique": str(row.get("technique", "unknown")),
             })
-        print(f"loaded external rows: {len(rows)}/{EXPECTED_ROWS}", flush=True)
-    if len(rows) != EXPECTED_ROWS or len({row["id"] for row in rows}) != EXPECTED_ROWS:
+        print(f"loaded external rows: {len(rows)}/{expected_rows}", flush=True)
+    if len(rows) != expected_rows or len({row["id"] for row in rows}) != expected_rows:
         raise SystemExit("External test split was incomplete or had duplicate IDs")
-    if len({row["text"].casefold().strip() for row in rows}) != EXPECTED_ROWS:
+    if len({row["text"].casefold().strip() for row in rows}) != expected_rows:
         raise SystemExit("External test split contains duplicate normalized text")
     return rows
 
@@ -146,18 +165,26 @@ def evaluate_semantic(rows: list[dict], base: str, model: str, timeout: int) -> 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--split", choices=tuple(SPLIT_ROWS), default="test")
     parser.add_argument("--mode", choices=("all", "rules", "semantic"), default="all")
     parser.add_argument("--model", default=os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b"))
     parser.add_argument("--ollama", default=os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434"))
     parser.add_argument("--timeout", type=int, default=60)
+    parser.add_argument("--prompt-file", type=Path, help="Optional candidate prompt addendum; does not change the runtime classifier")
     parser.add_argument("--output", type=Path, help="Optional aggregate-only JSON output; an existing file is never overwritten")
     args = parser.parse_args()
     if not 1 <= args.timeout <= 120:
         raise SystemExit("timeout must be between 1 and 120 seconds")
     if args.output and args.output.exists():
         raise SystemExit("Output already exists; choose a new result path")
+    if args.prompt_file:
+        candidate_addendum = args.prompt_file.read_text(encoding="utf-8").strip()
+        if not candidate_addendum:
+            raise SystemExit("Prompt addendum file is empty")
+        input_classifier.SYSTEM_PROMPT += "\n\nAdditional trust-boundary guidance:\n" + candidate_addendum
+    prompt_sha256 = sha256_bytes(input_classifier.SYSTEM_PROMPT.encode("utf-8"))
 
-    rows = fetch_rows()
+    rows = fetch_rows(args.split)
     local_hashes = local_text_hashes()
     overlap = sum(
         sha256_bytes(row["text"].casefold().strip().encode("utf-8")) in local_hashes
@@ -183,7 +210,8 @@ def main() -> None:
             "name": args.model,
             "digest": model_info.get("digest"),
             "ollama_version": version.get("version"),
-            "system_prompt_sha256": sha256_bytes(SYSTEM_PROMPT.encode("utf-8")),
+            "system_prompt_sha256": prompt_sha256,
+            "candidate_prompt": bool(args.prompt_file),
         }
         metrics["semantic"] = evaluate_semantic(rows, base, args.model, args.timeout)
 
@@ -193,7 +221,7 @@ def main() -> None:
             "id": DATASET_ID,
             "source_url": "https://huggingface.co/datasets/3nesdeniz/agentic-prompt-injection-5k",
             "revision": REVISION,
-            "split": SPLIT,
+            "split": args.split,
             "rows": len(rows),
             "labels": dict(sorted(labels.items())),
             "families": dict(sorted(families.items())),
@@ -205,7 +233,7 @@ def main() -> None:
         },
         "environment": {"python": platform.python_version(), "model": model_manifest},
         "metrics": metrics,
-        "scope_note": "External text-classification diagnostic on a scenario-isolated test split; this does not evaluate agent action outcomes or Gateway authorization.",
+        "scope_note": "External text-classification diagnostic on a scenario-isolated split; this does not evaluate agent action outcomes or Gateway authorization.",
     }
     serialized = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
     if args.output:

@@ -1,0 +1,212 @@
+{
+  "evaluated_at": "2026-10-02T08:56:13.380449+00:00",
+  "dataset": {
+    "id": "3nesdeniz/agentic-prompt-injection-5k",
+    "source_url": "https://huggingface.co/datasets/3nesdeniz/agentic-prompt-injection-5k",
+    "revision": "e658d94",
+    "split": "test",
+    "rows": 545,
+    "labels": {
+      "malicious": 280,
+      "normal": 265
+    },
+    "normalized_row_manifest_sha256": "590fd4d05af96dfe9475766b21024ab3810e67ec56123a4a2ad74e317ae897fa",
+    "exact_normalized_text_overlaps": {
+      "train_vs_validation": 0,
+      "train_vs_test": 0,
+      "validation_vs_test": 0
+    },
+    "exact_text_overlap_with_local_sets": 0,
+    "license": "CC-BY-4.0",
+    "raw_rows_written": false,
+    "per_case_decisions_written": false
+  },
+  "environment": {
+    "python": "3.12.14",
+    "ollama_version": "0.35.0",
+    "semantic_model": {
+      "name": "qwen2.5-coder:7b",
+      "digest": "96dd0f5a18a23cb79ece6990d1b8eb39b4052abaf54da650abfb7ef30b5a3592",
+      "system_prompt_sha256": "a4dc1c4503cb51a26654335a9967a271c292509d4ac4a1b6958c77207e3f9878"
+    }
+  },
+  "detector": {
+    "ngram_model_sha256": "706e66be53a86e5d3346c30e05f35b3fe818aea2a0b3d97f4fff2def93a9f594",
+    "threshold": 188.03128247233468,
+    "training_manifest_sha256": "1ff2a58a98ac968fe0d7245afed5fb76830af2cffb14f47980f59c02fe5f7940",
+    "validation_manifest_sha256": "d13b4d8cdd12e51ec4612d2739b1ba73f93fec4c9d46b551862451cffd2263ec",
+    "threshold_selection_split": "validation",
+    "selection_constraints": {
+      "minimum_recall": 0.95,
+      "maximum_false_positive_rate": 0.1
+    }
+  },
+  "metrics": {
+    "validation_frozen_ngram": {
+      "cases": 545,
+      "confusion": {
+        "true_positive": 279,
+        "false_positive": 16,
+        "false_negative": 1,
+        "true_negative": 249
+      },
+      "recall": 0.9964285714285714,
+      "precision": 0.9457627118644067,
+      "false_positive_rate": 0.06037735849056604,
+      "families": {
+        "approval_authority_escalation": {
+          "cases": 84,
+          "malicious_cases": 84,
+          "normal_cases": 0,
+          "recall": 1.0,
+          "false_positive_rate": null
+        },
+        "benign": {
+          "cases": 265,
+          "malicious_cases": 0,
+          "normal_cases": 265,
+          "recall": null,
+          "false_positive_rate": 0.06037735849056604
+        },
+        "memory_trust_boundary": {
+          "cases": 56,
+          "malicious_cases": 56,
+          "normal_cases": 0,
+          "recall": 0.9821428571428571,
+          "false_positive_rate": null
+        },
+        "rag_document_embedded": {
+          "cases": 84,
+          "malicious_cases": 84,
+          "normal_cases": 0,
+          "recall": 1.0,
+          "false_positive_rate": null
+        },
+        "tool_function_abuse": {
+          "cases": 56,
+          "malicious_cases": 56,
+          "normal_cases": 0,
+          "recall": 1.0,
+          "false_positive_rate": null
+        }
+      }
+    },
+    "local_semantic": {
+      "cases": 545,
+      "confusion": {
+        "true_positive": 202,
+        "false_positive": 8,
+        "false_negative": 78,
+        "true_negative": 257
+      },
+      "recall": 0.7214285714285714,
+      "precision": 0.9619047619047619,
+      "false_positive_rate": 0.03018867924528302,
+      "families": {
+        "approval_authority_escalation": {
+          "cases": 84,
+          "malicious_cases": 84,
+          "normal_cases": 0,
+          "recall": 0.5238095238095238,
+          "false_positive_rate": null
+        },
+        "benign": {
+          "cases": 265,
+          "malicious_cases": 0,
+          "normal_cases": 265,
+          "recall": null,
+          "false_positive_rate": 0.03018867924528302
+        },
+        "memory_trust_boundary": {
+          "cases": 56,
+          "malicious_cases": 56,
+          "normal_cases": 0,
+          "recall": 0.7321428571428571,
+          "false_positive_rate": null
+        },
+        "rag_document_embedded": {
+          "cases": 84,
+          "malicious_cases": 84,
+          "normal_cases": 0,
+          "recall": 0.7261904761904762,
+          "false_positive_rate": null
+        },
+        "tool_function_abuse": {
+          "cases": 56,
+          "malicious_cases": 56,
+          "normal_cases": 0,
+          "recall": 1.0,
+          "false_positive_rate": null
+        }
+      }
+    },
+    "hybrid_or_fail_closed": {
+      "cases": 545,
+      "confusion": {
+        "true_positive": 279,
+        "false_positive": 24,
+        "false_negative": 1,
+        "true_negative": 241
+      },
+      "recall": 0.9964285714285714,
+      "precision": 0.9207920792079208,
+      "false_positive_rate": 0.09056603773584905,
+      "families": {
+        "approval_authority_escalation": {
+          "cases": 84,
+          "malicious_cases": 84,
+          "normal_cases": 0,
+          "recall": 1.0,
+          "false_positive_rate": null
+        },
+        "benign": {
+          "cases": 265,
+          "malicious_cases": 0,
+          "normal_cases": 265,
+          "recall": null,
+          "false_positive_rate": 0.09056603773584905
+        },
+        "memory_trust_boundary": {
+          "cases": 56,
+          "malicious_cases": 56,
+          "normal_cases": 0,
+          "recall": 0.9821428571428571,
+          "false_positive_rate": null
+        },
+        "rag_document_embedded": {
+          "cases": 84,
+          "malicious_cases": 84,
+          "normal_cases": 0,
+          "recall": 1.0,
+          "false_positive_rate": null
+        },
+        "tool_function_abuse": {
+          "cases": 56,
+          "malicious_cases": 56,
+          "normal_cases": 0,
+          "recall": 1.0,
+          "false_positive_rate": null
+        }
+      }
+    }
+  },
+  "inference_errors": 0,
+  "latency_seconds": {
+    "ngram": {
+      "p50": 0.0005193999968469143,
+      "p95": 0.0007496000034734607,
+      "max": 0.000999899988528341
+    },
+    "semantic": {
+      "p50": 0.9643441999796778,
+      "p95": 1.1753876000002492,
+      "max": 9.16046769998502
+    }
+  },
+  "plan_thresholds": {
+    "minimum_recall": 0.8,
+    "maximum_false_positive_rate": 0.1
+  },
+  "passes_plan_thresholds": true,
+  "scope_note": "One frozen hybrid candidate; n-gram threshold selected on validation only. Test split is scored once and no per-case results are retained. This measures text classification, not Gateway authorization or end-to-end agent outcomes."
+}

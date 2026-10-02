@@ -1,0 +1,42 @@
+{
+  "evaluated_at": "2026-10-02T08:29:12.544181+00:00",
+  "dataset": {
+    "id": "3nesdeniz/agentic-prompt-injection-5k",
+    "revision": "e658d94",
+    "license": "CC-BY-4.0",
+    "train_rows": 3923,
+    "validation_rows": 467,
+    "train_manifest_sha256": "1ff2a58a98ac968fe0d7245afed5fb76830af2cffb14f47980f59c02fe5f7940",
+    "validation_manifest_sha256": "d13b4d8cdd12e51ec4612d2739b1ba73f93fec4c9d46b551862451cffd2263ec",
+    "exact_normalized_text_overlaps": {
+      "train_vs_validation": 0,
+      "train_vs_local_sets": 0,
+      "validation_vs_local_sets": 0
+    },
+    "raw_rows_written": false
+  },
+  "model": {
+    "type": "bernoulli-character-word-ngram-log-odds-v1",
+    "sha256": "e2bc631a609dc2fee613fa8159b187e1767fa22617f0059c9d1b9d90e0f56dd5",
+    "vocabulary_size": 51232,
+    "threshold": 107.19570239918082
+  },
+  "validation_metrics": {
+    "cases": 467,
+    "confusion": {
+      "true_positive": 308,
+      "false_positive": 0,
+      "false_negative": 0,
+      "true_negative": 159
+    },
+    "recall": 1.0,
+    "false_positive_rate": 0.0,
+    "precision": 1.0
+  },
+  "plan_thresholds": {
+    "minimum_recall": 0.8,
+    "maximum_false_positive_rate": 0.1
+  },
+  "passes_validation_thresholds": true,
+  "scope_note": "Threshold selected on validation only. The test split was not loaded or scored by this trainer. This is text classification, not Gateway authorization."
+}
