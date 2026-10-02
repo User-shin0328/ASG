@@ -1,0 +1,14 @@
+{
+  "commit": "35907dfe82db66301ff2728e7082845c3a94e960",
+  "reachable_objects": 550,
+  "unique_blobs_scanned": 380,
+  "configured_high_confidence_pattern_classes": [
+    "private-key",
+    "provider-token",
+    "github-token",
+    "aws-access-key"
+  ],
+  "matching_blobs": [],
+  "remote_configured": false,
+  "raw_matches_retained": false
+}
