@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-02",
+  "source_commit": "2ab551769b689aeb3a514a9273fa499e4b3c05fa",
+  "docker_engine": "29.8.1",
+  "method": "docker create + docker export; inspect every regular file in each merged image filesystem",
+  "patterns": [
+    "private-key",
+    "provider-token",
+    "github-token",
+    "aws-access-key"
+  ],
+  "images": {
+    "gateway": {
+      "image": "gw-clean-2ab5517-gateway:latest",
+      "image_id": "sha256:4cba4bc2313756852c3125e6b9939b205efbe3064f9784827995ec1e01887c90",
+      "filesystem_bytes": 70480277,
+      "matches": 0,
+      "findings": []
+    },
+    "migrate": {
+      "image": "gw-clean-2ab5517-migrate:latest",
+      "image_id": "sha256:8b5edf5daf42972d4f20cbb82f8e0e066250042210e968f16a278fd7d3298a4e",
+      "filesystem_bytes": 70480277,
+      "matches": 0,
+      "findings": []
+    },
+    "token-admin": {
+      "image": "gw-clean-2ab5517-token-admin:latest",
+      "image_id": "sha256:a510eb8ea9f84170f6f1fbf33cf0776a9cb5c0349ee99b70e18b9be3d2739edb",
+      "filesystem_bytes": 70561279,
+      "matches": 0,
+      "findings": []
+    },
+    "postgres": {
+      "image": "gw-clean-2ab5517-postgres:latest",
+      "image_id": "sha256:353007deae9353826728f9ac295bd9d00dd4c19c1cde55a87469b8fc9057d6e7",
+      "filesystem_bytes": 296924683,
+      "matches": 0,
+      "findings": []
+    },
+    "tool-sandbox": {
+      "image": "gw-clean-2ab5517-tool-sandbox:latest",
+      "image_id": "sha256:d80c7a12d861f3c9e87005894462227282d0ff218aed6b016fbef3fbfcb29bd3",
+      "filesystem_bytes": 51217207,
+      "matches": 0,
+      "findings": []
+    },
+    "dashboard": {
+      "image": "gw-clean-2ab5517-dashboard:latest",
+      "image_id": "sha256:17fd0fcbef29f37f8d641846956684ecaffa0c4505fed6849cb73011357b2d41",
+      "filesystem_bytes": 57289910,
+      "matches": 0,
+      "findings": []
+    },
+    "demo-agent": {
+      "image": "gw-clean-2ab5517-demo-agent:latest",
+      "image_id": "sha256:a2c6aded84a955f316fe01658e49d567b7a9f5c20fe853e8d8417031a694ca18",
+      "filesystem_bytes": 52796828,
+      "matches": 0,
+      "findings": []
+    }
+  },
+  "aggregate_filesystem_bytes": 669750461,
+  "aggregate_matches": 0,
+  "limitations": [
+    "Only four configured high-confidence patterns were checked.",
+    "Docker export excludes mounted volume contents.",
+    "This is not a general vulnerability or malware scan."
+  ]
+}
