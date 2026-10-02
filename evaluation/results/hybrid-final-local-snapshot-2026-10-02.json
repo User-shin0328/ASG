@@ -1,7 +1,7 @@
 {
   "date": "2026-10-02",
-  "source_commit": "bd2891fc2d79a627d77b2a6afe9519e5ab701552",
-  "host_unit_tests": {"passed": 67, "failed": 0},
+  "source_commit": "fffb73da388864a1ac208c77aa7ca20b23786138",
+  "host_unit_tests": {"passed": 71, "failed": 0},
   "python_compileall": "PASS",
   "compose_config": "PASS",
   "compose_core_services": {
@@ -16,10 +16,13 @@
   },
   "image_filesystem_scan": {
     "images": 7,
-    "bytes": 805000866,
+    "bytes": 669683472,
     "configured_pattern_matches": 0,
-    "result": "evaluation/results/image-filesystem-scan-hybrid-2026-10-02.json"
+    "result": "evaluation/results/image-filesystem-scan-clean-fffb73d-2026-10-02.json"
   },
+  "clean_source_reproduction": "evaluation/results/clean-repro-fffb73d-2026-10-02.json",
+  "dependency_license_audit": "PASS; evaluation/results/dependency-license-audit-2026-10-02.json",
+  "reachable_history_scan": "PASS; evaluation/results/tracked-history-scan-fffb73d.json",
   "github_publication": "HELD; no remote configured and no publication performed",
   "limitations": [
     "Compose health reflects the local Windows Docker Desktop host at capture time.",
