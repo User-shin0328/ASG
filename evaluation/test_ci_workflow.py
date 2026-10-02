@@ -16,6 +16,10 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("actions/upload-artifact@v7", workflow)
         self.assertIn("python -m evaluation.scan_git_history", workflow)
         self.assertEqual(workflow.count("aquasecurity/trivy-action@v0.36.0"), 5)
+        self.assertEqual(workflow.count("exit-code: '1'"), 5)
+        self.assertIn("Check PostgreSQL gosu code paths for Go vulnerabilities", workflow)
+        self.assertIn("GOTOOLCHAIN=go1.24.6 /go/bin/govulncheck ./...", workflow)
+        self.assertIn("vuln-type: os", workflow)
         for image in (
             "ai-agent-security-gateway-gateway:latest",
             "ai-agent-security-gateway-tool-sandbox:latest",

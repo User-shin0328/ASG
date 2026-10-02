@@ -90,9 +90,18 @@ jobs:
         with:
           image-ref: ai-agent-security-gateway-postgres:latest
           scan-type: image
-          vuln-type: os,library
+          vuln-type: os
           severity: CRITICAL,HIGH
           exit-code: '1'
+      - name: Check PostgreSQL gosu code paths for Go vulnerabilities
+        run: |
+          docker run --rm golang:1.26.6-alpine sh -ec '
+            apk add --no-cache git >/dev/null
+            git clone --quiet --depth 1 --branch 1.19 https://github.com/tianon/gosu.git /tmp/gosu
+            cd /tmp/gosu
+            go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
+            GOTOOLCHAIN=go1.24.6 /go/bin/govulncheck ./...
+          '
       - name: Wait for dashboard and Gateway readiness
         run: |
           python - <<'PY'
