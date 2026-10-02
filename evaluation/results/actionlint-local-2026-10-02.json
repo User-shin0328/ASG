@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-02",
+  "source_commit": "89ff192edd484e234161a0556e6b67518461525f",
+  "workflow": ".github/workflows/ci.yml",
+  "workflow_sha256": "6ebbd00eca66abd8c7c1435d193497fa80d0a3877c6eb5be4bf583ebee9ef929",
+  "validator": "actionlint 1.7.12",
+  "validator_image": "rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667",
+  "result": "PASS",
+  "execution": {
+    "network": "none",
+    "filesystem": "read-only",
+    "input": "workflow content on stdin; no repository mount",
+    "diagnostics": 0
+  },
+  "github_workflow_executed": false
+}
