@@ -22,7 +22,7 @@ A small, fictional security exercise that checks agent identity, task assignment
 
 See [the runbook](docs/runbook.md) for copyable Windows PowerShell commands that resolve Docker Desktop and Compose. Initialize ignored local credentials and database secrets with the containerized helper, then start the Linux-container Compose stack.
 
-Run the code-level suite with `python -m unittest discover -v`.
+Run the code-level suite with `python -m unittest discover -v`. Check the working tree with `python -m scripts.check_secrets` and scan all reachable Git history with `python -m evaluation.scan_git_history`; the history scanner records matching object IDs and pattern classes without printing secret text.
 
 The six final demo scenarios and their expected outcomes are listed in the [demo matrix](docs/final-demo-matrix.md). They use fictional documents and the local simulated outbox only.
 
