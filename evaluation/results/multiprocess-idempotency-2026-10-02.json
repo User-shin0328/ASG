@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-02",
+  "base_commit": "d049e67",
+  "script": "scripts/multiprocess_idempotency.py",
+  "script_sha256": "93bdd897df9fe44f9a172396f819aac70549a37c7421a9d5553d75e343550034",
+  "environment": {
+    "host": "Windows with Docker Desktop",
+    "docker_engine": "29.8.1",
+    "compose": "5.5.1",
+    "compose_project": "gateway-multiprocess-stress",
+    "isolated_postgres_and_tool_volumes": true,
+    "gateway_processes": 2
+  },
+  "workload_per_round": {
+    "same_idempotency_key_requests": 100,
+    "concurrent_workers": 32,
+    "tool": "save_summary",
+    "data": "fictional local fixture"
+  },
+  "runs": [
+    {
+      "round": 1,
+      "script_sha256": "c4a5af9058283de419d373a4634f85aef28ad3435f8b517700c9334fa854d1f8",
+      "http_200": 100,
+      "unique_action_ids": 1,
+      "unique_receipt_ids": 1,
+      "missing_receipts": 0,
+      "tool_counts_before": {"artifacts": 0, "outbox": 0, "receipts": 0},
+      "tool_counts_after": {"artifacts": 1, "outbox": 0, "receipts": 1},
+      "elapsed_seconds": 0.365,
+      "p50_ms": 95.795,
+      "p95_ms": 126.448,
+      "max_ms": 138.075
+    },
+    {
+      "round": 2,
+      "http_200": 100,
+      "unique_action_ids": 1,
+      "unique_receipt_ids": 1,
+      "missing_receipts": 0,
+      "tool_counts_before": {"artifacts": 1, "outbox": 0, "receipts": 1},
+      "tool_counts_after": {"artifacts": 2, "outbox": 0, "receipts": 2},
+      "elapsed_seconds": 0.388,
+      "p50_ms": 100.255,
+      "p95_ms": 121.33,
+      "max_ms": 139.734
+    }
+  ],
+  "tool_store_counts": {
+    "before_first_run": {"artifacts": 0, "outbox": 0, "receipts": 0},
+    "after_second_run": {"artifacts": 2, "outbox": 0, "receipts": 2}
+  },
+  "limitations": [
+    "These were two same-key workloads on one Windows host; they do not establish long-duration or multi-key capacity.",
+    "Each run wrote one fictional summary artifact; no external destination was contacted."
+  ]
+}

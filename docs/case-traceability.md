@@ -38,7 +38,7 @@ The matrix is complete as a traceability document; local v1.0 acceptance is stil
 | H06 | Policy version change invalidates approval | PASS-local | `tests/test_gateway.py::test_policy_version_change_invalidates_approval` |
 | H07 | Caller-provided `approved=true` is ignored | PASS-local | `tests/test_gateway.py::test_client_cannot_forge_approval_state`; exact request rejected before approval creation |
 | H08 | Other-tenant reviewer cannot approve | PASS-local | `tests/test_gateway.py::test_reviewer_sees_exact_snapshot_and_only_own_tenant` |
-| X01 | Same key and same request returns same action | PASS-local | `tests/test_gateway.py::test_allow_executes_once_and_idempotency_conflict_is_rejected`; cross-process run |
+| X01 | Same key and same request returns same action | PASS-local | `tests/test_gateway.py::test_allow_executes_once_and_idempotency_conflict_is_rejected`; two Gateway processes converged 100 concurrent same-key requests to one action and one receipt in each of two rounds. See `evaluation/results/multiprocess-idempotency-2026-10-02.json` |
 | X02 | Same key with different request conflicts | PASS-local | `tests/test_gateway.py::test_allow_executes_once_and_idempotency_conflict_is_rejected` |
 | X03 | 20 concurrent executions of one approval | PASS-local | B04 isolated Compose result; `tests/test_gateway.py::test_one_approval_cannot_be_used_twice_concurrently` |
 | X04 | Retry/re-read by execution ID does not duplicate | PASS-local | F02/F03 receipt recovery and existing receipt result tests |

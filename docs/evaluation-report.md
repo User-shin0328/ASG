@@ -4,7 +4,9 @@
 
 The final local acceptance decision and remaining gates are summarized in [final-local-acceptance.md](final-local-acceptance.md). All 68 planned cases now have explicit status and evidence references in [case traceability](case-traceability.md); R04 and R05 remain partial. Rules scanner v2 misses the recall target on the new v6 set; the local semantic prefilter met the numeric detection target on author-created v6, which is not an independent benchmark. The preregistered four-arm L01-L04 matrix used virtual tools only.
 
-This repository contains an in-progress implementation for a single fictional reporting workflow. It has a policy-checked Gateway, PostgreSQL runtime state, a separate HTTP tool sandbox, deterministic input inspection, a review dashboard, local demo data, and focused unit tests. The plan's completion thresholds have not been assessed.
+Two isolated multi-process idempotency runs each sent 100 same-key requests across 32 workers to two Gateway containers. All 200 returned HTTP 200 and produced one action and one receipt per round; the two rounds added two summary artifacts and no outbox entries. See `evaluation/results/multiprocess-idempotency-2026-10-02.json`; this does not establish long-duration or multi-key capacity.
+
+This repository is an implemented local reference MVP for a fictional reporting workflow. It has a policy-checked Gateway, PostgreSQL runtime state, a separate HTTP tool sandbox, deterministic input inspection, a review dashboard, local demo data, and focused unit tests. Project-plan acceptance was assessed and is not passed: rules v2 misses its fresh-set recall target, and R04/R05 remain partial while public documentation and remote CI depend on GitHub publication, which is on hold.
 
 | Item | Result | Evidence | Verdict |
 |---|---|---|---|
