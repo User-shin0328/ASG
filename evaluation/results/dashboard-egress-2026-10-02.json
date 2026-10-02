@@ -1,6 +1,6 @@
 {
   "date": "2026-10-02",
-  "source_revision": "ab5ae24 plus the working-tree dashboard-egress changes under test",
+  "source_revision": "21eb09e",
   "environment": {
     "os": "Windows with Docker Desktop",
     "docker_engine": "29.8.1",
@@ -37,6 +37,14 @@
     "compose_healthcheck_after_restart": "healthy",
     "host_ui_http_after_restart": 200,
     "public_tcp_after_restart": "timed_out"
+  },
+  "clean_snapshot_replication": {
+    "commit": "21eb09e",
+    "project": "ai-agent-security-gateway-clean-21eb09e",
+    "dashboard_healthcheck": "healthy",
+    "public_ipv4_tcp_1_1_1_1_443": "timed_out",
+    "host_ui_http": 200,
+    "internal_gateway_readiness_http": 200
   },
   "limitations": [
     "The outbound probe covers one public IPv4 TCP destination and port; it is not a complete protocol or destination audit.",
