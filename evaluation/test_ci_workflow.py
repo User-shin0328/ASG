@@ -16,6 +16,13 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertEqual(workflow.count("actions/setup-python@v7"), 2)
         self.assertNotIn("actions/checkout@v4", workflow)
         self.assertNotIn("actions/setup-python@v5", workflow)
+        self.assertIn("name: Validate GitHub Actions workflow", workflow)
+        self.assertIn("docker run --rm --network none --read-only -i", workflow)
+        self.assertIn(
+            "rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667",
+            workflow,
+        )
+        self.assertIn("-color - < .github/workflows/ci.yml", workflow)
         self.assertIn("pypa/gh-action-pip-audit@v1.1.0", workflow)
         self.assertIn("actions/upload-artifact@v7", workflow)
         self.assertIn("python -m evaluation.scan_git_history", workflow)
