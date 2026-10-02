@@ -102,6 +102,15 @@ jobs:
             go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
             GOTOOLCHAIN=go1.24.6 /go/bin/govulncheck ./...
           '
+      - name: Audit locked Python dependency licenses
+        run: |
+          mkdir -p reports/ci
+          docker run --rm --network none --read-only \
+            --mount "type=bind,source=${{ github.workspace }},target=/workspace,readonly" \
+            --workdir /workspace --entrypoint python \
+            ai-agent-security-gateway-gateway:latest \
+            scripts/audit_dependency_licenses.py --lock requirements.lock \
+            | tee reports/ci/dependency-license-audit.json
       - name: Wait for dashboard and Gateway readiness
         run: |
           python - <<'PY'
@@ -141,6 +150,14 @@ jobs:
           tool_network="$(docker network ls --filter label=com.docker.compose.network=tool_net --format '{{.Name}}' | head -n 1)"
           test -n "$tool_network"
           docker run --rm --network "$tool_network" ai-agent-security-gateway-demo-agent python -m demo_agent.network_checks --tool-auth
+      - name: Upload license audit evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: compose-license-audit
+          path: reports/ci/dependency-license-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Stop stack and remove CI volumes
         if: always()
         run: docker compose down --volumes

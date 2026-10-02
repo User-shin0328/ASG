@@ -1,0 +1,67 @@
+{
+  "lockfile": "requirements.lock",
+  "locked_requirements": [
+    {
+      "name": "psycopg",
+      "version": "3.3.6"
+    }
+  ],
+  "installed_packages": [
+    {
+      "name": "pip",
+      "version": "25.0.1",
+      "license_expression": null,
+      "license": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_files": [
+        "pip-25.0.1.dist-info/LICENSE.txt",
+        "pip/_vendor/packaging/licenses/__init__.py",
+        "pip/_vendor/packaging/licenses/_spdx.py"
+      ]
+    },
+    {
+      "name": "psycopg",
+      "version": "3.3.6",
+      "license_expression": "LGPL-3.0-only",
+      "license": null,
+      "license_classifiers": [],
+      "license_files": [
+        "psycopg-3.3.6.dist-info/licenses/LICENSE.txt"
+      ]
+    },
+    {
+      "name": "psycopg-binary",
+      "version": "3.3.6",
+      "license_expression": "LGPL-3.0-only",
+      "license": null,
+      "license_classifiers": [],
+      "license_files": [
+        "psycopg_binary-3.3.6.dist-info/licenses/LICENSE.txt"
+      ]
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "license_expression": "PSF-2.0",
+      "license": null,
+      "license_classifiers": [],
+      "license_files": [
+        "typing_extensions-4.16.0.dist-info/licenses/LICENSE"
+      ]
+    }
+  ],
+  "missing_locked_packages": [],
+  "version_mismatches": [],
+  "packages_missing_license_metadata": [],
+  "result": "PASS",
+  "limitations": [
+    "License metadata and files are reported as supplied by installed distributions.",
+    "This inventory does not determine legal compatibility or scan operating-system packages."
+  ],
+  "date": "2026-10-02",
+  "image": "ai-agent-security-gateway-gateway:latest",
+  "image_id": "sha256:71729fe49952e0baec05362217f54a8258a403f9628354d29c8c0bb72b893bac",
+  "requirements_lock_sha256": "281f4fe5b5deb728449e2e3c762b88249931daebc04f65a098c757ac3f37d80f"
+}
