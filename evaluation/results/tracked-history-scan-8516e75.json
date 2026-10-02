@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-02",
+  "commit": "8516e754c06c7c1399c58faf7d8d8721a41d9ec8",
+  "scope": "all Git-reachable object contents classified as blobs",
+  "reachable_objects": 435,
+  "unique_blobs_scanned": 312,
+  "configured_high_confidence_pattern_classes": [
+    "private_key_block",
+    "github_token",
+    "aws_access_key_id",
+    "secret_key_like"
+  ],
+  "matching_blobs": 0,
+  "remote_configured": false,
+  "raw_matches_retained": false
+}

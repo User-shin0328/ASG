@@ -1,0 +1,10 @@
+{
+  "run_id": "20261002T053018Z-c1b775f1",
+  "python": "3.12.14",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "started_at": "2026-10-02T05:30:18.607826+00:00",
+  "scanner": "rules-v2",
+  "mode": "deterministic-scan-only",
+  "dataset_kind": "heldout",
+  "dataset_sha256": "fa037aeac75912fcfd828f34684373fd1a67c209e9770cbefed737ec8a0e9794"
+}
