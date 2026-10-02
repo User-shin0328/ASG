@@ -6,9 +6,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from evaluation.evaluate_agentic5k_classifier import load_model
+from demo_agent.ngram_classifier import features, load_model
 from evaluation.metrics import summarize
-from evaluation.train_agentic5k_classifier import features
 
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from evaluation.metrics import summarize
 from evaluation.run_agentic5k_external import REVISION, dataset_digest, fetch_rows
-from evaluation.train_agentic5k_classifier import features
+from demo_agent.ngram_classifier import features, load_model
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,18 +20,6 @@ def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def load_model(path: Path) -> tuple[dict, str]:
-    model = json.loads(path.read_text(encoding="utf-8"))
-    recorded = model.get("model_sha256")
-    payload = {key: value for key, value in model.items() if key != "model_sha256"}
-    actual = sha256_bytes((json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8"))
-    if actual != recorded:
-        raise SystemExit("Frozen model integrity hash did not match")
-    if model.get("source_revision") != REVISION or model.get("training_split") != "train":
-        raise SystemExit("Frozen model was not trained from the expected pinned train split")
-    return model, recorded
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=Path, required=True)
@@ -39,7 +27,7 @@ def main() -> None:
     args = parser.parse_args()
     if args.output.exists():
         raise SystemExit("Output already exists; choose a new path")
-    model, model_hash = load_model(args.model)
+    model, model_hash = load_model(args.model, require_validation_threshold=False)
 
     train_rows = fetch_rows("train")
     validation_rows = fetch_rows("validation")

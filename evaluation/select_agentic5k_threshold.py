@@ -8,9 +8,9 @@ import math
 from datetime import datetime, timezone
 from pathlib import Path
 
-from evaluation.evaluate_agentic5k_classifier import load_model
+from demo_agent.ngram_classifier import features, load_model
 from evaluation.run_agentic5k_external import REVISION, dataset_digest, fetch_rows
-from evaluation.train_agentic5k_classifier import features, summarize
+from evaluation.train_agentic5k_classifier import summarize
 
 
 TARGET_RECALL = 0.95
@@ -29,7 +29,7 @@ def main() -> None:
     args = parser.parse_args()
     if args.model_output.exists() or args.result_output.exists():
         raise SystemExit("Output already exists; choose new paths")
-    base_model, base_hash = load_model(args.base_model)
+    base_model, base_hash = load_model(args.base_model, require_validation_threshold=False)
     rows = fetch_rows("validation")
     scores = [
         base_model["baseline_log_odds"]

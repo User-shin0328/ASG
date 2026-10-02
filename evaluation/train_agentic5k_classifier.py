@@ -10,17 +10,15 @@ import argparse
 import hashlib
 import json
 import math
-import re
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
+from demo_agent.ngram_classifier import features
 from evaluation.run_agentic5k_external import REVISION, dataset_digest, fetch_rows, local_text_hashes
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TOKEN_RE = re.compile(r"[^\W_]+", re.UNICODE)
-SPACE_RE = re.compile(r"\s+")
 MIN_DOCUMENT_FREQUENCY = 2
 MAX_FEATURES = 60000
 TARGET_FPR = 0.10
@@ -29,17 +27,6 @@ TARGET_RECALL = 0.80
 
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
-
-
-def features(text: str) -> set[str]:
-    lowered = SPACE_RE.sub(" ", text.casefold().strip())
-    tokens = TOKEN_RE.findall(lowered)
-    result = {"w:" + token for token in tokens}
-    result.update("b:" + left + " " + right for left, right in zip(tokens, tokens[1:]))
-    for size in (3, 4, 5):
-        result.update("c" + str(size) + ":" + lowered[index:index + size]
-                      for index in range(max(0, len(lowered) - size + 1)))
-    return result
 
 
 def summarize(labels: list[str], scores: list[float], threshold: float) -> dict:

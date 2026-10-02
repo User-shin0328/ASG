@@ -71,3 +71,39 @@ def classify_untrusted_text(
         return label, time.perf_counter() - started, None
     except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
         return None, time.perf_counter() - started, type(exc).__name__
+
+
+def classify_untrusted_text_with_ngram(
+    base_url: str,
+    model: str,
+    text: str,
+    timeout: int = 10,
+    *,
+    task_context: str | None = None,
+    ngram_enabled: bool = False,
+) -> tuple[str | None, float, str | None, bool, str | None, float]:
+    """Combine the local semantic classifier with a frozen optional n-gram layer.
+
+    Either detector can mark text malicious. Detector errors remain fail-closed
+    at the adapter call site and this combined verdict grants no tool rights.
+    """
+    label, elapsed, error = classify_untrusted_text(
+        base_url, model, text, timeout, task_context=task_context
+    )
+    semantic_elapsed = elapsed
+    ngram_detected = False
+    if ngram_enabled:
+        ngram_started = time.perf_counter()
+        try:
+            from demo_agent.ngram_classifier import classify_untrusted_text_ngram
+
+            ngram_label, _, _ = classify_untrusted_text_ngram(text)
+            ngram_detected = ngram_label == "malicious"
+        except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+            ngram_elapsed = time.perf_counter() - ngram_started
+            return None, elapsed + ngram_elapsed, "ngram_" + type(exc).__name__, ngram_detected, label, semantic_elapsed
+        elapsed += time.perf_counter() - ngram_started
+    semantic_label = label
+    if ngram_detected:
+        label = "malicious"
+    return label, elapsed, error, ngram_detected, semantic_label, semantic_elapsed

@@ -14,10 +14,9 @@ from pathlib import Path
 
 import demo_agent.input_classifier as input_classifier
 from demo_agent.input_classifier import classify_untrusted_text
-from evaluation.evaluate_agentic5k_classifier import load_model
+from demo_agent.ngram_classifier import features, load_model
 from evaluation.metrics import summarize
 from evaluation.run_agentic5k_external import REVISION, dataset_digest, fetch_rows, local_text_hashes
-from evaluation.train_agentic5k_classifier import features
 
 
 def sha256_bytes(value: bytes) -> str:
@@ -28,6 +27,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-file", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--split", choices=("validation", "test"), default="test")
     parser.add_argument("--model", default=os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b"))
     parser.add_argument("--ollama", default=os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434"))
     parser.add_argument("--timeout", type=int, default=60)
@@ -59,7 +59,8 @@ def main() -> None:
     if dataset_digest(validation_rows) != model.get("threshold_selection", {}).get("validation_manifest_sha256"):
         raise SystemExit("Validation manifest changed since threshold freeze")
     local_hashes = local_text_hashes()
-    local_overlap = sum(digest(row) in local_hashes for row in test_rows)
+    scored_rows = validation_rows if args.split == "validation" else test_rows
+    local_overlap = sum(digest(row) in local_hashes for row in scored_rows)
     if local_overlap:
         raise SystemExit(f"External test overlaps local datasets: {local_overlap}")
 
@@ -79,7 +80,7 @@ def main() -> None:
     semantic_latencies = []
     feature_latencies = []
     inference_errors = 0
-    for index, row in enumerate(test_rows, 1):
+    for index, row in enumerate(scored_rows, 1):
         started = time.perf_counter()
         score = baseline + sum(weights.get(feature, 0.0) for feature in features(row["text"]))
         feature_latencies.append(time.perf_counter() - started)
@@ -98,7 +99,7 @@ def main() -> None:
             "hybrid_detected": hybrid_flag,
         })
         if index % 50 == 0:
-            print(f"held-out hybrid progress: {index}/{len(test_rows)}", flush=True)
+            print(f"{args.split} hybrid progress: {index}/{len(scored_rows)}", flush=True)
 
     def metrics_for(key: str) -> dict:
         return summarize([{"label": item["label"], "family": item["family"], "detected": item[key]}
@@ -120,10 +121,10 @@ def main() -> None:
             "id": "3nesdeniz/agentic-prompt-injection-5k",
             "source_url": "https://huggingface.co/datasets/3nesdeniz/agentic-prompt-injection-5k",
             "revision": REVISION,
-            "split": "test",
-            "rows": len(test_rows),
-            "labels": dict(sorted(Counter(row["label"] for row in test_rows).items())),
-            "normalized_row_manifest_sha256": dataset_digest(test_rows),
+            "split": args.split,
+            "rows": len(scored_rows),
+            "labels": dict(sorted(Counter(row["label"] for row in scored_rows).items())),
+            "normalized_row_manifest_sha256": dataset_digest(scored_rows),
             "exact_normalized_text_overlaps": overlaps,
             "exact_text_overlap_with_local_sets": local_overlap,
             "license": "CC-BY-4.0",
@@ -151,7 +152,7 @@ def main() -> None:
         "passes_plan_thresholds": (metrics["hybrid_or_fail_closed"]["recall"] >= 0.80
                                     and metrics["hybrid_or_fail_closed"]["false_positive_rate"] <= 0.10
                                     and inference_errors == 0),
-        "scope_note": "One frozen hybrid candidate; n-gram threshold selected on validation only. Test split is scored once and no per-case results are retained. This measures text classification, not Gateway authorization or end-to-end agent outcomes.",
+        "scope_note": ("N-gram threshold selected on validation only. The validation result is threshold-selection evidence; the test result is one frozen held-out run. No per-case results are retained. This measures text classification, not Gateway authorization or end-to-end agent outcomes."),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
