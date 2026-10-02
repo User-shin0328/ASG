@@ -12,6 +12,10 @@ class CiWorkflowTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
 
         self.assertIn("fetch-depth: 0", workflow)
+        self.assertEqual(workflow.count("actions/checkout@v7"), 2)
+        self.assertEqual(workflow.count("actions/setup-python@v7"), 2)
+        self.assertNotIn("actions/checkout@v4", workflow)
+        self.assertNotIn("actions/setup-python@v5", workflow)
         self.assertIn("pypa/gh-action-pip-audit@v1.1.0", workflow)
         self.assertIn("actions/upload-artifact@v7", workflow)
         self.assertIn("python -m evaluation.scan_git_history", workflow)
