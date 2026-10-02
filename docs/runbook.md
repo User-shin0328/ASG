@@ -19,6 +19,12 @@ if (-not $ComposeCli) { $ComposeCli = Join-Path $env:LOCALAPPDATA 'Programs\Dock
 if (-not (Test-Path $DockerCli) -or -not (Test-Path $ComposeCli)) { throw 'Docker Desktop CLI or Compose executable was not found.' }
 ```
 
+Validate Compose interpolation before creating local credentials. The template supplies placeholder tokens for configuration parsing only; do not use it to start services.
+
+```powershell
+& $ComposeCli --env-file .env.example config --quiet
+```
+
 ```powershell
 & $DockerCli run --rm --mount "type=bind,source=$($PWD.Path),target=/workspace" --workdir /workspace python:3.12-slim python -m scripts.init_demo
 & $ComposeCli up --build -d
