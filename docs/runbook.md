@@ -9,10 +9,20 @@
 
 From the project root in PowerShell. The initialization step creates opaque demo tokens in `.env` and strong database secrets under the ignored `secrets/` directory; it keeps existing valid values and does not print secret values.
 
+Resolve the Docker Desktop executables once. This supports both a PATH installation and the per-user Windows installation:
+
 ```powershell
-docker run --rm --mount "type=bind,source=$($PWD.Path),target=/workspace" --workdir /workspace python:3.12-slim python -m scripts.init_demo
-docker compose up --build -d
-docker compose exec -T gateway python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3); print(r.status, r.read().decode())"
+$DockerCli = (Get-Command docker.exe -ErrorAction SilentlyContinue).Source
+if (-not $DockerCli) { $DockerCli = Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\resources\bin\docker.exe' }
+$ComposeCli = (Get-Command docker-compose.exe -ErrorAction SilentlyContinue).Source
+if (-not $ComposeCli) { $ComposeCli = Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\resources\bin\docker-compose.exe' }
+if (-not (Test-Path $DockerCli) -or -not (Test-Path $ComposeCli)) { throw 'Docker Desktop CLI or Compose executable was not found.' }
+```
+
+```powershell
+& $DockerCli run --rm --mount "type=bind,source=$($PWD.Path),target=/workspace" --workdir /workspace python:3.12-slim python -m scripts.init_demo
+& $ComposeCli up --build -d
+& $ComposeCli exec -T gateway python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3); print(r.status, r.read().decode())"
 ```
 
 The first command uses the Python image already required by the project, so no host Python installation is needed to create local credentials.
@@ -26,9 +36,9 @@ PostgreSQL starts on an internal data network with no host-published port. Compo
 Rotation revokes the existing token hash in PostgreSQL, replaces the selected value in the ignored local `.env`, and never prints the new token. Run this only after the stack is initialized. It briefly stops Gateway access while the token is replaced:
 
 ```powershell
-docker compose stop gateway
-docker compose --profile admin run --rm token-admin python /app/scripts/rotate_demo_token.py alice
-docker compose up -d gateway
+& $ComposeCli stop gateway
+& $ComposeCli --profile admin run --rm token-admin python /app/scripts/rotate_demo_token.py alice
+& $ComposeCli up -d gateway
 ```
 
 Use `bob` or `reviewer` instead of `alice` to rotate those credentials. The database keeps revoked hashes so restarting with an old token cannot reactivate it. The new credential is read from `.env` only by local services after the Gateway restarts.
@@ -44,8 +54,8 @@ Docker Desktop needs a host-facing bridge for dashboard port forwarding, so the 
 ## Deterministic demo
 
 ```powershell
-docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode normal
-docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode injection
+& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode normal
+& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode injection
 ```
 
 The normal example reads only Alice's assigned fictional report. The injection example records a suspicious string, then attempts Bob's report and receives a policy denial. The Gateway API is not published to the Windows host; use the demo-agent container for agent requests and the dashboard for reviewer approval. No external report transmission occurs.
@@ -55,9 +65,9 @@ The normal example reads only Alice's assigned fictional report. The injection e
 Follow the [six-case demo matrix](final-demo-matrix.md). The remaining deterministic commands are:
 
 ```powershell
-docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode unapproved-report
-docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode approval
-docker compose --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode execute-approved --action-id <action-id>
+& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode unapproved-report
+& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode approval
+& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode execute-approved --action-id <action-id>
 ```
 
 For scenario 3, run the optional host-side model against Alice's assigned adversarial fixture with the local model installed: `python -m demo_agent.llm_agent --document-id report-alice-attack --model qwen2.5-coder:7b`. It may not produce a malicious tool call; report its actual tool choice and Gateway result. The Gateway inspection and permission checks remain the enforcement evidence. Scenario 6 repeats the same `execute-approved` command and checks that the existing receipt is returned.
@@ -65,9 +75,9 @@ For scenario 3, run the optional host-side model against Alice's assigned advers
 Run the isolated-agent and tool-authentication smoke checks with:
 
 ```powershell
-docker compose --profile demo run --rm --no-deps demo-agent python -m demo_agent.network_checks
-$toolNet = (docker network ls --filter "label=com.docker.compose.network=tool_net" --format "{{.Name}}" | Select-Object -First 1).Trim()
-docker run --rm --network $toolNet ai-agent-security-gateway-demo-agent python -m demo_agent.network_checks --tool-auth
+& $ComposeCli --profile demo run --rm --no-deps demo-agent python -m demo_agent.network_checks
+$toolNet = (& $DockerCli network ls --filter "label=com.docker.compose.network=tool_net" --format "{{.Name}}" | Select-Object -First 1).Trim()
+& $DockerCli run --rm --network $toolNet ai-agent-security-gateway-demo-agent python -m demo_agent.network_checks --tool-auth
 ```
 
 These checks require the profiled demo-agent image to be built. They confirm the agent can reach only the Gateway among the tested endpoints and that a client on the tool network without service credentials gets HTTP 401.
@@ -79,7 +89,7 @@ An optional model adapter is available with `python -m demo_agent.llm_agent --mo
 ```powershell
 python -m unittest discover -v
 python -m evaluation.run
-docker compose down
+& $ComposeCli down
 ```
 
-`docker compose down -v` also deletes demo state. Use it only when intentionally resetting the exercise. Never place production documents or credentials in these fixtures.
+`& $ComposeCli down -v` also deletes demo state. Use it only when intentionally resetting the exercise. Never place production documents or credentials in these fixtures.

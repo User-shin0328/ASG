@@ -149,7 +149,8 @@ def main():
                         classifier_label, classifier_elapsed, classifier_error = (None, 0.0, None)
                         if classifier_enabled:
                             classifier_label, classifier_elapsed, classifier_error = classify_untrusted_text(
-                                args.model_url, args.model, tool_result["content"], classifier_timeout)
+                                args.model_url, args.model, tool_result["content"], classifier_timeout,
+                                task_context=user_instruction)
                             tool_history[-1]["semantic_input_inspection"] = {
                                 "label": classifier_label, "elapsed_seconds": round(classifier_elapsed, 3),
                                 "error": classifier_error,

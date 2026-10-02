@@ -2,7 +2,7 @@
 
 A small, fictional security exercise that checks agent identity, task assignment, tool arguments, resource ownership, and human approval before a tool creates a local simulated side effect.
 
-**Current implementation status:** local reference MVP; full plan acceptance is not passed and this is not a v1.0 release. Rules v2 measured 42% recall / 4% false-positive rate on fresh v6; the optional local semantic prefilter measured 86% / 0% on the same 100-case author-created synthetic set, with no inference errors. This is not an independent benchmark. The prefilter is auxiliary and never grants tool permissions. GitHub publication is on hold. See the [local acceptance assessment](docs/final-local-acceptance.md) and [implementation report](docs/evaluation-report.md).
+**Current implementation status:** local reference MVP; full plan acceptance is not passed and this is not a v1.0 release. Rules v2 measured 42% recall / 4% false-positive rate on fresh v6; the optional local semantic prefilter measured 86% / 0% on that author-created synthetic set. On a pinned InjecAgent indirect tool-response diagnostic, the baseline reached 51.6% recall without task context; a later context-aware prompt iteration reached 75.6% recall / 0% generated-control FPR, still below the 80% target and not independent acceptance evidence because it was evaluated after the split was observed. The classifier is auxiliary and never grants tool permissions. GitHub publication is on hold. See the [local acceptance assessment](docs/final-local-acceptance.md) and [implementation report](docs/evaluation-report.md).
 
 ## Included
 
@@ -20,7 +20,7 @@ A small, fictional security exercise that checks agent identity, task assignment
 
 ## Quick start
 
-See [the runbook](docs/runbook.md). Initialize ignored local credentials and database secrets with the containerized helper, then start the Linux-container Compose stack with `docker compose up --build -d`.
+See [the runbook](docs/runbook.md) for copyable Windows PowerShell commands that resolve Docker Desktop and Compose. Initialize ignored local credentials and database secrets with the containerized helper, then start the Linux-container Compose stack.
 
 Run the code-level suite with `python -m unittest discover -v`.
 

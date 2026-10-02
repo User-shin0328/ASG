@@ -1,0 +1,49 @@
+{
+  "evaluated_at": "2026-10-02T03:12:59.739884+00:00",
+  "runtime_source_commit": "94f3054",
+  "script": "scripts/multiprocess_multikey.py",
+  "script_sha256": "e4d0c473acb3dc654e4c081d204ec91bf6ac677fb62288e41aa0234df8578732",
+  "environment": {
+    "host": "Windows with Docker Desktop",
+    "docker_engine": "29.8.1",
+    "compose": "5.5.1",
+    "compose_project": "gateway-multikey-20261002-94f3054",
+    "isolated_postgres_and_tool_volumes": true,
+    "gateway_processes": 2,
+    "dashboard_note": "Dashboard was omitted from the headless stress run after its default loopback port conflicted with the already-running demo stack; both Gateway replicas, PostgreSQL, and tool sandbox were healthy. The existing demo remained running."
+  },
+  "workload": {
+    "unique_idempotency_keys": 50,
+    "concurrent_workers": 25,
+    "tool": "save_summary",
+    "data": "fictional local fixture"
+  },
+  "gateway_results": {
+    "http_200": 50,
+    "unique_action_ids": 50,
+    "missing_action_ids": 0,
+    "unique_receipt_ids": 50,
+    "missing_receipts": 0,
+    "elapsed_seconds": 0.715,
+    "actual_rps": 69.965,
+    "p50_ms": 315.118,
+    "p95_ms": 349.635,
+    "max_ms": 364.193
+  },
+  "tool_store_counts": {
+    "before": {
+      "artifacts": 0,
+      "outbox": 0,
+      "receipts": 0
+    },
+    "after": {
+      "artifacts": 50,
+      "outbox": 0,
+      "receipts": 50
+    }
+  },
+  "limitations": [
+    "One 50-request multi-key burst on one Windows Docker Desktop host; does not establish long-duration production capacity.",
+    "All artifacts were fictional and remained in the isolated Compose test volume."
+  ]
+}
