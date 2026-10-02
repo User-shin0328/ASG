@@ -73,11 +73,11 @@ The matrix is complete as a traceability document; local v1.0 acceptance is stil
 | B02 | Denial load without policy bypass | PASS-local | 1,200/1,200 cross-tenant requests denied; tool counter unchanged |
 | B03 | Oversized request/resource boundary | PASS-local | 576/576 expected 413/422 responses in 180-second local soak |
 | B04 | Concurrent approved execution remains single-use | PASS-local | 20 concurrent executions yielded one receipt in isolated Compose |
-| R01 | Initialize in a fresh environment | PASS-local | Commit `941748a` source snapshot, newly generated ignored credentials, pulled base images, and new Compose volumes initialized successfully on the same Windows host; 52 tests and all six demos passed |
+| R01 | Initialize in a fresh environment | PASS-local | Commit `c67e9ee` clean source snapshot, newly generated ignored credentials, freshly built service images using cached base images, and new Compose volumes initialized successfully on the same Windows host; Gateway readiness and all six demos passed; 53 tests passed |
 | R02 | Repeat initialization preserves local secrets | PASS-local | `tests/test_init_demo.py::test_reinitialization_preserves_existing_credentials_and_database_secrets` |
 | R03 | Source, Git history, and images contain no secrets | PASS-local | Source and tracked history scans plus `docker export` scans of all seven merged image filesystems found zero matches for four configured high-confidence patterns. See `evaluation/results/image-filesystem-scan-2026-10-02.json`; mounted volumes and other secret classes are outside this scan |
-| R04 | Six final demos can be followed from public docs | PARTIAL | All six scenarios replayed on commit `941748a` with fresh credentials/volumes; reviewer decision used the authenticated dashboard proxy API rather than clicking the UI button, and public documentation is not available while publication is held |
-| R05 | Commit, CI, and report identify the same local version | PARTIAL | Local Python CI equivalents passed on commit `941748a`, and its fresh-volume Compose reproduction plus six demos are recorded. Remote workflow execution remains pending while GitHub publication is held |
+| R04 | Six final demos can be followed from public docs | PARTIAL | All six scenarios replayed on commit `c67e9ee` with fresh credentials/volumes; reviewer decision used the authenticated dashboard proxy API, not the UI button. Public documentation is not available while publication is held |
+| R05 | Commit, CI, and report identify the same local version | PARTIAL | 53 local Python CI-equivalent tests and the fresh-volume Compose reproduction plus six demos are recorded for `c67e9ee`. Remote workflow execution remains pending while GitHub publication is held |
 
 ## Acceptance impact
 

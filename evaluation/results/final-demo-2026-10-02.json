@@ -55,7 +55,7 @@
       "additional_side_effects": 0
     }
   ],
-  "clean_checkout_replay": "Same six scenarios also passed on committed snapshot 941748a with new credentials and fresh volumes; see clean-repro-2026-10-02.json.",
+  "clean_checkout_replay": "Same six scenarios also passed on committed snapshot c67e9ee with new credentials and fresh volumes; see clean-repro-2026-10-02.json.",
   "limitations": [
     "The initial run used the existing local Compose project's fictional persistent state; a separate clean-checkout run is recorded alongside this file.",
     "The model result is one local run; the separate preregistered model matrix used synthetic workloads and in-memory mock tools."
