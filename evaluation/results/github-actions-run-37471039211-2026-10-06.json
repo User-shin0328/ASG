@@ -1,0 +1,40 @@
+{
+  "observed_at": "2026-10-06",
+  "repository": "User-shin0328/AI-AGENT-SECURE",
+  "repository_visibility": "private",
+  "branch": "main",
+  "commit": "b67a1ff94ab2b3129aa72b14caaa1e7b70d55ea9",
+  "run": {
+    "id": 37471039211,
+    "name": "Keep current verification scope explicit",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/User-shin0328/AI-AGENT-SECURE/actions/runs/37471039211",
+    "duration_seconds": 201,
+    "jobs": [
+      { "name": "python", "conclusion": "success", "duration_seconds": 30 },
+      { "name": "compose", "conclusion": "success", "duration_seconds": 198 }
+    ],
+    "notices": [
+      "GitHub warned that ubuntu-latest is scheduled to migrate to Ubuntu 26 beginning October 19, 2026."
+    ]
+  },
+  "artifacts": [
+    {
+      "name": "compose-license-audit",
+      "size_displayed": "683 Bytes",
+      "sha256": "5e0f62242555add4cbf912e3db9869f810a31087e2474308575a6d526fc7a566",
+      "availability": "listed on the completed workflow run",
+      "download_verified": false
+    },
+    {
+      "name": "local-ci-evidence",
+      "size_displayed": "7.97 KB",
+      "sha256": "857df612fd0691a718f2dd5196ddca7c89e7ee4830911746f9e3be30c7c2c794",
+      "availability": "listed on the completed workflow run",
+      "download_verified": false
+    }
+  ],
+  "public_reproduction_verified": false
+}
