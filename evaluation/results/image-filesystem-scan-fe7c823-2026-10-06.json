@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-06",
+  "source_commit": "fe7c823f809569a79ff414d57062b7e519b5b3cf",
+  "docker_engine": "29.8.1",
+  "method": "docker create + docker export; inspect every regular file in each merged image filesystem",
+  "patterns": [
+    "private-key",
+    "provider-token",
+    "github-token",
+    "aws-access-key"
+  ],
+  "images": {
+    "gateway": {
+      "image": "ai-agent-security-gateway-gateway:latest",
+      "image_id": "sha256:d82e29999479f85eb2f2292a8733d42fd77b6b5fa3e566f3e4e3b8c34b917478",
+      "filesystem_bytes": 70596425,
+      "matches": 0,
+      "findings": []
+    },
+    "migrate": {
+      "image": "ai-agent-security-gateway-migrate:latest",
+      "image_id": "sha256:cf86e8ebdbfef11916bbbe901273efa61b578af972f969a0c0f0a83a5950451b",
+      "filesystem_bytes": 70596425,
+      "matches": 0,
+      "findings": []
+    },
+    "token-admin": {
+      "image": "ai-agent-security-gateway-token-admin:latest",
+      "image_id": "sha256:ca3de47107eaa9fe1b59129301548a25fa490949f2b204469df1b7a068464361",
+      "filesystem_bytes": 70596425,
+      "matches": 0,
+      "findings": []
+    },
+    "postgres": {
+      "image": "ai-agent-security-gateway-postgres:latest",
+      "image_id": "sha256:c355c7633e90fdb2e4b7a185d77f22c8cb1752edaa13c366a31f39b012753bcf",
+      "filesystem_bytes": 296924683,
+      "matches": 0,
+      "findings": []
+    },
+    "tool-sandbox": {
+      "image": "ai-agent-security-gateway-tool-sandbox:latest",
+      "image_id": "sha256:3fccbdd5f5c2ede5f9da3610f338aa5d148c8573cb6ade842a72778bc5fa93d9",
+      "filesystem_bytes": 51231887,
+      "matches": 0,
+      "findings": []
+    },
+    "dashboard": {
+      "image": "ai-agent-security-gateway-dashboard:latest",
+      "image_id": "sha256:1974ca1fceca79edf908d130242694731fe44b262bc57f1335e9d394de398025",
+      "filesystem_bytes": 57294381,
+      "matches": 0,
+      "findings": []
+    },
+    "demo-agent": {
+      "image": "ai-agent-security-gateway-demo-agent:latest",
+      "image_id": "sha256:a7fd1baf164d43ad60ecfcdb76171625dbf69ec9624a953ada1f5f7d83be0e79",
+      "filesystem_bytes": 52839601,
+      "matches": 0,
+      "findings": []
+    }
+  },
+  "aggregate_filesystem_bytes": 670079827,
+  "aggregate_matches": 0,
+  "limitations": [
+    "Only four configured high-confidence patterns were checked.",
+    "Docker export excludes mounted volume contents.",
+    "This is not a general vulnerability or malware scan."
+  ]
+}

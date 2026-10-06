@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "verified_date": "2026-10-06",
+  "source_commit": "fe7c823f809569a79ff414d57062b7e519b5b3cf",
+  "docker_engine": "29.8.1",
+  "compose_version": "5.5.1",
+  "services": {
+    "postgres": "healthy",
+    "gateway": "healthy",
+    "tool_sandbox": "healthy",
+    "dashboard": "healthy",
+    "migration": "exited_successfully"
+  },
+  "gateway_readiness": {
+    "http_status": 200,
+    "status": "ready",
+    "policy_version": "demo-v2"
+  },
+  "normal_demo": {
+    "decision": "ALLOW",
+    "state": "SUCCEEDED",
+    "receipt_created": true
+  },
+  "injection_demo": {
+    "inspection": "SUSPICIOUS",
+    "decision": "DENY",
+    "http_status": 403,
+    "reason": "RESOURCE_OUT_OF_SCOPE",
+    "tool_counters_before_denial": "25/7/56",
+    "tool_counters_after_denial": "25/7/56",
+    "denial_side_effects": 0
+  },
+  "external_transmission": false,
+  "persistent_volumes_removed": false
+}
