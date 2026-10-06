@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-06",
+  "checkout_commit": "ec3e298ef1b1013ae2f8ba7aad1d1d53c2f58451",
+  "host_unit_tests": {
+    "command": "bundled-python -m unittest discover -v",
+    "passed": 71,
+    "failed": 0,
+    "elapsed_seconds": 7.763,
+    "result": "PASS"
+  },
+  "compileall": {
+    "command": "bundled-python -m compileall -q gateway tool_sandbox demo_agent dashboard scripts evaluation",
+    "result": "PASS"
+  },
+  "working_tree_secret_scan": {
+    "command": "bundled-python -m scripts.check_secrets",
+    "configured_pattern_matches": 0,
+    "result": "PASS"
+  },
+  "compose_preflight": {
+    "command": "docker compose --env-file .env.example config --quiet",
+    "exit_code": 0,
+    "result": "PASS",
+    "warnings": [
+      "Docker CLI could not read the user .docker/config.json (Access denied)."
+    ],
+    "interpretation": "Static Compose configuration parsed; no container startup is verified by this check."
+  },
+  "docker_daemon": {
+    "available": false,
+    "probe": "docker info",
+    "observation": "Docker engine named pipe was missing after restart."
+  },
+  "workflow_syntax": {
+    "current_workflow_sha256": "6ebbd00eca66abd8c7c1435d193497fa80d0a3877c6eb5be4bf583ebee9ef929",
+    "matches_pinned_actionlint_report": true,
+    "validator": "actionlint 1.7.12",
+    "prior_actionlint_report": "evaluation/results/actionlint-local-2026-10-02.json",
+    "github_actions_executed": false
+  },
+  "limitations": [
+    "Fresh host checks ran after reboot on the local Windows host.",
+    "Docker daemon was unavailable, so runtime Compose cases were not rerun.",
+    "Compose config returned exit code 0 but emitted a user Docker config access warning.",
+    "The workflow hash matches the prior local actionlint evidence; no remote GitHub workflow run is claimed.",
+    "This is a local CI-equivalent record, not a GitHub Actions result."
+  ]
+}
