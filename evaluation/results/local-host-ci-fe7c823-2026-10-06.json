@@ -77,6 +77,12 @@
     "known_vulnerabilities": 0,
     "evidence": "evaluation/results/dependency-audit-fe7c823-2026-10-06.json"
   },
+  "local_ci_artifact_scan": {
+    "result": "PASS-local",
+    "files_scanned": 15,
+    "configured_matches": 0,
+    "evidence": "evaluation/results/local-ci-artifact-scan-9b8bbfb-2026-10-06.json"
+  },
   "network_matrix": {
     "cases": "N01-N06",
     "result": "PASS-local",
