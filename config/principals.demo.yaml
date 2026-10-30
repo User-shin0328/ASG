@@ -1,0 +1,24 @@
+{
+  "principals": {
+    "agent-alice": {
+      "kind": "agent",
+      "role": "report-submitter",
+      "user": "alice",
+      "tenant": "north",
+      "task": "task-alice-001"
+    },
+    "agent-bob": {
+      "kind": "agent",
+      "role": "report-writer",
+      "user": "bob",
+      "tenant": "south",
+      "task": "task-bob-001"
+    },
+    "reviewer-demo": {
+      "kind": "reviewer",
+      "role": "reviewer",
+      "user": "reviewer",
+      "tenant": "north"
+    }
+  }
+}

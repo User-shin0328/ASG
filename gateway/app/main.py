@@ -36,7 +36,7 @@ def build_gateway():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "AIAgentSecurityGateway/0.1"
+    server_version = "ASG/2.0"
     gateway: Gateway
 
     def log_message(self, fmt, *args):
@@ -79,9 +79,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/health/ready" and self.command == "GET":
             return 200, self.gateway.ready()
         if path == "/" and self.command == "GET":
-            return 200, {"service": "Zero Trust AI Agent Security Gateway", "openapi": "/openapi.json", "policy_version": self.gateway.policy["version"]}
+            return 200, {"service": "ASG (AI Agent Secure Gateway)", "openapi": "/openapi.json", "policy_version": self.gateway.policy["version"]}
         if path == "/openapi.json" and self.command == "GET":
-            return 200, {"openapi": "3.1.0", "info": {"title": "AI Agent Security Gateway", "version": "0.1.0"}, "paths": {"/v1/actions": {"post": {"summary": "Create policy-checked action"}}, "/v1/inputs/inspect": {"post": {"summary": "Inspect untrusted text"}}}}
+            return 200, {"openapi": "3.1.0", "info": {"title": "ASG (AI Agent Secure Gateway)", "version": "0.1.0"}, "paths": {"/v1/actions": {"post": {"summary": "Create policy-checked action"}}, "/v1/inputs/inspect": {"post": {"summary": "Inspect untrusted text"}}}}
         p = self.principal()
         if path == "/v1/actions" and self.command == "POST":
             idem = self.headers.get("Idempotency-Key", "")
@@ -110,6 +110,8 @@ class Handler(BaseHTTPRequestHandler):
             return 200, self.gateway.decide(p, m.group(1), b["decision"])
         if path == "/v1/audit/events" and self.command == "GET":
             return 200, {"items": self.gateway.audit_events(p)}
+        if path == "/v1/audit/verify" and self.command == "GET":
+            return 200, self.gateway.verify_audit_chain(p)
         raise GatewayError(404, "NOT_FOUND", "Endpoint was not found")
 
     def do_GET(self):

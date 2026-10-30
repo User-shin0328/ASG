@@ -7,6 +7,7 @@ import re
 import secrets
 import threading
 import time
+import unicodedata
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,7 @@ from gateway.app.database import Database
 
 
 DEFAULT_POLICY_PATH = Path(__file__).resolve().parents[2] / "config" / "policy.yaml"
+DEFAULT_CONFIG_DIR = Path(__file__).resolve().parents[2] / "config"
 INSPECTION_SCANNER_VERSION = "rules-v2"
 INSPECTION_PATTERNS = (
     "ignore previous instructions", "reveal the system prompt", "send all files", "ignore all prior instructions",
@@ -126,13 +128,28 @@ def load_policy(path: str | Path = DEFAULT_POLICY_PATH) -> dict[str, Any]:
     return policy
 
 
+def normalize_untrusted_text(text: str) -> str:
+    cleaned = re.sub(r"[\u200B-\u200D\uFEFF]", "", text)
+    return unicodedata.normalize("NFKC", cleaned)
+
+
 def scan_untrusted_text(text: str) -> list[str]:
+    normalized = normalize_untrusted_text(text)
     compact_spacing = re.sub(
         r"(?<!\w)(?:[^\W\d_]\s+){2,}[^\W\d_](?!\w)",
         lambda match: re.sub(r"\s+", "", match.group(0)),
         text,
     )
-    scan_texts = (text, compact_spacing) if compact_spacing != text else (text,)
+    norm_compact = re.sub(
+        r"(?<!\w)(?:[^\W\d_]\s+){2,}[^\W\d_](?!\w)",
+        lambda match: re.sub(r"\s+", "", match.group(0)),
+        normalized,
+    )
+    candidates = [text]
+    for c in (compact_spacing, normalized, norm_compact):
+        if c not in candidates:
+            candidates.append(c)
+    scan_texts = tuple(candidates)
     folded = tuple(candidate.casefold() for candidate in scan_texts)
     hits = [phrase for phrase in INSPECTION_PATTERNS if any(phrase.casefold() in candidate for candidate in folded)]
     hits.extend(
@@ -226,8 +243,21 @@ class Gateway:
     def _audit(self, trace: str, action: str | None, actor: str, event: str, details: dict[str, Any]) -> None:
         # Never persist credentials or full document text in audit details.
         safe = {k: v for k, v in details.items() if k not in {"token", "content", "body", "authorization"}}
+        last_row = self.db.execute("SELECT id, details FROM audit ORDER BY id DESC LIMIT 1").fetchone()
+        prev_hash = "GENESIS"
+        if last_row and last_row["details"]:
+            try:
+                prev_details = json.loads(last_row["details"])
+                prev_hash = prev_details.get("_chain_hash", "LEGACY_" + str(last_row["id"]))
+            except Exception:
+                prev_hash = "CORRUPT_" + str(last_row["id"])
+        now = time.time()
+        record_payload = {"at": now, "trace": trace, "action": action, "actor": actor, "event": event, "details": safe, "prev_hash": prev_hash}
+        chain_hash = hashlib.sha256(canonical(record_payload)).hexdigest()
+        safe["_prev_hash"] = prev_hash
+        safe["_chain_hash"] = chain_hash
         self.db.execute("INSERT INTO audit(at,trace_id,action_id,actor,event,details) VALUES(?,?,?,?,?,?)",
-                        (time.time(), trace, action, actor, event, json.dumps(safe, ensure_ascii=False)))
+                        (now, trace, action, actor, event, json.dumps(safe, ensure_ascii=False)))
 
     def inspect(self, principal: Principal, source: str, text: str) -> dict[str, Any]:
         if principal.kind != "agent":
@@ -482,3 +512,37 @@ class Gateway:
         sql = f"SELECT e.* FROM audit e LEFT JOIN actions x ON x.id=e.action_id WHERE x.task IN ({task_marks}) OR (e.action_id IS NULL AND e.actor IN ({principal_marks})) ORDER BY e.id DESC LIMIT 200"
         rows = self.db.execute(sql, [*task_ids, *principal_ids]).fetchall()
         return [dict(r) | {"details": json.loads(r["details"])} for r in rows]
+
+    def verify_audit_chain(self, p: Principal) -> dict[str, Any]:
+        if p.kind != "reviewer":
+            raise GatewayError(403, "AUDITOR_REQUIRED", "Reviewer credentials are required")
+        rows = self.db.execute("SELECT id, at, trace_id, action_id, actor, event, details FROM audit ORDER BY id ASC").fetchall()
+        expected_prev = "GENESIS"
+        verified_count = 0
+        tampered_ids = []
+        for r in rows:
+            try:
+                det = json.loads(r["details"])
+                cur_prev = det.get("_prev_hash")
+                cur_hash = det.get("_chain_hash")
+                if cur_prev is None or cur_hash is None:
+                    expected_prev = "LEGACY_" + str(r["id"])
+                    continue
+                if cur_prev != expected_prev:
+                    tampered_ids.append(r["id"])
+                safe_det = {k: v for k, v in det.items() if k not in {"_prev_hash", "_chain_hash"}}
+                record_payload = {"at": r["at"], "trace": r["trace_id"], "action": r["action_id"], "actor": r["actor"], "event": r["event"], "details": safe_det, "prev_hash": cur_prev}
+                recomputed_hash = hashlib.sha256(canonical(record_payload)).hexdigest()
+                if recomputed_hash != cur_hash:
+                    tampered_ids.append(r["id"])
+                expected_prev = cur_hash
+                verified_count += 1
+            except Exception:
+                tampered_ids.append(r["id"])
+        return {
+            "status": "VALID" if not tampered_ids else "TAMPERED",
+            "total_records": len(rows),
+            "chained_records": verified_count,
+            "tampered_record_ids": tampered_ids,
+            "latest_chain_hash": expected_prev if verified_count > 0 else None,
+        }
