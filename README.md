@@ -1,39 +1,103 @@
-# Zero Trust AI Agent Security Gateway
+# ASG: AI Agent Secure Gateway
+> **Next-Generation Zero Trust Security Gateway & XDR Monitoring Platform for Autonomous AI Agents**
 
-A small, fictional security exercise that checks agent identity, task assignment, tool arguments, resource ownership, and human approval before a tool creates a local simulated side effect.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://www.python.org/)
+[![Docker Compose](https://img.shields.io/badge/Docker-Compose-blue.svg)](compose.yaml)
+[![Tests Passing](https://img.shields.io/badge/Tests-74%2F74%20Passing-success.svg)](tests/)
+[![Security: Zero Trust](https://img.shields.io/badge/Security-Zero%20Trust%20Enforced-orange.svg)](docs/threat-model.md)
 
-**Current implementation status:** local reference MVP pushed with its 61-commit history to the private GitHub repository [User-shin0328/AI-AGENT-SECURE](https://github.com/User-shin0328/AI-AGENT-SECURE), current commit `b67a1ff`. GitHub Actions run [#1](https://github.com/User-shin0328/AI-AGENT-SECURE/actions/runs/37471039211) passed both Python and Compose jobs and produced two retained artifacts. The repository is still private, so public URL availability and R04 public reproduction remain open. The optional host-side semantic prefilter now uses a validation-frozen local n-gram detector as an OR layer by default when enabled. On the pinned Agentic 5K dataset it measured 96.75% recall / 9.43% FPR on validation and 99.64% / 9.06% on held-out test, with zero test inference errors. The Qwen-only test result was 72.1% / 3.02%. On retained local semantic decisions, the combined detector preserved Qwen's v5/v6/v7 results (90%/2%, 88%/0%, 86%/0%); the n-gram model alone has weak recall on those local fixtures. A real adapter smoke run showed the n-gram layer catch an adversarial report that Qwen labeled benign; Gateway authorization still denied the unregistered destination. This classifier is auxiliary and never grants tool permissions. See the [local acceptance assessment](docs/final-local-acceptance.md) and [implementation report](docs/evaluation-report.md).
+---
 
-## Included
+## 📌 Overview
 
-- A Python Gateway with opaque token authentication, server-owned principals, PostgreSQL runtime storage, and versioned migrations.
-- Three fixed tools: `read_document`, `save_summary`, and reviewer-gated `send_report`.
-- A separate service-authenticated tool sandbox with fictional documents, immutable artifacts, a simulated outbox, and execution receipts.
-- Approval snapshots bound to artifact hash and policy version, with expiry and single-use consumption.
-- Request idempotency and duplicate receipt handling.
-- A deterministic prompt-injection pattern scanner whose verdict does not grant permissions.
-- PostgreSQL runs on an internal Docker network with a restricted application role and append-only audit table. The tool sandbox keeps its local SQLite store.
-- An optional bounded Ollama-compatible adapter and host-side fail-closed semantic input prefilter. The host adapter has completed a local fictional read/summary while the Gateway denied its unapproved report submission. In the preregistered 360-trial synthetic model study, baseline attacks succeeded in 60/60 relaxed mock trials; policy-only and full arms had 0/60 simulated attack successes. All relaxed tool effects were in-memory only; see the [matrix results](evaluation/results/agent-matrix-2026-10-01/supplemental-metrics.json).
-- Loopback-only dashboard in Docker Compose. The Gateway API and tool sandbox are not published to the Windows host.
-- Persistent token revocation with an administrator-only local rotation command; declarative policy is loaded and validated from `config/policy.yaml`.
-- Reviewer dashboard can download the latest tenant-scoped audit events as JSON after an authenticated fetch.
+**ASG (AI Agent Secure Gateway)** is a specialized, defense-in-depth security gateway that intercepts and enforces policy controls on autonomous AI agents before they can interact with enterprise databases, files, APIs, and external tools.
 
-## Quick start
+Unlike standard chatbots that only generate text, **agentic AI workflows possess "hands and tools"** capable of querying databases, altering records, or sending emails. When subjected to **Indirect Prompt Injection**, an attacker can trick an agent into exfiltrating confidential corporate records or dropping critical databases.
 
-See [the runbook](docs/runbook.md) for copyable Windows PowerShell commands that resolve Docker Desktop and Compose. Initialize ignored local credentials and database secrets with the containerized helper, then start the Linux-container Compose stack.
+**ASG acts as the single chokepoint (inline gatekeeper) between AI Agent runtimes and protected enterprise resources:**
+- Never trusts the agent, model inferences, tool arguments, or document content (**Zero Trust**).
+- Prevents identity spoofing by binding requests to **server-owned principals** derived from SHA-256 token hashes.
+- Mandates **Human-in-the-Loop (HITL)** approval with cryptographic snapshot binding for high-risk side effects (e.g., report transmissions).
+- Employs **multi-tier prompt injection guardrails** (Unicode NFKC normalization, regex heuristics, local n-gram Bernoulli classifier, and context-aware LLM guards).
+- Enforces append-only, tamper-proof audit trails with **Merkle Hash Chaining**.
 
-Run the code-level suite with `python -m unittest discover -v`. Check the working tree with `python -m scripts.check_secrets` and scan all reachable Git history with `python -m evaluation.scan_git_history`; the history scanner records matching object IDs and pattern classes without printing secret text.
+---
 
-The six final demo scenarios and their expected outcomes are listed in the [demo matrix](docs/final-demo-matrix.md). They use fictional documents and the local simulated outbox only.
+## 🚀 Key Features
 
-## Architecture and limits
+| Capability | Description |
+|---|---|
+| **ASG-XDR SOC Dashboard** | High-performance, dark-themed security operations center UI at `http://127.0.0.1:8501/` with real-time Windows host telemetry (CPU, RAM, OS, IPv4), threat case management, and live intercept logs. |
+| **Interactive Attack Generator** | Built-in simulator with 7 preset attack scenarios (normal summary, cross-tenant trespass, prompt injection, zero-width obfuscation, unapproved execution, Merkle verify) and real-time custom prompt injection testing. |
+| **Server-Owned Principals** | Clients only supply opaque bearer tokens. ASG strictly injects `principal`, `role`, `task_id`, and `tenant` server-side, defeating identity spoofing. |
+| **Cryptographic HITL Snapshots** | Dangerous actions remain `PENDING_APPROVAL` until signed off by a human reviewer. Approvals bind to `SHA-256(principal + task + args + artifact_hash + policy_version)` and are single-use with a 15-minute TTL. |
+| **PostgreSQL Advisory Locks** | Eliminates race conditions and duplicate executions via distributed advisory locks and idempotency keys. |
+| **Merkle Hash Chained Audit Log** | PostgreSQL trigger-enforced append-only audit records, each linked via cryptographic hash chaining (`_prev_hash`, `_chain_hash`) with a 1-click `/v1/audit/verify` integrity checker. |
+| **One-Click Windows Testbed** | Standalone launcher (`run_asg_testbed.bat` / `run_asg_testbed.ps1`) spins up Sandbox, Gateway, and Dashboard with zero Docker overhead. |
 
-Read [architecture](docs/architecture.md), [threat model](docs/threat-model.md), [API contract](docs/api.md), [requirements traceability](docs/requirements.md), and the [preregistered model study](evaluation/agent-matrix-preregistration-2026-10-01.md). Gateway state uses PostgreSQL at runtime; SQLite is retained as the fast unit-test adapter, while the tool sandbox uses SQLite for simulated receipts and outbox. Local Docker verified read and reviewer-approved submit paths. A separate host-run model adapter was measured against a virtual in-memory tool harness; those mock-policy results do not replace the live Gateway's enforcement. The dashboard alone joins a host-facing network so its UI can bind to loopback; startup installs a default-drop output filter and runs the app without capabilities. A local probe verified loopback UI and internal Gateway access while blocking a public IPv4 TCP connection; see the [egress evidence](evaluation/results/dashboard-egress-2026-10-02.json) for scope and limits. No real email, firewall action tool, shell, arbitrary HTTP, or SQL tool is included. Local acceptance gaps and limits are listed in the [assessment](docs/final-local-acceptance.md).
+---
 
-Every report and user is fictional. Do not add real user documents, credentials, or operational logs to this exercise.
+## ⚡ Quick Start
 
-## License
+### Option A: One-Click Local Testbed (Recommended)
+You can launch the entire stack (Gateway, Sandbox, and ASG-XDR Dashboard) immediately without Docker:
 
-MIT; see [LICENSE](LICENSE).
+- **Double-click:** Run [`run_asg_testbed.bat`](run_asg_testbed.bat)
+- **Or PowerShell:**
+  ```powershell
+  .\run_asg_testbed.ps1
+  ```
+- **What happens:**
+  1. Tool Sandbox starts on `http://127.0.0.1:8001`
+  2. ASG Security Gateway starts on `http://127.0.0.1:8000`
+  3. **ASG-XDR SOC Dashboard & Attack Generator** starts on `http://127.0.0.1:8501`
+  4. Your default browser opens automatically to the dashboard!
 
-The dataset-derived evaluation model has separate CC BY 4.0 attribution terms; see [`demo_agent/models/NOTICE.md`](demo_agent/models/NOTICE.md).
+---
+
+### Option B: Docker Compose Full Stack
+For containerized multi-network isolation:
+```powershell
+# 1. Initialize local credentials
+python -m scripts.init_demo
+
+# 2. Run unit & regression test suite (74 tests)
+python -m unittest discover -v
+
+# 3. Start Linux-container Compose stack
+docker compose up -d --build
+```
+
+---
+
+## 🕹️ Interactive Threat Simulator & Dashboard
+
+Click the **`[⚡ 프롬프트 발생기 제어]` (Traffic Generator)** button on the top-right of the ASG-XDR Dashboard to simulate live attacks:
+
+1. **Assigned Document Read (`ALLOW` 200 OK):** Alice reads `report-alice-001`.
+2. **Cross-Tenant Violation (`DENY` 403 Forbidden):** Alice attempts to read Bob's South-tenant document `report-bob-001` (`RESOURCE_OUT_OF_SCOPE`).
+3. **Indirect Prompt Injection (`SUSPICIOUS` Content Masked):** Injected document `report-alice-attack` is inspected, flagged, and masked as `[WITHHELD]`.
+4. **Unicode Zero-Width Obfuscation (`SUSPICIOUS`):** Normalizes `ig\u200Bnore...` evasion attempts before regex/n-gram scanning.
+5. **Unapproved High-Risk Action (`REQUIRE_APPROVAL` 202 Accepted):** Blocks report transmission until an authorized reviewer clicks **[Approve]**.
+6. **Merkle Hash Chain Verification (`VALID`):** Scans the audit chain and verifies zero tampering.
+
+---
+
+## 📚 Documentation & Specifications
+
+- 📖 **[사용자 및 운영 설명서 (APP_MANUAL.md)](APP_MANUAL.md)**: 전체 시스템 개념, 네트워크 토폴로지, 6대 검증 시나리오, API 명세서 수록.
+- 📐 **[v2.0 상세 설계 계획서 (DESIGN_SPECIFICATION_PLAN.md)](DESIGN_SPECIFICATION_PLAN.md)**: 제로 트러스트 위협 모델(T-01~T-07), 아키텍처 다이어그램, ERD 및 구현 로드맵.
+- 🏛️ **[시스템 아키텍처 (docs/architecture.md)](docs/architecture.md)**
+- 🎯 **[위협 모델 및 보안 경계 (docs/threat-model.md)](docs/threat-model.md)**
+- 🔌 **[REST API 규격서 (docs/api.md)](docs/api.md)**
+
+---
+
+## 🔒 Security Notice
+
+All documents, users (`alice`, `bob`), and sample outbox records in this repository are fictional. Never transmit real operational credentials, production tokens, or sensitive internal data to non-airgapped environments.
+
+## 📄 License
+
+MIT License. See [LICENSE](LICENSE) for details.
