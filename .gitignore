@@ -11,3 +11,8 @@ reports/*
 !reports/.gitkeep
 *.sqlite3
 *.db
+
+# Temporary test & scratch files
+/temp/
+test_tools/temp/*
+!test_tools/temp/.gitkeep

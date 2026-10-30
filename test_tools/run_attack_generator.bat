@@ -36,6 +36,6 @@ echo [*] Python 엔진 감지: %PY_EXE%
 echo [*] 공격 시뮬레이터를 시작합니다...
 echo.
 
-%PY_EXE% "%~dp0scripts\traffic_generator.py" --mode menu
+%PY_EXE% "%~dp0..\scripts\traffic_generator.py" --mode menu
 
 pause

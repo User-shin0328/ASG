@@ -1,6 +1,6 @@
-# ASG (AI Agent Secure Gateway) - 공격 & 트래픽 발생기 PowerShell 실행 스크립트
+# ASG (AI Agent Secure Gateway) - 통합 로컬 테스트베드 PowerShell 실행 스크립트
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$Host.UI.RawUI.WindowTitle = "ASG Attack & Traffic Simulator"
+$Host.UI.RawUI.WindowTitle = "ASG Local Testbed & SOC Dashboard"
 
 $PyExe = "python"
 $HasPython = Get-Command python -ErrorAction SilentlyContinue
@@ -20,5 +20,5 @@ if (-not $HasPython -or $HasPython.Version -eq "0.0.0.0") {
     }
 }
 
-$ScriptPath = Join-Path $PSScriptRoot "scripts\traffic_generator.py"
-& $PyExe $ScriptPath --mode menu
+$ScriptPath = Join-Path $PSScriptRoot "..\scripts\testbed_launcher.py"
+& $PyExe $ScriptPath

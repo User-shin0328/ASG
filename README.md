@@ -34,7 +34,7 @@ Unlike standard chatbots that only generate text, **agentic AI workflows possess
 | **Cryptographic HITL Snapshots** | Dangerous actions remain `PENDING_APPROVAL` until signed off by a human reviewer. Approvals bind to `SHA-256(principal + task + args + artifact_hash + policy_version)` and are single-use with a 15-minute TTL. |
 | **PostgreSQL Advisory Locks** | Eliminates race conditions and duplicate executions via distributed advisory locks and idempotency keys. |
 | **Merkle Hash Chained Audit Log** | PostgreSQL trigger-enforced append-only audit records, each linked via cryptographic hash chaining (`_prev_hash`, `_chain_hash`) with a 1-click `/v1/audit/verify` integrity checker. |
-| **One-Click Windows Testbed** | Standalone launcher (`run_asg_testbed.bat` / `run_asg_testbed.ps1`) spins up Sandbox, Gateway, and Dashboard with zero Docker overhead. |
+| **One-Click Windows Testbed** | Standalone launcher (`test_tools/run_asg_testbed.bat` / `test_tools/run_asg_testbed.ps1`) spins up Sandbox, Gateway, and Dashboard with zero Docker overhead. |
 
 ---
 
@@ -43,10 +43,10 @@ Unlike standard chatbots that only generate text, **agentic AI workflows possess
 ### Option A: One-Click Local Testbed (Recommended)
 You can launch the entire stack (Gateway, Sandbox, and ASG-XDR Dashboard) immediately without Docker:
 
-- **Double-click:** Run [`run_asg_testbed.bat`](run_asg_testbed.bat)
+- **Double-click:** Run [`test_tools/run_asg_testbed.bat`](test_tools/run_asg_testbed.bat)
 - **Or PowerShell:**
   ```powershell
-  .\run_asg_testbed.ps1
+  .\test_tools/run_asg_testbed.ps1
   ```
 - **What happens:**
   1. Tool Sandbox starts on `http://127.0.0.1:8001`
@@ -59,10 +59,10 @@ You can launch the entire stack (Gateway, Sandbox, and ASG-XDR Dashboard) immedi
 ### Option B: Standalone Attack Simulator (CLI)
 If you wish to simulate attacks directly from an interactive command-line interface:
 - **Double-click:** Run [
-un_attack_generator.bat](run_attack_generator.bat)
+un_attack_generator.bat](test_tools/run_attack_generator.bat)
 - **Or PowerShell:**
   `powershell
-  .\run_attack_generator.ps1
+  .\test_tools/run_attack_generator.ps1
   `
 - Select from 8 scenarios (cross-tenant access, jailbreak prompt injection, Unicode zero-width evasion, unapproved action execution, audit chain verification, or send custom prompts).
 

@@ -118,7 +118,7 @@ flowchart LR
 ### 4.1 초간편 원클릭 로컬 테스트베드 실행 (★ 가장 빠른 추천 방법)
 Docker 데스크톱이 켜져 있지 않아도 윈도우 환경에서 파일 하나로 즉시 전체 보안 시스템과 SOC 대시보드를 구동할 수 있습니다.
 
-- **더블클릭 실행:** 프로젝트 루트 폴더의 `run_asg_testbed.bat` 파일을 더블클릭합니다.
+- **더블클릭 실행:** 프로젝트 루트 폴더의 `test_tools/run_asg_testbed.bat` 파일을 더블클릭합니다.
 - **PowerShell 실행:**
   ```powershell
   .
@@ -155,7 +155,7 @@ un_asg_testbed.ps1
 un_attack_generator.bat 파일을 더블클릭합니다.
 - **PowerShell 실행:**
   `powershell
-  .\run_attack_generator.ps1
+  .\test_tools/run_attack_generator.ps1
   `
 - **지원 시나리오 메뉴:**
   - [1] 정상 요청 (고객 데이터 요약) - ALLOW (200 OK)

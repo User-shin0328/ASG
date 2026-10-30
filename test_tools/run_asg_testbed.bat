@@ -36,6 +36,6 @@ echo [*] Python 엔진 감지: %PY_EXE%
 echo [*] ASG 테스트베드 및 관제 대시보드를 기동합니다...
 echo.
 
-%PY_EXE% "%~dp0scripts\testbed_launcher.py"
+%PY_EXE% "%~dp0..\scripts\testbed_launcher.py"
 
 pause
