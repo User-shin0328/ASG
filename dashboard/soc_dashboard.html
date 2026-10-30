@@ -776,7 +776,7 @@
           document.getElementById('kpiTotalActions').innerText = `${g_logs.length}건`;
           document.getElementById('kpiHttpRequests').innerText = `${g_logs.length + 2}건`;
           document.getElementById('logCount').innerText = g_logs.length;
-          
+
           let deniedCount = g_logs.filter(l => l.event && l.event.includes('DENIED')).length;
           document.getElementById('kpiDeniedActions').innerText = deniedCount;
           renderLogs();
@@ -830,7 +830,7 @@
         const eventName = l.event || 'UNKNOWN';
         const isDeny = eventName.includes('DENIED') || (l.details && JSON.stringify(l.details).includes('DENY'));
         const levelBadge = isDeny ? '<span class="badge badge-critical">차단(Denied)</span>' : '<span class="badge badge-info">정보(Info)</span>';
-        
+
         tr.innerHTML = `
           <td>${timeStr}</td>
           <td><span class="badge-tag">${l.actor || 'agent-alice'}</span></td>

@@ -102,7 +102,7 @@ jobs:
         run: |
           docker run --rm golang:1.26.6-alpine sh -ec '
             apk add --no-cache git >/dev/null
-            git clone --quiet --depth 1 --branch 1.19 https://github.com/tianon/gosu.git /tmp/gosu
+            git clone --quiet --depth 1 --branch 1.20 https://github.com/tianon/gosu.git /tmp/gosu
             cd /tmp/gosu
             go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
             GOTOOLCHAIN=go1.24.6 /go/bin/govulncheck ./...

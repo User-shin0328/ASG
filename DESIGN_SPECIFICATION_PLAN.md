@@ -68,7 +68,7 @@ flowchart TD
         Guardrail["Multi-tier Guardrail<br/>- Regex Scanner<br/>- Local n-gram Classifier<br/>- Context LLM Guard"]
         HITL["Approval & Snapshot Manager<br/>(Cryptographic Binding)"]
         IdemLock["Distributed Lock & Idempotency<br/>(PG Advisory Lock)"]
-        
+
         GW --> AuthModule
         GW --> PolicyEngine
         GW --> Guardrail
@@ -84,7 +84,7 @@ flowchart TD
         MCPAdapter["MCP Server / Tool Adapter<br/>(Model Context Protocol)"]
         ExecEngine["Safe Tool Execution Engine<br/>- read_document<br/>- save_summary<br/>- send_report"]
         ReceiptStore[("Receipt & Outbox Store<br/>(Transactional DB)")]
-        
+
         MCPAdapter --> ExecEngine
         ExecEngine --> ReceiptStore
     end

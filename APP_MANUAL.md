@@ -151,7 +151,7 @@ un_asg_testbed.ps1
 ### 4.3 독립형 대화식 공격 발생기 실행 (Attack Simulator CLI)
 웹 대시보드 외에도 독립된 콘솔 환경에서 공격 시나리오를 연속으로 실행하고 테스트할 수 있는 전용 실행 파일이 제공됩니다.
 
-- **더블클릭 실행:** 프로젝트 루트 폴더의 
+- **더블클릭 실행:** 프로젝트 루트 폴더의
 un_attack_generator.bat 파일을 더블클릭합니다.
 - **PowerShell 실행:**
   `powershell
