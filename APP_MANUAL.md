@@ -121,7 +121,8 @@ Docker 데스크톱이 켜져 있지 않아도 윈도우 환경에서 파일 하
 - **더블클릭 실행:** 프로젝트 루트 폴더의 `run_asg_testbed.bat` 파일을 더블클릭합니다.
 - **PowerShell 실행:**
   ```powershell
-  .un_asg_testbed.ps1
+  .
+un_asg_testbed.ps1
   ```
 - **동작 내용:**
   1. 도구 샌드박스 (`http://127.0.0.1:8001`) 기동
@@ -147,7 +148,29 @@ Docker 데스크톱이 켜져 있지 않아도 윈도우 환경에서 파일 하
 
 ---
 
-### 4.3 Docker Compose 기반 풀스택 컨테이너 배포 (프로덕션 모드)
+### 4.3 독립형 대화식 공격 발생기 실행 (Attack Simulator CLI)
+웹 대시보드 외에도 독립된 콘솔 환경에서 공격 시나리오를 연속으로 실행하고 테스트할 수 있는 전용 실행 파일이 제공됩니다.
+
+- **더블클릭 실행:** 프로젝트 루트 폴더의 
+un_attack_generator.bat 파일을 더블클릭합니다.
+- **PowerShell 실행:**
+  `powershell
+  .\run_attack_generator.ps1
+  `
+- **지원 시나리오 메뉴:**
+  - [1] 정상 요청 (고객 데이터 요약) - ALLOW (200 OK)
+  - [2] 크로스 테넌트 권한 침해 공격 - DENY (403 Forbidden)
+  - [3] 전형적인 프롬프트 인젝션 (탈옥/시스템 프롬프트 탈취) - DENY (403 Forbidden)
+  - [4] 유니코드 호모글리프/제로너비 공백 은닉 우회 공격 - DENY (403 Forbidden)
+  - [5] 승인 미보유 상태의 위험 액션(submit_payment) 강제 호출 - DENY (403 Forbidden)
+  - [6] 머클 해시 체인 감사 로그 무결성 검증 - 200 OK (verified=True)
+  - [7] 사용자 정의 커스텀 프롬프트/명령 직접 입력 테스트
+  - [8] 전체 시나리오 일괄 연속 테스트 실행
+  - [0] 종료
+
+---
+
+### 4.4 Docker Compose 기반 풀스택 컨테이너 배포 (프로덕션 모드)
 
 1. **로컬 자격 증명 및 시크릿 초기화:**
    ```powershell

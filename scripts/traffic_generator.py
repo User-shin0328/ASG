@@ -14,6 +14,13 @@ import urllib.request
 import uuid
 from typing import Any
 
+# Windows console encoding safety
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 GATEWAY_DEFAULT_URL = os.environ.get("GATEWAY_URL", "http://127.0.0.1:8000")
 
@@ -212,17 +219,95 @@ class TrafficGenerator:
         return results
 
 
+def run_interactive_cli(gen: TrafficGenerator):
+    """Interactive Console Menu for Windows/CLI users"""
+    while True:
+        print("\n" + "=" * 72)
+        print("  [ASG] AI Agent Secure Gateway - 공격 & 트래픽 발생기 (Attack Simulator)")
+        print(f"  연결 대상 게이트웨이: {gen.gateway_url}")
+        print("=" * 72)
+        print("  [1] 전체 보안 시나리오 순차 발사 (All 6 Scenarios)")
+        print("  [2] [정상] 배정 문서 읽기 요청 (Alice -> report-alice-001) [ALLOW]")
+        print("  [3] [공격] 타 테넌트 자원 무단 침해 시도 (Alice -> Bob's Doc) [DENY]")
+        print("  [4] [공격] 간접 프롬프트 인젝션 공격 패턴 주입 [SUSPICIOUS]")
+        print("  [5] [공격] 유니코드 제로너비 은닉 인젝션 공격 [SUSPICIOUS]")
+        print("  [6] [위험] 미승인 고위험 보고서 전송 시도 [REQUIRE_APPROVAL]")
+        print("  [7] [검증] Merkle Hash Chain 감사 로그 무결성 전수 검증 [VALID]")
+        print("  [8] [직접] 사용자 정의 커스텀 프롬프트 직접 입력 & 실시간 검사")
+        print("  [0] 프로그램 종료 (Exit)")
+        print("-" * 72)
+
+        try:
+            choice = input("실행할 시나리오 번호를 입력하세요 (0-8): ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\n발생기를 종료합니다.")
+            break
+
+        if choice == "0":
+            print("\n발생기를 종료합니다.")
+            break
+        elif choice == "1":
+            print("\n[*] 전체 6개 보안 시나리오를 순차 발사합니다...")
+            results = gen.run_all_scenarios()
+            for idx, r in enumerate(results, 1):
+                print(f"\n[{idx}] {r['name']}")
+                print(f"    - HTTP 상태코드: {r['status']}")
+                print(f"    - 기대 결과    : {r['expected']}")
+                print(f"    - 상세 결과    : {json.dumps(r['result'], ensure_ascii=False)}")
+        elif choice == "2":
+            res = gen.run_normal_read()
+            print("\n[+] 실행 결과:")
+            print(json.dumps(res, ensure_ascii=False, indent=2))
+        elif choice == "3":
+            res = gen.run_cross_tenant_violation()
+            print("\n[+] 실행 결과:")
+            print(json.dumps(res, ensure_ascii=False, indent=2))
+        elif choice == "4":
+            res = gen.run_prompt_injection_inspection()
+            print("\n[+] 실행 결과:")
+            print(json.dumps(res, ensure_ascii=False, indent=2))
+        elif choice == "5":
+            res = gen.run_unicode_obfuscation()
+            print("\n[+] 실행 결과:")
+            print(json.dumps(res, ensure_ascii=False, indent=2))
+        elif choice == "6":
+            res = gen.run_unapproved_report_submit()
+            print("\n[+] 실행 결과:")
+            print(json.dumps(res, ensure_ascii=False, indent=2))
+        elif choice == "7":
+            res = gen.run_audit_verify()
+            print("\n[+] 실행 결과:")
+            print(json.dumps(res, ensure_ascii=False, indent=2))
+        elif choice == "8":
+            try:
+                custom_text = input("\n검사할 프롬프트나 지시문을 입력하세요:\n> ").strip()
+                if not custom_text:
+                    print("[!] 입력된 내용이 없습니다.")
+                    continue
+                res = gen.run_custom_prompt(custom_text)
+                print("\n[+] 검사 결과:")
+                print(json.dumps(res, ensure_ascii=False, indent=2))
+            except (KeyboardInterrupt, EOFError):
+                continue
+        else:
+            print("[!] 올바른 번호를 입력해 주세요 (0-8).")
+
+        input("\n[Enter] 키를 누르면 메뉴로 돌아갑니다...")
+
+
 def main():
     parser = argparse.ArgumentParser(description="ASG Security Traffic & Attack Generator")
     parser.add_argument("--gateway", default=GATEWAY_DEFAULT_URL, help="Gateway URL")
-    parser.add_argument("--mode", default="all", choices=["all", "normal", "cross-tenant", "injection", "obfuscation", "unapproved", "audit-verify", "custom"])
+    parser.add_argument("--mode", default="menu", choices=["menu", "all", "normal", "cross-tenant", "injection", "obfuscation", "unapproved", "audit-verify", "custom"])
     parser.add_argument("--text", default="", help="Custom text for inspection")
     args = parser.parse_args()
 
     gen = TrafficGenerator(gateway_url=args.gateway)
-    print(f"[*] ASG Traffic Generator starting against {args.gateway}...")
 
-    if args.mode == "all":
+    if args.mode == "menu":
+        run_interactive_cli(gen)
+    elif args.mode == "all":
+        print(f"[*] ASG Traffic Generator starting against {args.gateway}...")
         results = gen.run_all_scenarios()
         for idx, r in enumerate(results, 1):
             print(f"\n[{idx}] {r['name']} -> Status {r['status']}")

@@ -56,7 +56,19 @@ You can launch the entire stack (Gateway, Sandbox, and ASG-XDR Dashboard) immedi
 
 ---
 
-### Option B: Docker Compose Full Stack
+### Option B: Standalone Attack Simulator (CLI)
+If you wish to simulate attacks directly from an interactive command-line interface:
+- **Double-click:** Run [
+un_attack_generator.bat](run_attack_generator.bat)
+- **Or PowerShell:**
+  `powershell
+  .\run_attack_generator.ps1
+  `
+- Select from 8 scenarios (cross-tenant access, jailbreak prompt injection, Unicode zero-width evasion, unapproved action execution, audit chain verification, or send custom prompts).
+
+---
+
+### Option C: Docker Compose Full Stack
 For containerized multi-network isolation:
 ```powershell
 # 1. Initialize local credentials
