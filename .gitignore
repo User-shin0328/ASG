@@ -1,6 +1,16 @@
 .env
 .test-config/
 .venv/
+build/
+ASG.exe
+.impeccable/review/
+.impeccable/db-review/
+.impeccable/db-final/
+testing/screenshots/
+.taste-skill/before/
+.taste-skill/after/
+testing/results/
+testing/.runtime/
 __pycache__/
 *.py[cod]
 .pytest_cache/

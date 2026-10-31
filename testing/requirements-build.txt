@@ -1,0 +1,2 @@
+# Local runtime and tests use the Python standard library. Packaging only:
+pyinstaller==6.16.0

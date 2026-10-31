@@ -83,6 +83,33 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/openapi.json" and self.command == "GET":
             return 200, {"openapi": "3.1.0", "info": {"title": "ASG (AI Agent Secure Gateway)", "version": "0.1.0"}, "paths": {"/v1/actions": {"post": {"summary": "Create policy-checked action"}}, "/v1/inputs/inspect": {"post": {"summary": "Inspect untrusted text"}}}}
         p = self.principal()
+        if path.startswith('/v1/db/'):
+            service = self.gateway.db_access
+            query = parse_qs(urlparse(self.path).query)
+            if path == '/v1/db/requests' and self.command == 'POST':
+                result = service.create(p,self.body(),self.headers.get('Idempotency-Key',''),self.client_address[0],self.headers.get('User-Agent',''))
+                return (403 if result['decision']=='DENY' else 202),result
+            if path == '/v1/db/requests' and self.command == 'GET':
+                try: page=int(query.get('page',['1'])[0])
+                except ValueError: raise GatewayError(422,'INVALID_PAGE','페이지 번호가 올바르지 않습니다.')
+                return 200,service.listing(p,query.get('date',[None])[0],query.get('pending',['false'])[0]=='true',query.get('sort',['newest'])[0],page)
+            if path == '/v1/db/overview' and self.command == 'GET':return 200,service.overview(p)
+            if path == '/v1/db/status' and self.command == 'GET':return 200,service.status(p)
+            if path == '/v1/db/diagnostics' and self.command == 'POST':
+                if self.body(): raise GatewayError(422,'INVALID_REQUEST','본문은 빈 객체여야 합니다.')
+                return 200,service.diagnostics(p)
+            match=re.fullmatch(r'/v1/db/requests/([a-zA-Z0-9-]+)(?:/(decision|execute))?',path)
+            if match:
+                request_id,operation=match.groups()
+                if not operation and self.command=='GET':return 200,service.detail(p,request_id)
+                if operation=='decision' and self.command=='POST':
+                    body=self.body()
+                    if set(body)!={'decision','reason'}:raise GatewayError(422,'INVALID_REQUEST','decision과 reason이 필요합니다.')
+                    return 200,service.decide(p,request_id,body['decision'],body['reason'])
+                if operation=='execute' and self.command=='POST':
+                    if self.body():raise GatewayError(422,'INVALID_REQUEST','본문은 빈 객체여야 합니다.')
+                    return 200,service.execute(p,request_id)
+            raise GatewayError(404,'NOT_FOUND','DB API를 찾을 수 없습니다.')
         if path == "/v1/actions" and self.command == "POST":
             idem = self.headers.get("Idempotency-Key", "")
             result = self.gateway.create_action(p, self.body(), idem)

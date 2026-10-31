@@ -1,0 +1,97 @@
+{
+  "id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+  "principal": "agent-alice",
+  "user_name": "alice",
+  "tenant": "north",
+  "task_id": "task-alice-001",
+  "requested_at": 1793465145.606736,
+  "source_ip": "127.0.0.1",
+  "client": "Python-urllib/3.12",
+  "risk_score": 15,
+  "decision": "REQUIRE_APPROVAL",
+  "expires_at": 1793466045.606736,
+  "reviewer": "reviewer-demo",
+  "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
+  "decided_at": 1793465145.6147366,
+  "result_count": 25,
+  "trace_id": "14731f2f-1eaa-47d4-aa5d-a91e0da1be3a",
+  "request_id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+  "state": "SUCCEEDED",
+  "arguments": {
+    "dataset_id": "operations",
+    "columns": [
+      "ticket_id",
+      "status"
+    ],
+    "filters": {},
+    "row_limit": 25,
+    "purpose": "승인 기반 DB 조회 통합 검증입니다."
+  },
+  "analysis": {
+    "engine": "db-security-rules-v1",
+    "method": "policy_and_behavior_rules",
+    "risk_score": 15,
+    "risk_level": "low",
+    "sensitive": false,
+    "bulk": false,
+    "abnormal": false,
+    "reason_codes": [],
+    "reasons": [
+      "등록된 데이터와 열, 조회량 범위 안의 읽기 요청입니다."
+    ],
+    "recommendation": "업무 목적과 요청자의 담당 범위를 확인한 뒤 일회성 조회를 승인하세요.",
+    "decision": "REQUIRE_APPROVAL",
+    "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+  },
+  "dataset_name": "운영 지원 이력",
+  "database_name": "사내 검증 DB",
+  "mode": "fictional_sqlite_lab",
+  "execution_id": "c7f4a9f1-a8b0-4bcd-bc35-1bc1f4c95100",
+  "receipt_id": "receipt-74631052-494b-40ca-be5f-9099ba7dd585",
+  "approval_binding": {
+    "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
+    "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5",
+    "policy_hash": "5d8b2bea056f668d7f1c6a868b38b0cd484735eb9f492f2ce157d978ac3da4b8"
+  },
+  "timeline": [
+    {
+      "at": 1793465145.608736,
+      "actor": "agent-alice",
+      "event": "DB_REQUESTED",
+      "details": {
+        "dataset_id": "operations",
+        "decision": "REQUIRE_APPROVAL",
+        "risk_score": 15,
+        "source_ip": "127.0.0.1",
+        "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
+        "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5"
+      }
+    },
+    {
+      "at": 1793465145.6147366,
+      "actor": "reviewer-demo",
+      "event": "DB_APPROVED",
+      "details": {
+        "reason": "업무 범위와 열·조회량을 확인했습니다.",
+        "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5"
+      }
+    },
+    {
+      "at": 1793465145.622735,
+      "actor": "agent-alice",
+      "event": "DB_EXECUTION_STARTED",
+      "details": {
+        "execution_id": "c7f4a9f1-a8b0-4bcd-bc35-1bc1f4c95100"
+      }
+    },
+    {
+      "at": 1793465145.6357358,
+      "actor": "agent-alice",
+      "event": "DB_EXECUTION_SUCCEEDED",
+      "details": {
+        "row_count": 25,
+        "receipt_id": "receipt-74631052-494b-40ca-be5f-9099ba7dd585"
+      }
+    }
+  ]
+}

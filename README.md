@@ -1,115 +1,73 @@
-# ASG: AI Agent Secure Gateway
-> **Next-Generation Zero Trust Security Gateway & XDR Monitoring Platform for Autonomous AI Agents**
+# ASG · DB 접근 보안 게이트웨이
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://www.python.org/)
-[![Docker Compose](https://img.shields.io/badge/Docker-Compose-blue.svg)](compose.yaml)
-[![Tests Passing](https://img.shields.io/badge/Tests-74%2F74%20Passing-success.svg)](tests/)
-[![Security: Zero Trust](https://img.shields.io/badge/Security-Zero%20Trust%20Enforced-orange.svg)](docs/threat-model.md)
+사내 에이전트의 DB 조회 요청을 **보안 분석 → 사람 승인 → 제한된 조회 실행**으로 처리하는 로컬 검증 프로그램입니다. 모든 유효한 DB 읽기는 사람 승인이 필요하며, 정책 위반은 차단합니다.
 
----
+## 바로 실행
 
-## 📌 Overview
+[ASG.exe](ASG.exe)를 내려받아 더블클릭하면 준비 확인 후 `http://127.0.0.1:18511`을 엽니다. Python이나 Docker 없이 실행할 수 있습니다. 데이터는 기본 `%LOCALAPPDATA%\ASG\lab`에 보존되며, 실행 창에서 Ctrl+C를 누르면 종료합니다.
 
-**ASG (AI Agent Secure Gateway)** is a specialized, defense-in-depth security gateway that intercepts and enforces policy controls on autonomous AI agents before they can interact with enterprise databases, files, APIs, and external tools.
-
-Unlike standard chatbots that only generate text, **agentic AI workflows possess "hands and tools"** capable of querying databases, altering records, or sending emails. When subjected to **Indirect Prompt Injection**, an attacker can trick an agent into exfiltrating confidential corporate records or dropping critical databases.
-
-**ASG acts as the single chokepoint (inline gatekeeper) between AI Agent runtimes and protected enterprise resources:**
-- Never trusts the agent, model inferences, tool arguments, or document content (**Zero Trust**).
-- Prevents identity spoofing by binding requests to **server-owned principals** derived from SHA-256 token hashes.
-- Mandates **Human-in-the-Loop (HITL)** approval with cryptographic snapshot binding for high-risk side effects (e.g., report transmissions).
-- Employs **multi-tier prompt injection guardrails** (Unicode NFKC normalization, regex heuristics, local n-gram Bernoulli classifier, and context-aware LLM guards).
-- Enforces append-only, tamper-proof audit trails with **Merkle Hash Chaining**.
-
----
-
-## 🚀 Key Features
-
-| Capability | Description |
-|---|---|
-| **ASG-XDR SOC Dashboard** | High-performance, dark-themed security operations center UI at `http://127.0.0.1:8501/` with real-time Windows host telemetry (CPU, RAM, OS, IPv4), threat case management, and live intercept logs. |
-| **Interactive Attack Generator** | Built-in simulator with 7 preset attack scenarios (normal summary, cross-tenant trespass, prompt injection, zero-width obfuscation, unapproved execution, Merkle verify) and real-time custom prompt injection testing. |
-| **Server-Owned Principals** | Clients only supply opaque bearer tokens. ASG strictly injects `principal`, `role`, `task_id`, and `tenant` server-side, defeating identity spoofing. |
-| **Cryptographic HITL Snapshots** | Dangerous actions remain `PENDING_APPROVAL` until signed off by a human reviewer. Approvals bind to `SHA-256(principal + task + args + artifact_hash + policy_version)` and are single-use with a 15-minute TTL. |
-| **PostgreSQL Advisory Locks** | Eliminates race conditions and duplicate executions via distributed advisory locks and idempotency keys. |
-| **Merkle Hash Chained Audit Log** | PostgreSQL trigger-enforced append-only audit records, each linked via cryptographic hash chaining (`_prev_hash`, `_chain_hash`) with a 1-click `/v1/audit/verify` integrity checker. |
-| **One-Click Windows Testbed** | Standalone launcher (`test_tools/run_asg_testbed.bat` / `test_tools/run_asg_testbed.ps1`) spins up Sandbox, Gateway, and Dashboard with zero Docker overhead. |
-
----
-
-## ⚡ Quick Start
-
-### Option A: One-Click Local Testbed (Recommended)
-You can launch the entire stack (Gateway, Sandbox, and ASG-XDR Dashboard) immediately without Docker:
-
-- **Double-click:** Run [`test_tools/run_asg_testbed.bat`](test_tools/run_asg_testbed.bat)
-- **Or PowerShell:**
-  ```powershell
-  .\test_tools/run_asg_testbed.ps1
-  ```
-- **What happens:**
-  1. Tool Sandbox starts on `http://127.0.0.1:8001`
-  2. ASG Security Gateway starts on `http://127.0.0.1:8000`
-  3. **ASG-XDR SOC Dashboard & Attack Generator** starts on `http://127.0.0.1:8501`
-  4. Your default browser opens automatically to the dashboard!
-
----
-
-### Option B: Standalone Attack Simulator (CLI)
-If you wish to simulate attacks directly from an interactive command-line interface:
-- **Double-click:** Run [
-un_attack_generator.bat](test_tools/run_attack_generator.bat)
-- **Or PowerShell:**
-  `powershell
-  .\test_tools/run_attack_generator.ps1
-  `
-- Select from 8 scenarios (cross-tenant access, jailbreak prompt injection, Unicode zero-width evasion, unapproved action execution, audit chain verification, or send custom prompts).
-
----
-
-### Option C: Docker Compose Full Stack
-For containerized multi-network isolation:
 ```powershell
-# 1. Initialize local credentials
-python -m scripts.init_demo
-
-# 2. Run unit & regression test suite (74 tests)
-python -m unittest discover -v
-
-# 3. Start Linux-container Compose stack
-docker compose up -d --build
+.\ASG.exe --dashboard-port 18512 --data-dir .\testing\.runtime\manual
 ```
 
----
+게이트웨이·도구 서비스 포트는 자동 배정합니다. 실제 주소는 데이터 폴더의 `session.json`에서 확인합니다. 같은 데이터 폴더의 중복 실행과 포트 충돌은 시작 오류로 표시하며 다른 서비스를 종료하지 않습니다.
 
-## 🕹️ Interactive Threat Simulator & Dashboard
+## 대시보드
 
-Click the **`[⚡ 프롬프트 발생기 제어]` (Traffic Generator)** button on the top-right of the ASG-XDR Dashboard to simulate live attacks:
+| 메뉴 | 제공 기능 |
+|---|---|
+| 보안 현황 `/` | 오늘 처리 결과 차트, 최근 30분 위험도, 실제 작동 상태, 시각 기준 집계, 최근 접근 이력 |
+| 승인 검토 `/approvals` | 시간·위험도 정렬, 요청·분석·추천 대응 상세보고서, 근거를 남기는 승인/거절 |
+| 감사 기록 `/audit` | 한국 시간 날짜별 조회, 50건 단위 이력, 언제·어디서·누가·무엇·처리 결과 보고서 |
+| 작동 테스트 `/tests` | 연결·보안 분석·DB·감사 무결성 원클릭 점검, 가상 DB 요청 시나리오 |
 
-1. **Assigned Document Read (`ALLOW` 200 OK):** Alice reads `report-alice-001`.
-2. **Cross-Tenant Violation (`DENY` 403 Forbidden):** Alice attempts to read Bob's South-tenant document `report-bob-001` (`RESOURCE_OUT_OF_SCOPE`).
-3. **Indirect Prompt Injection (`SUSPICIOUS` Content Masked):** Injected document `report-alice-attack` is inspected, flagged, and masked as `[WITHHELD]`.
-4. **Unicode Zero-Width Obfuscation (`SUSPICIOUS`):** Normalizes `ig\u200Bnore...` evasion attempts before regex/n-gram scanning.
-5. **Unapproved High-Risk Action (`REQUIRE_APPROVAL` 202 Accepted):** Blocks report transmission until an authorized reviewer clicks **[Approve]**.
-6. **Merkle Hash Chain Verification (`VALID`):** Scans the audit chain and verifies zero tampering.
+왼쪽 메뉴와 청록색 구분선을 사용합니다. 모바일에서는 메뉴가 접히고 표의 행은 목록으로 바뀝니다. 기존 다이어그램, 메인 화면의 무결성·테스트 패널은 제거했습니다.
 
----
+`정책 결정`은 요청을 허용·차단·승인 대기로 분류하는 뜻입니다. 화면에서는 `승인 대기 / 허용 / 차단 / 오늘 DB 조회 요청`으로 표시합니다. 집계는 실제 저장된 요청을 사용합니다.
 
-## 📚 Documentation & Specifications
+## DB 요청 구조와 위험도
 
-- 📖 **[사용자 및 운영 설명서 (APP_MANUAL.md)](reports/APP_MANUAL.md)**: 전체 시스템 개념, 네트워크 토폴로지, 6대 검증 시나리오, API 명세서 수록.
-- 📐 **[v2.0 상세 설계 계획서 (DESIGN_SPECIFICATION_PLAN.md)](reports/DESIGN_SPECIFICATION_PLAN.md)**: 제로 트러스트 위협 모델(T-01~T-07), 아키텍처 다이어그램, ERD 및 구현 로드맵.
-- 🏛️ **[시스템 아키텍처 (docs/architecture.md)](docs/architecture.md)**
-- 🎯 **[위협 모델 및 보안 경계 (docs/threat-model.md)](docs/threat-model.md)**
-- 🔌 **[REST API 규격서 (docs/api.md)](docs/api.md)**
+- 등록된 데이터·열·필터·조회량만 받으며 임의 SQL이나 쓰기 작업을 허용하지 않습니다.
+- 보안 에이전트는 설명 가능한 정책·행위 규칙으로 위험도·근거·추천 대응을 생성합니다.
+- 게이트웨이가 인증·테넌트·역할·승인·변조·만료·재실행을 통제합니다.
+- 검토자는 요청별 보고서를 읽고 판단 근거를 남깁니다. 승인은 DB 조회를 자동 실행하지 않습니다.
+- 최근 30분의 민감정보·대량·비정상 요청에 12·10·20점을 가중하고 시간에 따라 선형 감쇠합니다. 최대 100점이며 침해 확률은 아닙니다.
 
----
+자세한 설계 판단, 산식, API와 에이전트 연결 예시는 [DB 접근 구조 설명서](docs/DB_ACCESS_GATEWAY.md)에 있습니다.
 
-## 🔒 Security Notice
+## 현재 동작 범위
 
-All documents, users (`alice`, `bob`), and sample outbox records in this repository are fictional. Never transmit real operational credentials, production tokens, or sensitive internal data to non-airgapped environments.
+현재 보호 DB는 **가상 데이터가 담긴 실제 SQLite 검증 DB**입니다. 실제 사내 DB나 기업 IdP를 연결했다고 표시하지 않습니다. 기존 문서·요약·모의 전송함 기능과 API는 보존했습니다. LLM/외부 데이터셋 평가 코드는 기존 기능이며, 새 보안 분석 엔진을 LLM이라고 부르지 않습니다.
 
-## 📄 License
+로컬 UI는 루프백 검증용 관리자 화면입니다. 같은 사용자 권한의 악성 로컬 프로세스와 DB 파일을 격리하지는 않습니다. PostgreSQL 감사 스키마와 Compose 네트워크 구성이 있지만, 실동작 검증 여부는 결과보고서에서 구분합니다.
 
-MIT License. See [LICENSE](LICENSE) for details.
+## 테스트·재빌드·문서
+
+```powershell
+.\testing\setup.ps1
+.\scripts\build_exe.ps1
+.\testing\run_tests.ps1
+```
+
+- [통합 테스트 설명서](testing/TEST_GUIDE.md): 순서, 환경, 예상 결과와 실제 결과보고서 한 파일
+- [실제 결과보고서](testing/results/latest/REPORT.md): 관찰값·응답·SHA-256
+- [화면 검증 기록](testing/DESIGN_REVIEW.md)
+- [폴더 분석](testing/ANALYSIS.md)
+- [디자인 규칙](DESIGN.md)
+
+테스트는 별도 임시 데이터와 포트를 사용합니다. 사용자 DB·Docker 볼륨을 삭제하지 않습니다. 결과는 `testing/results/latest/`와 회차별 폴더에 보존합니다. 실행파일은 루트 `ASG.exe` 하나를 갱신하며, 이전 테스트 증거는 남깁니다.
+
+## 구성
+
+| 위치 | 역할 |
+|---|---|
+| `security_agent/` | DB 카탈로그, 범위 검증, 설명 가능한 위험 분석, 안전한 SELECT |
+| `gateway/app/db_access.py` | DB 요청·승인·실행·이력·집계·진단 |
+| `gateway/app/core.py` | 기존 인증·정책·감사·도구 실행 |
+| `tool_sandbox/` | 보호 검증 DB, 실제 쿼리 실행, 일회성 영수증 |
+| `dashboard/` | 네 페이지 UI, 인증 프록시, 로컬 검증 요청 |
+| `migrations/003_db_access.sql` | PostgreSQL DB 접근·감사 이력 테이블 |
+| `demo_agent/db_client.py` | 승인 대기 후 DB 실행을 요청하는 사내 에이전트 예제 |
+| `testing/`, `tests/` | 재현 환경·절차·원본 결과·회귀 테스트 |
+
+라이선스: [MIT](LICENSE). 이전 아키텍처 문서는 [docs/architecture.md](docs/architecture.md), 현재 DB 확장은 [DB_ACCESS_GATEWAY.md](docs/DB_ACCESS_GATEWAY.md)를 기준으로 봅니다.

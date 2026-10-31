@@ -128,6 +128,16 @@ class TrafficGenerator:
 
     def run_unapproved_report_submit(self) -> dict[str, Any]:
         """Scenario 4: High-risk action without reviewer approval"""
+        saved_status, saved = send_request(
+            f"{self.gateway_url}/v1/actions", method="POST",
+            headers=self._headers(self.alice_token, str(uuid.uuid4())),
+            data={"task_id": "task-alice-001", "tool": "save_summary", "arguments": {
+                "document_id": "report-alice-001", "content": "ASG local lab: fictional report for approval testing."}},
+        )
+        if saved_status != 200 or saved.get("state") != "SUCCEEDED":
+            return {"scenario": "UNAPPROVED_HIGH_RISK_ACTION", "name": "승인 대기 보고서", "status": saved_status,
+                    "expected": "REQUIRE_APPROVAL (202)", "result": saved, "setup_failed": True}
+        artifact_id = saved["result"]["result"]["artifact_id"]
         idem = str(uuid.uuid4())
         status, res = send_request(
             f"{self.gateway_url}/v1/actions",
@@ -137,7 +147,7 @@ class TrafficGenerator:
                 "task_id": "task-alice-001",
                 "tool": "send_report",
                 "arguments": {
-                    "artifact_id": "artifact-demo-123",
+                    "artifact_id": artifact_id,
                     "destination_id": "internal-review-outbox",
                 },
             },
@@ -145,7 +155,7 @@ class TrafficGenerator:
         return {
             "scenario": "UNAPPROVED_HIGH_RISK_ACTION",
             "name": "미승인 고위험 보고서 전송 시도",
-            "expected": "REQUIRE_APPROVAL (202 Accepted or 403)",
+            "expected": "REQUIRE_APPROVAL (202 Accepted)",
             "status": status,
             "result": res,
             "mitre": "T1048 (Exfiltration Over Alternative Protocol)",

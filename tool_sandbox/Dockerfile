@@ -6,5 +6,6 @@ RUN apk upgrade --no-cache \
 RUN groupadd --system --gid 10002 sandbox && useradd --system --uid 10002 --gid sandbox --home-dir /nonexistent --shell /usr/sbin/nologin sandbox
 RUN mkdir -p /data && chown sandbox:sandbox /data
 COPY tool_sandbox /app/tool_sandbox
+COPY security_agent /app/security_agent
 COPY fixtures/documents /app/fixtures/documents
 CMD ["python", "-m", "tool_sandbox.app"]

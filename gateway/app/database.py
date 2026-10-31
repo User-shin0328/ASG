@@ -7,6 +7,35 @@ from pathlib import Path
 from typing import Any
 
 
+class BufferedCursor:
+    """Detach result rows from a shared connection before releasing its lock."""
+    def __init__(self,cursor):
+        self.description=cursor.description
+        self.rowcount=cursor.rowcount
+        self.lastrowid=getattr(cursor,'lastrowid',None)
+        self._rows=cursor.fetchall() if cursor.description else []
+        self._position=0
+
+    def fetchone(self):
+        if self._position>=len(self._rows):return None
+        row=self._rows[self._position]
+        self._position+=1
+        return row
+
+    def fetchall(self):
+        rows=self._rows[self._position:]
+        self._position=len(self._rows)
+        return rows
+
+    def fetchmany(self,size=1):
+        rows=self._rows[self._position:self._position+size]
+        self._position+=len(rows)
+        return rows
+
+    def __iter__(self):
+        while (row:=self.fetchone()) is not None:yield row
+
+
 class Database:
     """Small SQLite test adapter and PostgreSQL runtime connection."""
 
@@ -44,7 +73,11 @@ class Database:
             if self.is_postgres:
                 self._reconnect_if_broken()
             try:
-                return self.connection.execute(statement, params)
+                cursor=self.connection.execute(statement, params)
+                try:
+                    return BufferedCursor(cursor)
+                finally:
+                    cursor.close()
             except Exception as exc:
                 if self.is_postgres and isinstance(exc, (self._psycopg.OperationalError, self._psycopg.InterfaceError)):
                     if self.connection.broken or self.connection.closed:

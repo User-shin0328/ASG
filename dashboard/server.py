@@ -1,54 +1,92 @@
-from http.server import BaseHTTPRequestHandler, SimpleHTTPRequestHandler, ThreadingHTTPServer
+"""Shared static UI and authenticated Gateway proxy for local and Compose modes."""
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import json
 import os
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
 ROOT = Path(__file__).resolve().parent
+STATIC = {"/": ("index.html", "text/html"), "/index.html": ("index.html", "text/html"), "/soc_dashboard.html": ("index.html", "text/html"), "/app.css": ("app.css", "text/css"), "/app.js": ("app.js", "text/javascript")}
+for route in ('/approvals','/audit','/tests'):
+    STATIC[route]=('index.html','text/html')
 
-class Handler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(ROOT), **kwargs)
-    def end_headers(self):
+
+class Handler(BaseHTTPRequestHandler):
+    gateway_url = None
+
+    def log_message(self, fmt, *args):
+        pass
+
+    def respond(self, status, content, mime="application/json"):
+        raw = content if isinstance(content, bytes) else json.dumps(content, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", mime + "; charset=utf-8")
+        self.send_header("Content-Length", str(len(raw)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'")
-        super().end_headers()
+        self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.end_headers()
+        self.wfile.write(raw)
+
+    def body(self):
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length < 0 or length > 24000:
+                raise ValueError("size")
+            obj = json.loads(self.rfile.read(length) if length else b"{}")
+            if not isinstance(obj, dict):
+                raise ValueError("object")
+            return obj
+        except (ValueError, UnicodeError):
+            return None
+
+    def mutation_allowed(self):
+        origin = self.headers.get("Origin")
+        host = self.headers.get("Host", "")
+        return self.headers.get("X-ASG-Request") == "1" and (not origin or origin in {"http://" + host, "https://" + host})
 
     def do_GET(self):
-        if self.path.startswith(("/v1/", "/health/")):
-            self.proxy()
-        else:
-            super().do_GET()
+        path = urlparse(self.path).path
+        if path == "/api/context":
+            return self.respond(200, {"mode": "container", "label": "Docker · PostgreSQL", "simulator": False})
+        if path in STATIC:
+            filename, mime = STATIC[path]
+            return self.respond(200, (ROOT / filename).read_bytes(), mime)
+        if path.startswith(("/v1/", "/health/")):
+            return self.proxy()
+        return self.respond(404, {"error": "NOT_FOUND"})
 
     def do_POST(self):
-        if self.path.startswith("/v1/"):
-            self.proxy()
-        else:
-            self.send_error(404)
+        if not self.mutation_allowed():
+            return self.respond(403, {"error": "SAME_ORIGIN_REQUIRED"})
+        if urlparse(self.path).path.startswith("/v1/"):
+            return self.proxy()
+        return self.respond(404, {"error": "NOT_FOUND"})
 
     def proxy(self):
-        base = os.environ.get("GATEWAY_URL", "http://gateway:8000")
-        length = int(self.headers.get("Content-Length", "0"))
-        if length > 24000:
-            return self.send_error(413)
-        raw = self.rfile.read(length) if length else None
+        base = self.gateway_url or os.environ.get("GATEWAY_URL", "http://gateway:8000")
+        raw = None
+        if self.command == "POST":
+            body = self.body()
+            if body is None:
+                return self.respond(400, {"error": "INVALID_JSON_OR_SIZE"})
+            raw = json.dumps(body).encode()
         headers = {k: v for k, v in self.headers.items() if k.lower() in {"authorization", "content-type", "idempotency-key"}}
+        if getattr(self, "generator", None) and not any(k.lower() == "authorization" for k in headers):
+            headers["Authorization"] = "Bearer " + self.generator.reviewer_token
         req = Request(base.rstrip("/") + self.path, data=raw, headers=headers, method=self.command)
         try:
-            with urlopen(req, timeout=5) as response:
+            with urlopen(req, timeout=15) as response:
                 payload, status = response.read(), response.status
-        except HTTPError as e:
-            payload, status = e.read(), e.code
-        except URLError:
+        except HTTPError as exc:
+            payload, status = exc.read(), exc.code
+        except (URLError, TimeoutError, OSError):
             payload, status = b'{"error":"GATEWAY_UNAVAILABLE"}', 503
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(payload)))
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("X-Content-Type-Options", "nosniff")
-        self.end_headers()
-        self.wfile.write(payload)
+        self.respond(status, payload)
+
 
 if __name__ == "__main__":
     ThreadingHTTPServer(("0.0.0.0", int(os.environ.get("DASHBOARD_PORT", "8501"))), Handler).serve_forever()

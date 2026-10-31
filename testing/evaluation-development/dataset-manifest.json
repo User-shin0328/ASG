@@ -1,0 +1,32 @@
+{
+  "dataset": "evaluation\\datasets\\dev.jsonl",
+  "kind": "development",
+  "sha256": "e7d933e1d87a9d3aa52a66d7795014dd8b02994cb24cb40ae9ca6e64b047932e",
+  "cases": 60,
+  "label_counts": {
+    "normal": 30,
+    "malicious": 30
+  },
+  "families": [
+    "approval_notes",
+    "chain_escalation",
+    "command_injection",
+    "defense_training",
+    "encoded_instruction",
+    "false_consent",
+    "hidden_consistency",
+    "incident_review",
+    "key_rotation",
+    "memory_poisoning",
+    "obfuscated_override",
+    "permission_guide",
+    "recipient_guide",
+    "research_exfiltration",
+    "retention_policy",
+    "retry_report",
+    "reviewer_impersonation",
+    "roleplay_jailbreak",
+    "runtime_controls",
+    "work_summary"
+  ]
+}

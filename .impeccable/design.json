@@ -1,0 +1,447 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-31T11:24:34.850Z",
+  "title": "Design System: ASG DB Access Dashboard",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Ground",
+        "tonalRamp": [
+          "oklch(15.00% 0.0047 196.75)",
+          "oklch(26.43% 0.0047 196.75)",
+          "oklch(37.86% 0.0047 196.75)",
+          "oklch(49.29% 0.0047 196.75)",
+          "oklch(60.71% 0.0047 196.75)",
+          "oklch(72.14% 0.0047 196.75)",
+          "oklch(83.57% 0.0047 196.75)",
+          "oklch(95.00% 0.0047 196.75)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.0078 182.15)",
+          "oklch(26.43% 0.0078 182.15)",
+          "oklch(37.86% 0.0078 182.15)",
+          "oklch(49.29% 0.0078 182.15)",
+          "oklch(60.71% 0.0078 182.15)",
+          "oklch(72.14% 0.0078 182.15)",
+          "oklch(83.57% 0.0078 182.15)",
+          "oklch(95.00% 0.0078 182.15)"
+        ]
+      },
+      "raised": {
+        "role": "neutral",
+        "displayName": "Raised",
+        "tonalRamp": [
+          "oklch(15.00% 0.0120 178.43)",
+          "oklch(26.43% 0.0120 178.43)",
+          "oklch(37.86% 0.0120 178.43)",
+          "oklch(49.29% 0.0120 178.43)",
+          "oklch(60.71% 0.0120 178.43)",
+          "oklch(72.14% 0.0120 178.43)",
+          "oklch(83.57% 0.0120 178.43)",
+          "oklch(95.00% 0.0120 178.43)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.0044 179.73)",
+          "oklch(26.43% 0.0044 179.73)",
+          "oklch(37.86% 0.0044 179.73)",
+          "oklch(49.29% 0.0044 179.73)",
+          "oklch(60.71% 0.0044 179.73)",
+          "oklch(72.14% 0.0044 179.73)",
+          "oklch(83.57% 0.0044 179.73)",
+          "oklch(95.00% 0.0044 179.73)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15.00% 0.0181 173.88)",
+          "oklch(26.43% 0.0181 173.88)",
+          "oklch(37.86% 0.0181 173.88)",
+          "oklch(49.29% 0.0181 173.88)",
+          "oklch(60.71% 0.0181 173.88)",
+          "oklch(72.14% 0.0181 173.88)",
+          "oklch(83.57% 0.0181 173.88)",
+          "oklch(95.00% 0.0181 173.88)"
+        ]
+      },
+      "line": {
+        "role": "primary",
+        "displayName": "Teal line",
+        "tonalRamp": [
+          "oklch(15.00% 0.0316 183.43)",
+          "oklch(26.43% 0.0316 183.43)",
+          "oklch(37.86% 0.0316 183.43)",
+          "oklch(49.29% 0.0316 183.43)",
+          "oklch(60.71% 0.0316 183.43)",
+          "oklch(72.14% 0.0316 183.43)",
+          "oklch(83.57% 0.0316 183.43)",
+          "oklch(95.00% 0.0316 183.43)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Teal accent",
+        "tonalRamp": [
+          "oklch(15.00% 0.0997 183.14)",
+          "oklch(26.43% 0.0997 183.14)",
+          "oklch(37.86% 0.0997 183.14)",
+          "oklch(49.29% 0.0997 183.14)",
+          "oklch(60.71% 0.0997 183.14)",
+          "oklch(72.14% 0.0997 183.14)",
+          "oklch(83.57% 0.0997 183.14)",
+          "oklch(95.00% 0.0997 183.14)"
+        ]
+      },
+      "green": {
+        "role": "semantic",
+        "displayName": "Measured normal",
+        "tonalRamp": [
+          "oklch(15.00% 0.1082 161.95)",
+          "oklch(26.43% 0.1082 161.95)",
+          "oklch(37.86% 0.1082 161.95)",
+          "oklch(49.29% 0.1082 161.95)",
+          "oklch(60.71% 0.1082 161.95)",
+          "oklch(72.14% 0.1082 161.95)",
+          "oklch(83.57% 0.1082 161.95)",
+          "oklch(95.00% 0.1082 161.95)"
+        ]
+      },
+      "red": {
+        "role": "semantic",
+        "displayName": "Failure or blocked",
+        "tonalRamp": [
+          "oklch(15.00% 0.1046 19.71)",
+          "oklch(26.43% 0.1046 19.71)",
+          "oklch(37.86% 0.1046 19.71)",
+          "oklch(49.29% 0.1046 19.71)",
+          "oklch(60.71% 0.1046 19.71)",
+          "oklch(72.14% 0.1046 19.71)",
+          "oklch(83.57% 0.1046 19.71)",
+          "oklch(95.00% 0.1046 19.71)"
+        ]
+      },
+      "amber": {
+        "role": "semantic",
+        "displayName": "Pending or caution",
+        "tonalRamp": [
+          "oklch(15.00% 0.0899 81.64)",
+          "oklch(26.43% 0.0899 81.64)",
+          "oklch(37.86% 0.0899 81.64)",
+          "oklch(49.29% 0.0899 81.64)",
+          "oklch(60.71% 0.0899 81.64)",
+          "oklch(72.14% 0.0899 81.64)",
+          "oklch(83.57% 0.0899 81.64)",
+          "oklch(95.00% 0.0899 81.64)"
+        ]
+      },
+      "control-stroke": {
+        "role": "neutral",
+        "displayName": "Control stroke",
+        "tonalRamp": [
+          "oklch(15.00% 0.0374 176.36)",
+          "oklch(26.43% 0.0374 176.36)",
+          "oklch(37.86% 0.0374 176.36)",
+          "oklch(49.29% 0.0374 176.36)",
+          "oklch(60.71% 0.0374 176.36)",
+          "oklch(72.14% 0.0374 176.36)",
+          "oklch(83.57% 0.0374 176.36)",
+          "oklch(95.00% 0.0374 176.36)"
+        ]
+      },
+      "danger-stroke": {
+        "role": "semantic",
+        "displayName": "Rejection border",
+        "tonalRamp": [
+          "oklch(15.00% 0.0614 20.60)",
+          "oklch(26.43% 0.0614 20.60)",
+          "oklch(37.86% 0.0614 20.60)",
+          "oklch(49.29% 0.0614 20.60)",
+          "oklch(60.71% 0.0614 20.60)",
+          "oklch(72.14% 0.0614 20.60)",
+          "oklch(83.57% 0.0614 20.60)",
+          "oklch(95.00% 0.0614 20.60)"
+        ]
+      },
+      "error-stroke": {
+        "role": "semantic",
+        "displayName": "Error border",
+        "tonalRamp": [
+          "oklch(15.00% 0.0638 25.46)",
+          "oklch(26.43% 0.0638 25.46)",
+          "oklch(37.86% 0.0638 25.46)",
+          "oklch(49.29% 0.0638 25.46)",
+          "oklch(60.71% 0.0638 25.46)",
+          "oklch(72.14% 0.0638 25.46)",
+          "oklch(83.57% 0.0638 25.46)",
+          "oklch(95.00% 0.0638 25.46)"
+        ]
+      },
+      "selection": {
+        "role": "primary",
+        "displayName": "Text selection",
+        "tonalRamp": [
+          "oklch(15.00% 0.0659 179.99)",
+          "oklch(26.43% 0.0659 179.99)",
+          "oklch(37.86% 0.0659 179.99)",
+          "oklch(49.29% 0.0659 179.99)",
+          "oklch(60.71% 0.0659 179.99)",
+          "oklch(72.14% 0.0659 179.99)",
+          "oklch(83.57% 0.0659 179.99)",
+          "oklch(95.00% 0.0659 179.99)"
+        ]
+      },
+      "bar-track": {
+        "role": "neutral",
+        "displayName": "Outcome track",
+        "tonalRamp": [
+          "oklch(15.00% 0.0201 175.51)",
+          "oklch(26.43% 0.0201 175.51)",
+          "oklch(37.86% 0.0201 175.51)",
+          "oklch(49.29% 0.0201 175.51)",
+          "oklch(60.71% 0.0201 175.51)",
+          "oklch(72.14% 0.0201 175.51)",
+          "oklch(83.57% 0.0201 175.51)",
+          "oklch(95.00% 0.0201 175.51)"
+        ]
+      },
+      "chart-grid": {
+        "role": "neutral",
+        "displayName": "Risk grid",
+        "tonalRamp": [
+          "oklch(15.00% 0.0218 177.99)",
+          "oklch(26.43% 0.0218 177.99)",
+          "oklch(37.86% 0.0218 177.99)",
+          "oklch(49.29% 0.0218 177.99)",
+          "oklch(60.71% 0.0218 177.99)",
+          "oklch(72.14% 0.0218 177.99)",
+          "oklch(83.57% 0.0218 177.99)",
+          "oklch(95.00% 0.0218 177.99)"
+        ]
+      },
+      "unknown-status": {
+        "role": "neutral",
+        "displayName": "Unknown status",
+        "tonalRamp": [
+          "oklch(15.00% 0.0180 178.00)",
+          "oklch(26.43% 0.0180 178.00)",
+          "oklch(37.86% 0.0180 178.00)",
+          "oklch(49.29% 0.0180 178.00)",
+          "oklch(60.71% 0.0180 178.00)",
+          "oklch(72.14% 0.0180 178.00)",
+          "oklch(83.57% 0.0180 178.00)",
+          "oklch(95.00% 0.0180 178.00)"
+        ]
+      },
+      "dialog-stroke": {
+        "role": "neutral",
+        "displayName": "Report border",
+        "tonalRamp": [
+          "oklch(15.00% 0.0404 176.02)",
+          "oklch(26.43% 0.0404 176.02)",
+          "oklch(37.86% 0.0404 176.02)",
+          "oklch(49.29% 0.0404 176.02)",
+          "oklch(60.71% 0.0404 176.02)",
+          "oklch(72.14% 0.0404 176.02)",
+          "oklch(83.57% 0.0404 176.02)",
+          "oklch(95.00% 0.0404 176.02)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Page title",
+        "purpose": "Route heading in Korean."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "Chart and task region headings."
+      },
+      "subheading": {
+        "displayName": "Subheading",
+        "purpose": "Report and diagnostic sections."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Offline Korean text and controls."
+      },
+      "table": {
+        "displayName": "Table",
+        "purpose": "Data rows and report field values."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, statuses, and footnotes."
+      },
+      "metric": {
+        "displayName": "Request count",
+        "purpose": "Tabular daily DB request counts."
+      },
+      "risk-score": {
+        "displayName": "Operational risk",
+        "purpose": "Current bounded operational indicator, not a probability."
+      },
+      "identifier": {
+        "displayName": "Identifier",
+        "purpose": "Request IDs, trace IDs, and approval hashes only."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "button-background",
+        "value": "background .16s",
+        "purpose": "Button hover feedback."
+      },
+      {
+        "name": "mobile-drawer",
+        "value": "transform .18s ease",
+        "purpose": "Sidebar drawer transition; reduced motion disables both transitions."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-main",
+        "value": "1800px"
+      },
+      {
+        "name": "compact-sidebar",
+        "value": "1150px"
+      },
+      {
+        "name": "mobile-drawer-and-records",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "General refresh and diagnostic actions.",
+      "html": "<button class=\"ds-button-secondary\" type=\"button\">새로고침</button>",
+      "css": ".ds-button-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:8px 14px;border:1px solid #4a6860;border-radius:6px;background:var(--ground,#101313);color:var(--ink,#f2f6f5);font-family:\"Segoe UI\",\"Malgun Gothic\",sans-serif;font-size:14px;cursor:pointer;transition:background .16s;}.ds-button-secondary:hover{background:var(--raised,#1c2422);border-color:var(--accent,#68d0c1)}.ds-button-secondary:disabled{opacity:.5;cursor:wait}.ds-button-secondary:focus-visible{outline:2px solid var(--accent,#68d0c1);outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-button-secondary{transition:none}}"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "A teal outline marks the approval or primary diagnostic action.",
+      "html": "<button class=\"ds-button-primary\" type=\"button\">조회 승인</button>",
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:8px 14px;border:1px solid #4a6860;border-radius:6px;background:var(--ground,#101313);color:var(--ink,#f2f6f5);font-family:\"Segoe UI\",\"Malgun Gothic\",sans-serif;font-size:14px;cursor:pointer;transition:background .16s;border-color:var(--accent,#68d0c1);}.ds-button-primary:hover{background:var(--raised,#1c2422);border-color:var(--accent,#68d0c1)}.ds-button-primary:disabled{opacity:.5;cursor:wait}.ds-button-primary:focus-visible{outline:2px solid var(--accent,#68d0c1);outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-button-primary{transition:none}}"
+    },
+    {
+      "name": "Reject Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Rejection uses an explicit action label and muted danger border.",
+      "html": "<button class=\"ds-button-danger\" type=\"button\">요청 거절</button>",
+      "css": ".ds-button-danger{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:8px 14px;border:1px solid #4a6860;border-radius:6px;background:var(--ground,#101313);color:var(--ink,#f2f6f5);font-family:\"Segoe UI\",\"Malgun Gothic\",sans-serif;font-size:14px;cursor:pointer;transition:background .16s;border-color:#926362;}.ds-button-danger:hover{background:var(--raised,#1c2422);border-color:var(--accent,#68d0c1)}.ds-button-danger:disabled{opacity:.5;cursor:wait}.ds-button-danger:focus-visible{outline:2px solid var(--accent,#68d0c1);outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-button-danger{transition:none}}"
+    },
+    {
+      "name": "Reviewer Reason",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Required reasoning for a pending approval or rejection.",
+      "html": "<label class=\"ds-reason\">검토자의 판단 근거<textarea rows=\"3\" minlength=\"3\" maxlength=\"1000\" required placeholder=\"업무 필요성과 결정 이유를 남겨 주세요.\"></textarea></label>",
+      "css": ".ds-reason{display:block;font:12px \"Segoe UI\",\"Malgun Gothic\",sans-serif;color:var(--muted,#a7b6b1)}.ds-reason textarea{display:block;width:100%;margin-top:6px;border:1px solid #4a6860;background:var(--ground,#101313);border-radius:6px;padding:9px 11px;resize:vertical;caret-color:var(--accent,#68d0c1);font:14px \"Segoe UI\",\"Malgun Gothic\",sans-serif;color:var(--ink,#f2f6f5)}.ds-reason textarea::placeholder{color:var(--muted,#a7b6b1)}.ds-reason textarea:focus-visible{outline:2px solid var(--accent,#68d0c1);outline-offset:4px}"
+    },
+    {
+      "name": "Sidebar Navigation",
+      "kind": "nav",
+      "refersTo": "sidebar",
+      "description": "Four real page routes with text labels and a thin selected edge.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"주요 메뉴\"><a href=\"/\" aria-current=\"page\">보안 현황</a><a href=\"/approvals\">승인 검토</a><a href=\"/audit\">감사 기록</a><a href=\"/tests\">작동 테스트</a></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:6px;width:216px;padding:20px;background:var(--ground,#101313);border-right:1px solid var(--line,#2b4440);font:14px \"Segoe UI\",\"Malgun Gothic\",sans-serif}.ds-nav a{display:flex;align-items:center;min-height:46px;padding:11px 10px;color:var(--muted,#a7b6b1);text-decoration:none;border-bottom:1px solid transparent}.ds-nav a:hover{background:var(--raised,#1c2422);color:var(--ink,#f2f6f5)}.ds-nav a[aria-current]{color:var(--ink,#f2f6f5);border-bottom-color:var(--accent,#68d0c1)}.ds-nav a:focus-visible{outline:2px solid var(--accent,#68d0c1);outline-offset:4px}"
+    },
+    {
+      "name": "Measured Component Status",
+      "kind": "custom",
+      "description": "Actual status words and small dots; green/red/neutral mean normal/failed/unknown.",
+      "html": "<div class=\"ds-status\"><div><span>게이트웨이</span><span class=\"ds-value\"><i class=\"ds-dot ds-up\" aria-hidden=\"true\"></i>정상</span></div><div><span>보호 DB</span><span class=\"ds-value\"><i class=\"ds-dot ds-down\" aria-hidden=\"true\"></i>연결 실패</span></div><div><span>감사 DB</span><span class=\"ds-value\"><i class=\"ds-dot\" aria-hidden=\"true\"></i>확인 중</span></div></div>",
+      "css": ".ds-status{font:13px \"Segoe UI\",\"Malgun Gothic\",sans-serif;color:var(--ink,#f2f6f5);background:var(--surface,#151a19)}.ds-status>div{display:flex;justify-content:space-between;gap:10px;padding:13px 0;border-top:1px solid var(--line,#2b4440)}.ds-status>div:first-child{border:0}.ds-value{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted,#a7b6b1)}.ds-dot{width:8px;height:8px;border-radius:50%;background:#8d9c98}.ds-dot.ds-up{background:var(--green,#72cda2)}.ds-dot.ds-down{background:var(--red,#f29b9b)}"
+    },
+    {
+      "name": "Flat Task Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "One-pixel teal-toned boundary with a flat surface; no shadow.",
+      "html": "<section class=\"ds-panel\"><h2>최근 DB 접근 이력</h2><p>각 요청에서 상세보고서를 확인할 수 있습니다.</p></section>",
+      "css": ".ds-panel{border:1px solid var(--line,#2b4440);border-radius:var(--radius,10px);background:var(--surface,#151a19);padding:20px;min-width:0;color:var(--ink,#f2f6f5);font-family:\"Segoe UI\",\"Malgun Gothic\",sans-serif}.ds-panel h2{margin:0;font-size:16px;font-weight:600}.ds-panel p{margin:12px 0 0;font-size:13px;color:var(--muted,#a7b6b1)}"
+    },
+    {
+      "name": "Outcome Bar",
+      "kind": "custom",
+      "description": "An unfilled preview track; actual runtime widths and counts come from today's requests.",
+      "html": "<div class=\"ds-bar\"><div class=\"ds-bar-heading\"><span>승인 대기</span><strong>—건</strong></div><div class=\"ds-bar-track\"><div class=\"ds-bar-fill\"></div></div></div>",
+      "css": ".ds-bar{font:13px \"Segoe UI\",\"Malgun Gothic\",sans-serif;color:var(--ink,#f2f6f5);background:var(--surface,#151a19)}.ds-bar-heading{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px}.ds-bar-heading strong{font-weight:500;font-variant-numeric:tabular-nums}.ds-bar-track{height:6px;background:#25332f;overflow:hidden;border-radius:2px}.ds-bar-fill{height:100%;width:0;background:var(--amber,#e6c384)}"
+    },
+    {
+      "name": "Request Record",
+      "kind": "custom",
+      "description": "The row retains time, requester, requested scope, state, and report action; mobile CSS wraps rows into records.",
+      "html": "<div class=\"ds-record\"><span>요청 시각</span><span>요청자<small>조회 대상</small></span><span class=\"ds-pending\">승인 대기</span><button type=\"button\">보고서</button></div>",
+      "css": ".ds-record{display:grid;grid-template-columns:1fr 1.5fr 1fr auto;align-items:center;gap:12px;padding:15px 0;border-top:1px solid var(--line,#2b4440);background:var(--surface,#151a19);color:var(--ink,#f2f6f5);font:13px \"Segoe UI\",\"Malgun Gothic\",sans-serif}.ds-record small{display:block;font-size:12px;color:var(--muted,#a7b6b1)}.ds-pending{color:var(--amber,#e6c384);font-size:12px}.ds-record button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:8px 14px;border:1px solid #4a6860;border-radius:6px;background:var(--ground,#101313);color:var(--ink,#f2f6f5);font-family:\"Segoe UI\",\"Malgun Gothic\",sans-serif;font-size:14px;cursor:pointer;transition:background .16s;font-size:12px;min-height:32px;padding:5px 11px}.ds-record button:hover{background:var(--raised,#1c2422);border-color:var(--accent,#68d0c1)}.ds-record button:disabled{opacity:.5;cursor:wait}.ds-record button:focus-visible{outline:2px solid var(--accent,#68d0c1);outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-record button{transition:none}}@media(max-width:760px){.ds-record{grid-template-columns:minmax(0,1fr) auto}.ds-record>span:first-child{font-size:12px;color:var(--muted,#a7b6b1)}.ds-record button{min-height:40px}}"
+    },
+    {
+      "name": "Request Report Frame",
+      "kind": "custom",
+      "refersTo": "report-dialog",
+      "description": "Static preview of the focused native report dialog frame; live dashboard uses showModal and a dark backdrop.",
+      "html": "<section class=\"ds-report\" aria-label=\"DB 접근 요청 상세보고서\"><header><h2>DB 접근 요청 상세보고서</h2><button type=\"button\">닫기</button></header><div class=\"ds-report-body\"><h3>보안 에이전트 분석</h3><p>선택한 요청의 실제 정책·행위 분석 결과가 표시됩니다.</p><details><summary>승인 바인딩과 추적 정보</summary><p>추적 ID와 승인 해시</p></details></div></section>",
+      "css": ".ds-report{color:var(--ink,#f2f6f5);background:var(--surface,#151a19);border:1px solid #56776e;border-radius:12px;max-width:860px;font-family:\"Segoe UI\",\"Malgun Gothic\",sans-serif}.ds-report header{display:flex;gap:20px;justify-content:space-between;align-items:start;padding:23px 26px;border-bottom:1px solid var(--line,#2b4440)}.ds-report h2{margin:0;font-size:19px;font-weight:600}.ds-report h3{margin:0;font-size:14px;font-weight:600}.ds-report-body{padding:22px 26px}.ds-report p{font-size:13px;line-height:1.6}.ds-report summary{font-size:12px;color:var(--muted,#a7b6b1);cursor:pointer}.ds-report button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:8px 14px;border:1px solid #4a6860;border-radius:6px;background:var(--ground,#101313);color:var(--ink,#f2f6f5);font-family:\"Segoe UI\",\"Malgun Gothic\",sans-serif;font-size:14px;cursor:pointer;transition:background .16s;}.ds-report button:hover{background:var(--raised,#1c2422);border-color:var(--accent,#68d0c1)}.ds-report button:disabled{opacity:.5;cursor:wait}.ds-report button:focus-visible{outline:2px solid var(--accent,#68d0c1);outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-report button{transition:none}}.ds-report summary:focus-visible{outline:2px solid var(--accent,#68d0c1);outline-offset:4px}@media(max-width:760px){.ds-report header,.ds-report-body{padding:18px}.ds-report h2{font-size:17px}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Data terminal",
+    "overview": "The ASG dashboard is a Korean operating surface for reviewing structured database-read requests. The confirmed brief uses neutral dark backgrounds, near-white text, thin teal separation, a left sidebar, and separate overview, approval, audit, and test pages. Charts and measured component states supply the overview; the former request-path diagram is no longer part of the composition.\n\nThe Data terminal direction in `.taste-skill/direction.json` (seed `994061310`) remains a reference for restrained density and scanability. The user-approved evolution takes precedence over its generic palette, icon rail, font recommendations, and one-pixel-only accent budget. Offline Korean typography, reason-based review, and explicit status language shape the implemented system.",
+    "keyCharacteristics": [
+      "A persistent labelled sidebar that becomes a mobile drawer.",
+      "Flat bordered surfaces, teal separators, and near-white reading text.",
+      "Real request outcomes, a scaled 30-minute trend, and measured component states.",
+      "A focused request report with required reviewer reasoning."
+    ],
+    "rules": [
+      {
+        "name": "The Thin Separation Rule",
+        "body": "Structural borders and selected navigation edges are one pixel. Data marks retain their implemented geometry: six-pixel outcome bars, a two-pixel risk line, and eight-pixel status dots. Keyboard focus uses a two-pixel teal outline with a four-pixel offset.",
+        "section": "colors"
+      },
+      {
+        "name": "The Measured State Rule",
+        "body": "Show green or red component dots only with an actual status response and explicit words such as normal or connection failure. Unknown state remains neutral.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat Evidence Rule",
+        "body": "Separate evidence with spacing, type hierarchy, and thin rules. Reserve the dialog backdrop for focused request review, not general decoration.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preserve the neutral dark palette, near-white text, and thin teal separation.",
+      "Do use green and red for measured component status with explicit status words.",
+      "Do retain the offline Korean font stack and tabular numerals for counts and times.",
+      "Do show the metric as-of time and Korean-time scope alongside request counts.",
+      "Do preserve report evidence, required reviewer reasons, and the distinction between approval and execution.",
+      "Do transform table rows into readable mobile records while keeping the report action visible."
+    ],
+    "donts": [
+      "Don't restore the request-path diagram or replace the sidebar with the generic direction's icon rail.",
+      "Don't use mono for ordinary Korean labels, request counts, dates, times, or report prose.",
+      "Don't add decorative shadows, glows, gradients, or large colored status panels.",
+      "Don't imply that the operational risk score is an LLM probability or a breach probability.",
+      "Don't present fictional validation records as a connected corporate production database."
+    ]
+  }
+}

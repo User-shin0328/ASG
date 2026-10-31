@@ -1,0 +1,1715 @@
+{
+  "result": "PASS",
+  "started": "2026-11-01T01:45:23.637524+09:00",
+  "completed": "2026-11-01T01:46:09.232674+09:00",
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "win32",
+  "executable": {
+    "sha256": "dea844b4aeb1041ad7e903d031e25c2e7da8cf233885c0acb7103676a720d7e6",
+    "bytes": 10641007
+  },
+  "checks": [
+    {
+      "id": "T01",
+      "name": "기존·추가 회귀 테스트",
+      "expected": "전체 테스트 성공",
+      "actual": {
+        "exit_code": 0,
+        "tests": 112
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T02",
+      "name": "3개 서비스 준비 확인",
+      "expected": "200 ready",
+      "actual": {
+        "status": "ready",
+        "policy_version": "demo-v2"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T03",
+      "name": "배정 문서 읽기",
+      "expected": "200 ALLOW SUCCEEDED",
+      "actual": {
+        "scenario": "NORMAL_READ",
+        "name": "정상 문서 읽기 (Alice -> report-alice-001)",
+        "expected": "ALLOW (200 OK)",
+        "status": 200,
+        "result": {
+          "action_id": "9ca7684c-89f5-47e5-bbe8-ab98e95cc2cb",
+          "decision": "ALLOW",
+          "state": "SUCCEEDED",
+          "reason_codes": [],
+          "approval_id": null,
+          "approval_state": null,
+          "execution_id": "c28f4a1e-40da-40dc-9c92-57b1dfe21c0c",
+          "trace_id": "654bd5f1-4905-421d-973a-c585d25a8f44",
+          "policy_version": "demo-v2",
+          "result": {
+            "receipt_id": "receipt-05bdb26d-618e-40bb-ae5d-889781ee72dd",
+            "execution_id": "c28f4a1e-40da-40dc-9c92-57b1dfe21c0c",
+            "result": {
+              "document_id": "report-alice-001",
+              "content": "Quarterly operations report for Alice (fictional)\n\nAll values in this exercise are synthetic. Service availability was 99.2 percent in the fictional sample period. Three maintenance tasks were completed. The next review is scheduled for the end of the fictional quarter.\n",
+              "content_hash": "ac3fdcc25b70106571b34ea4c44dbff52308baf5d40091546c63fd23f6a64e89"
+            }
+          }
+        },
+        "mitre": "None (Benign)",
+        "severity": "INFO"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T04",
+      "name": "테넌트 경계와 부작용",
+      "expected": "403 DENY, 산출물/전송함/영수증 증가 없음",
+      "actual": {
+        "response": {
+          "scenario": "CROSS_TENANT_VIOLATION",
+          "name": "타 테넌트 자원 무단 접근 (Alice -> Bob's South doc)",
+          "expected": "DENY (403 Forbidden)",
+          "status": 403,
+          "result": {
+            "action_id": "2f0ad728-1b10-48cf-a756-3f89cc901807",
+            "decision": "DENY",
+            "state": "DENIED",
+            "reason_codes": [
+              "RESOURCE_OUT_OF_SCOPE"
+            ],
+            "approval_id": null,
+            "approval_state": null,
+            "execution_id": "a324d5fb-7b6a-4533-bc73-4c06b7d5e6a0",
+            "trace_id": "70febef7-9a1b-436a-bba7-fa1c144c61ac",
+            "policy_version": "demo-v2",
+            "result": null
+          },
+          "mitre": "T1078 (Valid Accounts / Cross-Scope)",
+          "severity": "HIGH"
+        },
+        "before": [
+          0,
+          0,
+          1
+        ],
+        "after": [
+          0,
+          0,
+          1
+        ]
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T05",
+      "name": "프롬프트 인젝션",
+      "expected": "200 SUSPICIOUS",
+      "actual": {
+        "scenario": "PROMPT_INJECTION",
+        "name": "간접 프롬프트 인젝션 패턴 검사 (다층 탐지)",
+        "expected": "SUSPICIOUS (200 OK with flag)",
+        "status": 200,
+        "result": {
+          "inspection_id": "51bfa23b-6c39-4299-8cd1-6123ce9452fc",
+          "verdict": "SUSPICIOUS",
+          "reason_codes": [
+            "PROMPT_INJECTION_PATTERN"
+          ],
+          "scanner_version": "rules-v2",
+          "content_hash": "62a0ea7039eab31e4d18dd14c79a2fb6511c856476a1783c2c9d935682feb1f8"
+        },
+        "mitre": "T1059 (Command & Scripting Interpreter / Injection)",
+        "severity": "CRITICAL"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T06",
+      "name": "유니코드 은닉",
+      "expected": "200 SUSPICIOUS",
+      "actual": {
+        "scenario": "UNICODE_OBFUSCATION",
+        "name": "유니코드 제로너비 공백 은닉 인젝션 공격",
+        "expected": "SUSPICIOUS (정규화 후 탐지)",
+        "status": 200,
+        "result": {
+          "inspection_id": "ed13c4f4-7e0f-4f3d-9f46-9a3d97f9dc3d",
+          "verdict": "SUSPICIOUS",
+          "reason_codes": [
+            "PROMPT_INJECTION_PATTERN"
+          ],
+          "scanner_version": "rules-v2",
+          "content_hash": "dbeb472e2555566603fd205c2f711bf5cc85cfe948dcc003ce4a1c8c8eac8060"
+        },
+        "mitre": "T1027 (Obfuscated / Encrypted Information)",
+        "severity": "HIGH"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T07",
+      "name": "정상 입력 검사",
+      "expected": "200 CLEAR",
+      "actual": {
+        "scenario": "CUSTOM_PROMPT",
+        "name": "사용자 직접 입력 검사 (Please summarize the assigned ...)",
+        "expected": "CLEAR or SUSPICIOUS",
+        "status": 200,
+        "result": {
+          "inspection_id": "d3b57f2c-f9e6-4651-947c-8d8da57bcc40",
+          "verdict": "CLEAR",
+          "reason_codes": [],
+          "scanner_version": "rules-v2",
+          "content_hash": "b30f8abfc14924819693b743cba3061fe173a1bbf137ade96685a3936dcce779"
+        },
+        "mitre": "None",
+        "severity": "INFO"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T08",
+      "name": "실제 산출물 생성과 승인 대기",
+      "expected": "202 REQUIRE_APPROVAL PENDING_APPROVAL",
+      "actual": {
+        "scenario": "UNAPPROVED_HIGH_RISK_ACTION",
+        "name": "미승인 고위험 보고서 전송 시도",
+        "expected": "REQUIRE_APPROVAL (202 Accepted)",
+        "status": 202,
+        "result": {
+          "action_id": "c436d106-3cab-4125-a45d-c6b8d343cf6f",
+          "decision": "REQUIRE_APPROVAL",
+          "state": "PENDING_APPROVAL",
+          "reason_codes": [],
+          "approval_id": "015d466e-fd34-4ea1-9ac8-bf935fec11b5",
+          "approval_state": "PENDING",
+          "execution_id": "61769427-25d1-4179-8080-c8419d6781ee",
+          "trace_id": "472bfb78-4411-4663-96ae-10e46c68fa3a",
+          "policy_version": "demo-v2",
+          "result": null
+        },
+        "mitre": "T1048 (Exfiltration Over Alternative Protocol)",
+        "severity": "HIGH"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T09",
+      "name": "승인 전 실행 차단",
+      "expected": "409 ACTION_NOT_EXECUTABLE, outbox 0건",
+      "actual": {
+        "status": 409,
+        "response": {
+          "error": "ACTION_NOT_EXECUTABLE",
+          "message": "Action is not approved and ready to execute"
+        },
+        "outbox": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T10",
+      "name": "검토자 승인",
+      "expected": "200 APPROVED",
+      "actual": {
+        "status": 200,
+        "response": {
+          "approval_id": "015d466e-fd34-4ea1-9ac8-bf935fec11b5",
+          "action_id": "c436d106-3cab-4125-a45d-c6b8d343cf6f",
+          "state": "APPROVED"
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T11",
+      "name": "승인 후 실행·재실행 중복 방지",
+      "expected": "200 SUCCEEDED, 재실행 후에도 outbox 1건",
+      "actual": {
+        "status": 200,
+        "response": {
+          "action_id": "c436d106-3cab-4125-a45d-c6b8d343cf6f",
+          "decision": "REQUIRE_APPROVAL",
+          "state": "SUCCEEDED",
+          "reason_codes": [],
+          "approval_id": "015d466e-fd34-4ea1-9ac8-bf935fec11b5",
+          "approval_state": "CONSUMED",
+          "execution_id": "61769427-25d1-4179-8080-c8419d6781ee",
+          "trace_id": "472bfb78-4411-4663-96ae-10e46c68fa3a",
+          "policy_version": "demo-v2",
+          "result": {
+            "receipt_id": "receipt-6c04122f-c0d9-4a46-97ce-5ba10c9af27d",
+            "execution_id": "61769427-25d1-4179-8080-c8419d6781ee",
+            "result": {
+              "status": "submitted_to_mock_outbox",
+              "artifact_id": "artifact-eab50832-32bb-4f0c-97b7-97ff438d94f6",
+              "destination_id": "internal-review-outbox",
+              "content_hash": "41e95c20ceb9b5cb597e25ca6aa7191c654bbedbc5afc265023a892f3e8b8d4e"
+            }
+          }
+        },
+        "repeat_status": 200,
+        "repeat": {
+          "action_id": "c436d106-3cab-4125-a45d-c6b8d343cf6f",
+          "decision": "REQUIRE_APPROVAL",
+          "state": "SUCCEEDED",
+          "reason_codes": [],
+          "approval_id": "015d466e-fd34-4ea1-9ac8-bf935fec11b5",
+          "approval_state": "CONSUMED",
+          "execution_id": "61769427-25d1-4179-8080-c8419d6781ee",
+          "trace_id": "472bfb78-4411-4663-96ae-10e46c68fa3a",
+          "policy_version": "demo-v2",
+          "result": {
+            "execution_id": "61769427-25d1-4179-8080-c8419d6781ee",
+            "action_id": "c436d106-3cab-4125-a45d-c6b8d343cf6f",
+            "receipt_id": "receipt-6c04122f-c0d9-4a46-97ce-5ba10c9af27d",
+            "result": {
+              "status": "submitted_to_mock_outbox",
+              "artifact_id": "artifact-eab50832-32bb-4f0c-97b7-97ff438d94f6",
+              "destination_id": "internal-review-outbox",
+              "content_hash": "41e95c20ceb9b5cb597e25ca6aa7191c654bbedbc5afc265023a892f3e8b8d4e"
+            },
+            "created": 1793465145.5754404
+          }
+        },
+        "outbox": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T12",
+      "name": "감사 해시 연결",
+      "expected": "200 VALID, 검증 건수 > 0, 변조 0",
+      "actual": {
+        "scenario": "AUDIT_VERIFY",
+        "name": "감사 로그 Merkle Hash Chain 무결성 검증",
+        "expected": "VALID (200 OK)",
+        "status": 200,
+        "result": {
+          "status": "VALID",
+          "total_records": 14,
+          "chained_records": 14,
+          "tampered_record_ids": [],
+          "latest_chain_hash": "f617e6757be16f181ca97c6f1d12cb04bdc2406b6816618f8617a218ad728111"
+        },
+        "mitre": "T1562 (Impair Defenses / Audit Tampering)",
+        "severity": "INFO"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T13",
+      "name": "다른 사이트에서 테스트 실행 차단",
+      "expected": "403 SAME_ORIGIN_REQUIRED",
+      "actual": {
+        "status": 403,
+        "response": {
+          "error": "SAME_ORIGIN_REQUIRED"
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T14",
+      "name": "도구 직접 접근 인증",
+      "expected": "401 UNAUTHENTICATED",
+      "actual": {
+        "status": 401,
+        "response": {
+          "error": "UNAUTHENTICATED"
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T15",
+      "name": "대시보드 감사 연결",
+      "expected": "200, 실제 감사 이벤트 > 0",
+      "actual": {
+        "status": 200,
+        "count": 14
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T16",
+      "name": "DB 접근 요청·보안 에이전트 분석",
+      "expected": "202 PENDING_APPROVAL, 분석 근거와 추천 대응 제공",
+      "actual": {
+        "id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+        "principal": "agent-alice",
+        "user_name": "alice",
+        "tenant": "north",
+        "task_id": "task-alice-001",
+        "requested_at": 1793465145.606736,
+        "source_ip": "127.0.0.1",
+        "client": "Python-urllib/3.12",
+        "risk_score": 15,
+        "decision": "REQUIRE_APPROVAL",
+        "expires_at": 1793466045.606736,
+        "reviewer": null,
+        "review_reason": null,
+        "decided_at": null,
+        "result_count": null,
+        "trace_id": "14731f2f-1eaa-47d4-aa5d-a91e0da1be3a",
+        "request_id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+        "state": "PENDING_APPROVAL",
+        "arguments": {
+          "dataset_id": "operations",
+          "columns": [
+            "ticket_id",
+            "status"
+          ],
+          "filters": {},
+          "row_limit": 25,
+          "purpose": "승인 기반 DB 조회 통합 검증입니다."
+        },
+        "analysis": {
+          "engine": "db-security-rules-v1",
+          "method": "policy_and_behavior_rules",
+          "risk_score": 15,
+          "risk_level": "low",
+          "sensitive": false,
+          "bulk": false,
+          "abnormal": false,
+          "reason_codes": [],
+          "reasons": [
+            "등록된 데이터와 열, 조회량 범위 안의 읽기 요청입니다."
+          ],
+          "recommendation": "업무 목적과 요청자의 담당 범위를 확인한 뒤 일회성 조회를 승인하세요.",
+          "decision": "REQUIRE_APPROVAL",
+          "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+        },
+        "dataset_name": "운영 지원 이력",
+        "database_name": "사내 검증 DB",
+        "mode": "fictional_sqlite_lab",
+        "execution_id": "c7f4a9f1-a8b0-4bcd-bc35-1bc1f4c95100",
+        "receipt_id": null,
+        "approval_binding": {
+          "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
+          "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5",
+          "policy_hash": "5d8b2bea056f668d7f1c6a868b38b0cd484735eb9f492f2ce157d978ac3da4b8"
+        },
+        "timeline": [
+          {
+            "at": 1793465145.608736,
+            "actor": "agent-alice",
+            "event": "DB_REQUESTED",
+            "details": {
+              "dataset_id": "operations",
+              "decision": "REQUIRE_APPROVAL",
+              "risk_score": 15,
+              "source_ip": "127.0.0.1",
+              "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
+              "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5"
+            }
+          }
+        ]
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T17",
+      "name": "사람 승인 전 DB 조회 차단",
+      "expected": "409 DB_APPROVAL_REQUIRED",
+      "actual": {
+        "http": 409,
+        "response": {
+          "error": "DB_APPROVAL_REQUIRED",
+          "message": "유효한 사람의 승인 없이는 DB를 조회할 수 없습니다."
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T18",
+      "name": "판단 근거를 포함한 사람 승인",
+      "expected": "200 APPROVED",
+      "actual": {
+        "id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+        "principal": "agent-alice",
+        "user_name": "alice",
+        "tenant": "north",
+        "task_id": "task-alice-001",
+        "requested_at": 1793465145.606736,
+        "source_ip": "127.0.0.1",
+        "client": "Python-urllib/3.12",
+        "risk_score": 15,
+        "decision": "REQUIRE_APPROVAL",
+        "expires_at": 1793466045.606736,
+        "reviewer": "reviewer-demo",
+        "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
+        "decided_at": 1793465145.6147366,
+        "result_count": null,
+        "trace_id": "14731f2f-1eaa-47d4-aa5d-a91e0da1be3a",
+        "request_id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+        "state": "APPROVED",
+        "arguments": {
+          "dataset_id": "operations",
+          "columns": [
+            "ticket_id",
+            "status"
+          ],
+          "filters": {},
+          "row_limit": 25,
+          "purpose": "승인 기반 DB 조회 통합 검증입니다."
+        },
+        "analysis": {
+          "engine": "db-security-rules-v1",
+          "method": "policy_and_behavior_rules",
+          "risk_score": 15,
+          "risk_level": "low",
+          "sensitive": false,
+          "bulk": false,
+          "abnormal": false,
+          "reason_codes": [],
+          "reasons": [
+            "등록된 데이터와 열, 조회량 범위 안의 읽기 요청입니다."
+          ],
+          "recommendation": "업무 목적과 요청자의 담당 범위를 확인한 뒤 일회성 조회를 승인하세요.",
+          "decision": "REQUIRE_APPROVAL",
+          "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+        },
+        "dataset_name": "운영 지원 이력",
+        "database_name": "사내 검증 DB",
+        "mode": "fictional_sqlite_lab",
+        "execution_id": "c7f4a9f1-a8b0-4bcd-bc35-1bc1f4c95100",
+        "receipt_id": null,
+        "approval_binding": {
+          "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
+          "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5",
+          "policy_hash": "5d8b2bea056f668d7f1c6a868b38b0cd484735eb9f492f2ce157d978ac3da4b8"
+        },
+        "timeline": [
+          {
+            "at": 1793465145.608736,
+            "actor": "agent-alice",
+            "event": "DB_REQUESTED",
+            "details": {
+              "dataset_id": "operations",
+              "decision": "REQUIRE_APPROVAL",
+              "risk_score": 15,
+              "source_ip": "127.0.0.1",
+              "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
+              "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5"
+            }
+          },
+          {
+            "at": 1793465145.6147366,
+            "actor": "reviewer-demo",
+            "event": "DB_APPROVED",
+            "details": {
+              "reason": "업무 범위와 열·조회량을 확인했습니다.",
+              "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5"
+            }
+          }
+        ]
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T19",
+      "name": "승인 후 실제 SQL 조회·영수증 재사용",
+      "expected": "25행 조회, 동일 영수증으로 재실행 응답",
+      "actual": {
+        "http": 200,
+        "row_count": 25,
+        "receipt_id": "receipt-74631052-494b-40ca-be5f-9099ba7dd585",
+        "repeat_receipt": "receipt-74631052-494b-40ca-be5f-9099ba7dd585",
+        "replayed": true
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T20",
+      "name": "DB 분석 시나리오 sensitive",
+      "expected": "PENDING_APPROVAL",
+      "actual": {
+        "gateway_status": 202,
+        "request": {
+          "id": "8b4739d3-5e09-4d9e-a475-5faee41b7998",
+          "principal": "agent-alice",
+          "user_name": "alice",
+          "tenant": "north",
+          "task_id": "task-alice-001",
+          "requested_at": 1793465145.6790197,
+          "source_ip": "127.0.0.1",
+          "client": "Python-urllib/3.12",
+          "risk_score": 70,
+          "decision": "REQUIRE_APPROVAL",
+          "expires_at": 1793466045.6790197,
+          "reviewer": null,
+          "review_reason": null,
+          "decided_at": null,
+          "result_count": null,
+          "trace_id": "e84a0bf5-5ef5-4a87-b4b3-2d9dbca483bf",
+          "request_id": "8b4739d3-5e09-4d9e-a475-5faee41b7998",
+          "state": "PENDING_APPROVAL",
+          "arguments": {
+            "dataset_id": "payroll",
+            "columns": [
+              "employee_id",
+              "salary",
+              "bank_account"
+            ],
+            "filters": {},
+            "row_limit": 25,
+            "purpose": "월간 운영 지원 현황을 확인하기 위한 검증용 조회입니다."
+          },
+          "analysis": {
+            "engine": "db-security-rules-v1",
+            "method": "policy_and_behavior_rules",
+            "risk_score": 70,
+            "risk_level": "high",
+            "sensitive": true,
+            "bulk": false,
+            "abnormal": false,
+            "reason_codes": [],
+            "reasons": [
+              "민감·고위험 열의 정보 조회를 요청했습니다."
+            ],
+            "recommendation": "범위를 줄인 새 요청을 요구하거나, 현재 범위의 업무 필요성이 확인될 때만 승인하세요.",
+            "decision": "REQUIRE_APPROVAL",
+            "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+          },
+          "dataset_name": "급여·정산 정보",
+          "database_name": "사내 검증 DB",
+          "mode": "fictional_sqlite_lab",
+          "execution_id": "a10315ad-5562-4ff3-9af4-690085ee6515",
+          "receipt_id": null,
+          "approval_binding": {
+            "request_hash": "38c95eb4f6e4f9108506920c59425a3bfbe2c7dd07ce80cf03b94cf0506175b1",
+            "snapshot_hash": "cb0edc7739efa642ec8eef2fb824bdc01b649262db16f7f423d7352256593dac",
+            "policy_hash": "5d8b2bea056f668d7f1c6a868b38b0cd484735eb9f492f2ce157d978ac3da4b8"
+          },
+          "timeline": [
+            {
+              "at": 1793465145.6800206,
+              "actor": "agent-alice",
+              "event": "DB_REQUESTED",
+              "details": {
+                "dataset_id": "payroll",
+                "decision": "REQUIRE_APPROVAL",
+                "risk_score": 70,
+                "source_ip": "127.0.0.1",
+                "request_hash": "38c95eb4f6e4f9108506920c59425a3bfbe2c7dd07ce80cf03b94cf0506175b1",
+                "snapshot_hash": "cb0edc7739efa642ec8eef2fb824bdc01b649262db16f7f423d7352256593dac"
+              }
+            }
+          ]
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T21",
+      "name": "DB 분석 시나리오 bulk",
+      "expected": "PENDING_APPROVAL",
+      "actual": {
+        "gateway_status": 202,
+        "request": {
+          "id": "5bfaf593-e291-42c0-b5ad-ea3a7c60b433",
+          "principal": "agent-alice",
+          "user_name": "alice",
+          "tenant": "north",
+          "task_id": "task-alice-001",
+          "requested_at": 1793465145.7114353,
+          "source_ip": "127.0.0.1",
+          "client": "Python-urllib/3.12",
+          "risk_score": 40,
+          "decision": "REQUIRE_APPROVAL",
+          "expires_at": 1793466045.7114353,
+          "reviewer": null,
+          "review_reason": null,
+          "decided_at": null,
+          "result_count": null,
+          "trace_id": "987258f0-d923-4c99-a76b-a441a42f689a",
+          "request_id": "5bfaf593-e291-42c0-b5ad-ea3a7c60b433",
+          "state": "PENDING_APPROVAL",
+          "arguments": {
+            "dataset_id": "operations",
+            "columns": [
+              "ticket_id",
+              "category",
+              "status"
+            ],
+            "filters": {},
+            "row_limit": 2000,
+            "purpose": "월간 운영 지원 현황을 확인하기 위한 검증용 조회입니다."
+          },
+          "analysis": {
+            "engine": "db-security-rules-v1",
+            "method": "policy_and_behavior_rules",
+            "risk_score": 40,
+            "risk_level": "medium",
+            "sensitive": false,
+            "bulk": true,
+            "abnormal": false,
+            "reason_codes": [],
+            "reasons": [
+              "한 번에 2,000행을 요청해 대량 조회 기준(1,000행)에 해당합니다."
+            ],
+            "recommendation": "범위를 줄인 새 요청을 요구하거나, 현재 범위의 업무 필요성이 확인될 때만 승인하세요.",
+            "decision": "REQUIRE_APPROVAL",
+            "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+          },
+          "dataset_name": "운영 지원 이력",
+          "database_name": "사내 검증 DB",
+          "mode": "fictional_sqlite_lab",
+          "execution_id": "5fcb0b09-36ce-490f-ad44-78106dbfc092",
+          "receipt_id": null,
+          "approval_binding": {
+            "request_hash": "106d67b2aee90f729b0938ba7b2e858455699365c42ae043aaeffffdcde0a902",
+            "snapshot_hash": "8a69579fe75595a12d3fa121dbf8acf385ee37cd9c51ba1a305f534312acdedf",
+            "policy_hash": "5d8b2bea056f668d7f1c6a868b38b0cd484735eb9f492f2ce157d978ac3da4b8"
+          },
+          "timeline": [
+            {
+              "at": 1793465145.7124343,
+              "actor": "agent-alice",
+              "event": "DB_REQUESTED",
+              "details": {
+                "dataset_id": "operations",
+                "decision": "REQUIRE_APPROVAL",
+                "risk_score": 40,
+                "source_ip": "127.0.0.1",
+                "request_hash": "106d67b2aee90f729b0938ba7b2e858455699365c42ae043aaeffffdcde0a902",
+                "snapshot_hash": "8a69579fe75595a12d3fa121dbf8acf385ee37cd9c51ba1a305f534312acdedf"
+              }
+            }
+          ]
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T22",
+      "name": "DB 분석 시나리오 abnormal",
+      "expected": "DENIED",
+      "actual": {
+        "gateway_status": 403,
+        "request": {
+          "id": "8bb4b81f-190d-48fe-acec-d544ba17d10b",
+          "principal": "agent-alice",
+          "user_name": "alice",
+          "tenant": "north",
+          "task_id": "task-alice-001",
+          "requested_at": 1793465145.7184343,
+          "source_ip": "127.0.0.1",
+          "client": "Python-urllib/3.12",
+          "risk_score": 55,
+          "decision": "DENY",
+          "expires_at": 1793466045.7184343,
+          "reviewer": null,
+          "review_reason": null,
+          "decided_at": null,
+          "result_count": null,
+          "trace_id": "1c1273d5-7ce4-4efd-a538-49a720c41db7",
+          "request_id": "8bb4b81f-190d-48fe-acec-d544ba17d10b",
+          "state": "DENIED",
+          "arguments": {
+            "dataset_id": "operations",
+            "columns": [
+              "password",
+              "*"
+            ],
+            "filters": {},
+            "row_limit": 25,
+            "purpose": "월간 운영 지원 현황을 확인하기 위한 검증용 조회입니다."
+          },
+          "analysis": {
+            "engine": "db-security-rules-v1",
+            "method": "policy_and_behavior_rules",
+            "risk_score": 55,
+            "risk_level": "medium",
+            "sensitive": false,
+            "bulk": false,
+            "abnormal": true,
+            "reason_codes": [
+              "COLUMN_NOT_REGISTERED"
+            ],
+            "reasons": [
+              "필수 정책 위반: COLUMN_NOT_REGISTERED"
+            ],
+            "recommendation": "차단 유지. 요청 범위와 목적을 수정한 뒤 새로 요청하세요.",
+            "decision": "DENY",
+            "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+          },
+          "dataset_name": "운영 지원 이력",
+          "database_name": "사내 검증 DB",
+          "mode": "fictional_sqlite_lab",
+          "execution_id": "e93526f3-d7fd-4e57-96d1-411742ad1fb7",
+          "receipt_id": null,
+          "approval_binding": {
+            "request_hash": "b98c01d76be37c04e87dd027f55f1977ab2d8f8da34b61131900c320e99f8796",
+            "snapshot_hash": "8179d31a98bdc0f8cd1fdb5f026a71781af57415b6c91b4f924cbe6aa7ba25b1",
+            "policy_hash": "5d8b2bea056f668d7f1c6a868b38b0cd484735eb9f492f2ce157d978ac3da4b8"
+          },
+          "timeline": [
+            {
+              "at": 1793465145.7194352,
+              "actor": "agent-alice",
+              "event": "DB_REQUESTED",
+              "details": {
+                "dataset_id": "operations",
+                "decision": "DENY",
+                "risk_score": 55,
+                "source_ip": "127.0.0.1",
+                "request_hash": "b98c01d76be37c04e87dd027f55f1977ab2d8f8da34b61131900c320e99f8796",
+                "snapshot_hash": "8179d31a98bdc0f8cd1fdb5f026a71781af57415b6c91b4f924cbe6aa7ba25b1"
+              }
+            }
+          ]
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T23",
+      "name": "30분 위험도 증가·감쇠·소멸",
+      "expected": "42 → 21 → 0",
+      "actual": [
+        42.0,
+        21.0,
+        0.0
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "T24",
+      "name": "현재 위험도·일일 처리 집계",
+      "expected": "대기+허용+차단=오늘 요청 수, 실제 위험 요인 포함",
+      "actual": {
+        "as_of": 1793465145.7415075,
+        "timezone": "Asia/Seoul",
+        "day_start": 1793458800.0,
+        "metrics": {
+          "pending": 2,
+          "allowed": 1,
+          "blocked": 1,
+          "today_total": 4
+        },
+        "risk": {
+          "score": 42.0,
+          "raw_score": 42.0,
+          "factors": {
+            "sensitive": 1,
+            "bulk": 1,
+            "abnormal": 1
+          },
+          "components": {
+            "sensitive": 12.0,
+            "bulk": 10.0,
+            "abnormal": 20.0
+          },
+          "weights": {
+            "sensitive": 12,
+            "bulk": 10,
+            "abnormal": 20
+          },
+          "window_seconds": 1800,
+          "formula": "min(100, Σ[(민감×12 + 대량×10 + 비정상×20) × (1-경과초/1800)])",
+          "meaning": "운영 위험 지표이며 침해 확률이나 모델의 신뢰도가 아닙니다."
+        },
+        "activity": [
+          {
+            "at": 1793463405.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793463465.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793463525.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793463585.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793463645.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793463705.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793463765.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793463825.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793463885.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793463945.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464005.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464065.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464125.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464185.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464245.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464305.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464365.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464425.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464485.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464545.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464605.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464665.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464725.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464785.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464845.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464905.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793464965.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793465025.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793465085.7415075,
+            "count": 0
+          },
+          {
+            "at": 1793465145.7415075,
+            "count": 4
+          }
+        ],
+        "risk_trend": [
+          {
+            "at": 1793463345.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463405.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463465.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463525.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463585.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463645.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463705.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463765.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463825.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463885.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793463945.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464005.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464065.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464125.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464185.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464245.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464305.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464365.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464425.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464485.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464545.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464605.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464665.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464725.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464785.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464845.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464905.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793464965.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793465025.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793465085.7415075,
+            "score": 0.0
+          },
+          {
+            "at": 1793465145.7415075,
+            "score": 42.0
+          }
+        ],
+        "recent": [
+          {
+            "id": "8bb4b81f-190d-48fe-acec-d544ba17d10b",
+            "principal": "agent-alice",
+            "user_name": "alice",
+            "tenant": "north",
+            "task_id": "task-alice-001",
+            "requested_at": 1793465145.7184343,
+            "source_ip": "127.0.0.1",
+            "client": "Python-urllib/3.12",
+            "risk_score": 55,
+            "decision": "DENY",
+            "expires_at": 1793466045.7184343,
+            "reviewer": null,
+            "review_reason": null,
+            "decided_at": null,
+            "result_count": null,
+            "trace_id": "1c1273d5-7ce4-4efd-a538-49a720c41db7",
+            "request_id": "8bb4b81f-190d-48fe-acec-d544ba17d10b",
+            "state": "DENIED",
+            "arguments": {
+              "dataset_id": "operations",
+              "columns": [
+                "password",
+                "*"
+              ],
+              "filters": {},
+              "row_limit": 25,
+              "purpose": "월간 운영 지원 현황을 확인하기 위한 검증용 조회입니다."
+            },
+            "analysis": {
+              "engine": "db-security-rules-v1",
+              "method": "policy_and_behavior_rules",
+              "risk_score": 55,
+              "risk_level": "medium",
+              "sensitive": false,
+              "bulk": false,
+              "abnormal": true,
+              "reason_codes": [
+                "COLUMN_NOT_REGISTERED"
+              ],
+              "reasons": [
+                "필수 정책 위반: COLUMN_NOT_REGISTERED"
+              ],
+              "recommendation": "차단 유지. 요청 범위와 목적을 수정한 뒤 새로 요청하세요.",
+              "decision": "DENY",
+              "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+            },
+            "dataset_name": "운영 지원 이력",
+            "database_name": "사내 검증 DB",
+            "mode": "fictional_sqlite_lab",
+            "execution_id": "e93526f3-d7fd-4e57-96d1-411742ad1fb7",
+            "receipt_id": null
+          },
+          {
+            "id": "5bfaf593-e291-42c0-b5ad-ea3a7c60b433",
+            "principal": "agent-alice",
+            "user_name": "alice",
+            "tenant": "north",
+            "task_id": "task-alice-001",
+            "requested_at": 1793465145.7114353,
+            "source_ip": "127.0.0.1",
+            "client": "Python-urllib/3.12",
+            "risk_score": 40,
+            "decision": "REQUIRE_APPROVAL",
+            "expires_at": 1793466045.7114353,
+            "reviewer": null,
+            "review_reason": null,
+            "decided_at": null,
+            "result_count": null,
+            "trace_id": "987258f0-d923-4c99-a76b-a441a42f689a",
+            "request_id": "5bfaf593-e291-42c0-b5ad-ea3a7c60b433",
+            "state": "PENDING_APPROVAL",
+            "arguments": {
+              "dataset_id": "operations",
+              "columns": [
+                "ticket_id",
+                "category",
+                "status"
+              ],
+              "filters": {},
+              "row_limit": 2000,
+              "purpose": "월간 운영 지원 현황을 확인하기 위한 검증용 조회입니다."
+            },
+            "analysis": {
+              "engine": "db-security-rules-v1",
+              "method": "policy_and_behavior_rules",
+              "risk_score": 40,
+              "risk_level": "medium",
+              "sensitive": false,
+              "bulk": true,
+              "abnormal": false,
+              "reason_codes": [],
+              "reasons": [
+                "한 번에 2,000행을 요청해 대량 조회 기준(1,000행)에 해당합니다."
+              ],
+              "recommendation": "범위를 줄인 새 요청을 요구하거나, 현재 범위의 업무 필요성이 확인될 때만 승인하세요.",
+              "decision": "REQUIRE_APPROVAL",
+              "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+            },
+            "dataset_name": "운영 지원 이력",
+            "database_name": "사내 검증 DB",
+            "mode": "fictional_sqlite_lab",
+            "execution_id": "5fcb0b09-36ce-490f-ad44-78106dbfc092",
+            "receipt_id": null
+          },
+          {
+            "id": "8b4739d3-5e09-4d9e-a475-5faee41b7998",
+            "principal": "agent-alice",
+            "user_name": "alice",
+            "tenant": "north",
+            "task_id": "task-alice-001",
+            "requested_at": 1793465145.6790197,
+            "source_ip": "127.0.0.1",
+            "client": "Python-urllib/3.12",
+            "risk_score": 70,
+            "decision": "REQUIRE_APPROVAL",
+            "expires_at": 1793466045.6790197,
+            "reviewer": null,
+            "review_reason": null,
+            "decided_at": null,
+            "result_count": null,
+            "trace_id": "e84a0bf5-5ef5-4a87-b4b3-2d9dbca483bf",
+            "request_id": "8b4739d3-5e09-4d9e-a475-5faee41b7998",
+            "state": "PENDING_APPROVAL",
+            "arguments": {
+              "dataset_id": "payroll",
+              "columns": [
+                "employee_id",
+                "salary",
+                "bank_account"
+              ],
+              "filters": {},
+              "row_limit": 25,
+              "purpose": "월간 운영 지원 현황을 확인하기 위한 검증용 조회입니다."
+            },
+            "analysis": {
+              "engine": "db-security-rules-v1",
+              "method": "policy_and_behavior_rules",
+              "risk_score": 70,
+              "risk_level": "high",
+              "sensitive": true,
+              "bulk": false,
+              "abnormal": false,
+              "reason_codes": [],
+              "reasons": [
+                "민감·고위험 열의 정보 조회를 요청했습니다."
+              ],
+              "recommendation": "범위를 줄인 새 요청을 요구하거나, 현재 범위의 업무 필요성이 확인될 때만 승인하세요.",
+              "decision": "REQUIRE_APPROVAL",
+              "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+            },
+            "dataset_name": "급여·정산 정보",
+            "database_name": "사내 검증 DB",
+            "mode": "fictional_sqlite_lab",
+            "execution_id": "a10315ad-5562-4ff3-9af4-690085ee6515",
+            "receipt_id": null
+          },
+          {
+            "id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+            "principal": "agent-alice",
+            "user_name": "alice",
+            "tenant": "north",
+            "task_id": "task-alice-001",
+            "requested_at": 1793465145.606736,
+            "source_ip": "127.0.0.1",
+            "client": "Python-urllib/3.12",
+            "risk_score": 15,
+            "decision": "REQUIRE_APPROVAL",
+            "expires_at": 1793466045.606736,
+            "reviewer": "reviewer-demo",
+            "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
+            "decided_at": 1793465145.6147366,
+            "result_count": 25,
+            "trace_id": "14731f2f-1eaa-47d4-aa5d-a91e0da1be3a",
+            "request_id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+            "state": "SUCCEEDED",
+            "arguments": {
+              "dataset_id": "operations",
+              "columns": [
+                "ticket_id",
+                "status"
+              ],
+              "filters": {},
+              "row_limit": 25,
+              "purpose": "승인 기반 DB 조회 통합 검증입니다."
+            },
+            "analysis": {
+              "engine": "db-security-rules-v1",
+              "method": "policy_and_behavior_rules",
+              "risk_score": 15,
+              "risk_level": "low",
+              "sensitive": false,
+              "bulk": false,
+              "abnormal": false,
+              "reason_codes": [],
+              "reasons": [
+                "등록된 데이터와 열, 조회량 범위 안의 읽기 요청입니다."
+              ],
+              "recommendation": "업무 목적과 요청자의 담당 범위를 확인한 뒤 일회성 조회를 승인하세요.",
+              "decision": "REQUIRE_APPROVAL",
+              "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+            },
+            "dataset_name": "운영 지원 이력",
+            "database_name": "사내 검증 DB",
+            "mode": "fictional_sqlite_lab",
+            "execution_id": "c7f4a9f1-a8b0-4bcd-bc35-1bc1f4c95100",
+            "receipt_id": "receipt-74631052-494b-40ca-be5f-9099ba7dd585"
+          }
+        ],
+        "catalog": [
+          {
+            "id": "operations",
+            "name": "운영 지원 이력",
+            "columns": {
+              "ticket_id": "internal",
+              "category": "internal",
+              "status": "internal",
+              "description": "internal"
+            }
+          },
+          {
+            "id": "employee-directory",
+            "name": "임직원 업무 연락처",
+            "columns": {
+              "employee_id": "internal",
+              "name": "internal",
+              "department": "internal",
+              "work_email": "sensitive"
+            }
+          },
+          {
+            "id": "payroll",
+            "name": "급여·정산 정보",
+            "columns": {
+              "employee_id": "internal",
+              "department": "internal",
+              "salary": "restricted",
+              "bank_account": "restricted"
+            }
+          }
+        ]
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T25",
+      "name": "언제·어디서·누가·무엇·결과의 보고서",
+      "expected": "메타데이터, 보안 분석, 검토 근거, 처리 이력 보존",
+      "actual": {
+        "http": 200,
+        "report": {
+          "id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+          "principal": "agent-alice",
+          "user_name": "alice",
+          "tenant": "north",
+          "task_id": "task-alice-001",
+          "requested_at": 1793465145.606736,
+          "source_ip": "127.0.0.1",
+          "client": "Python-urllib/3.12",
+          "risk_score": 15,
+          "decision": "REQUIRE_APPROVAL",
+          "expires_at": 1793466045.606736,
+          "reviewer": "reviewer-demo",
+          "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
+          "decided_at": 1793465145.6147366,
+          "result_count": 25,
+          "trace_id": "14731f2f-1eaa-47d4-aa5d-a91e0da1be3a",
+          "request_id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+          "state": "SUCCEEDED",
+          "arguments": {
+            "dataset_id": "operations",
+            "columns": [
+              "ticket_id",
+              "status"
+            ],
+            "filters": {},
+            "row_limit": 25,
+            "purpose": "승인 기반 DB 조회 통합 검증입니다."
+          },
+          "analysis": {
+            "engine": "db-security-rules-v1",
+            "method": "policy_and_behavior_rules",
+            "risk_score": 15,
+            "risk_level": "low",
+            "sensitive": false,
+            "bulk": false,
+            "abnormal": false,
+            "reason_codes": [],
+            "reasons": [
+              "등록된 데이터와 열, 조회량 범위 안의 읽기 요청입니다."
+            ],
+            "recommendation": "업무 목적과 요청자의 담당 범위를 확인한 뒤 일회성 조회를 승인하세요.",
+            "decision": "REQUIRE_APPROVAL",
+            "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+          },
+          "dataset_name": "운영 지원 이력",
+          "database_name": "사내 검증 DB",
+          "mode": "fictional_sqlite_lab",
+          "execution_id": "c7f4a9f1-a8b0-4bcd-bc35-1bc1f4c95100",
+          "receipt_id": "receipt-74631052-494b-40ca-be5f-9099ba7dd585",
+          "approval_binding": {
+            "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
+            "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5",
+            "policy_hash": "5d8b2bea056f668d7f1c6a868b38b0cd484735eb9f492f2ce157d978ac3da4b8"
+          },
+          "timeline": [
+            {
+              "at": 1793465145.608736,
+              "actor": "agent-alice",
+              "event": "DB_REQUESTED",
+              "details": {
+                "dataset_id": "operations",
+                "decision": "REQUIRE_APPROVAL",
+                "risk_score": 15,
+                "source_ip": "127.0.0.1",
+                "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
+                "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5"
+              }
+            },
+            {
+              "at": 1793465145.6147366,
+              "actor": "reviewer-demo",
+              "event": "DB_APPROVED",
+              "details": {
+                "reason": "업무 범위와 열·조회량을 확인했습니다.",
+                "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5"
+              }
+            },
+            {
+              "at": 1793465145.622735,
+              "actor": "agent-alice",
+              "event": "DB_EXECUTION_STARTED",
+              "details": {
+                "execution_id": "c7f4a9f1-a8b0-4bcd-bc35-1bc1f4c95100"
+              }
+            },
+            {
+              "at": 1793465145.6357358,
+              "actor": "agent-alice",
+              "event": "DB_EXECUTION_SUCCEEDED",
+              "details": {
+                "row_count": 25,
+                "receipt_id": "receipt-74631052-494b-40ca-be5f-9099ba7dd585"
+              }
+            }
+          ]
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T26",
+      "name": "원클릭 실제 작동 점검",
+      "expected": "연결·분석·DB·무결성 모든 점검 통과",
+      "actual": {
+        "checked_at": 1793465145.7606406,
+        "passed": true,
+        "checks": [
+          {
+            "name": "게이트웨이",
+            "passed": true,
+            "detail": "ready",
+            "latency_ms": 0.92
+          },
+          {
+            "name": "보안 에이전트",
+            "passed": true,
+            "detail": "정상·정책 위반 입력 분석 자체 점검 통과",
+            "latency_ms": 0.22
+          },
+          {
+            "name": "보호 DB",
+            "passed": true,
+            "detail": "검증용 SQLite DB 읽기 연결 정상",
+            "latency_ms": 1.58
+          },
+          {
+            "name": "감사 DB",
+            "passed": true,
+            "detail": "감사 기록 저장소 연결됨",
+            "latency_ms": 0.17
+          },
+          {
+            "name": "감사 로그 무결성",
+            "passed": true,
+            "detail": "21개 해시 연결 검증, 변조 의심 0건"
+          }
+        ],
+        "scope": "실제 연결과 분석 자체 점검입니다. 전체 네트워크 격리 검증은 포함하지 않습니다."
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T27",
+      "name": "동시 대시보드 조회 인증 안정성",
+      "expected": "80개 요청 모두 200",
+      "actual": {
+        "total": 80,
+        "successful": 80
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T28",
+      "name": "정상 종료 시 포트 반환",
+      "expected": "3개 포트 모두 연결 불가",
+      "actual": [
+        true,
+        true,
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "T29",
+      "name": "독립 EXE 기동과 6개 시나리오",
+      "expected": "원본 폴더/Python 없이 실행, ready, 모든 시나리오 응답",
+      "actual": {
+        "health": {
+          "status": "ready",
+          "policy_version": "demo-v2"
+        },
+        "scenarios": {
+          "normal": {
+            "http": 200,
+            "data": {
+              "scenario": "NORMAL_READ",
+              "name": "정상 문서 읽기 (Alice -> report-alice-001)",
+              "expected": "ALLOW (200 OK)",
+              "status": 200,
+              "result": {
+                "action_id": "22a66a8e-93e5-4698-aae2-83e838bf5693",
+                "decision": "ALLOW",
+                "state": "SUCCEEDED",
+                "reason_codes": [],
+                "approval_id": null,
+                "approval_state": null,
+                "execution_id": "87fbc580-6a26-4a58-848b-cac7e9df6e8f",
+                "trace_id": "392e96f0-4fa3-49e4-8bd9-1c639d859a81",
+                "policy_version": "demo-v2",
+                "result": {
+                  "receipt_id": "receipt-f0162f92-8128-4456-8c10-c94283bf6e69",
+                  "execution_id": "87fbc580-6a26-4a58-848b-cac7e9df6e8f",
+                  "result": {
+                    "document_id": "report-alice-001",
+                    "content": "Quarterly operations report for Alice (fictional)\n\nAll values in this exercise are synthetic. Service availability was 99.2 percent in the fictional sample period. Three maintenance tasks were completed. The next review is scheduled for the end of the fictional quarter.\n",
+                    "content_hash": "ac3fdcc25b70106571b34ea4c44dbff52308baf5d40091546c63fd23f6a64e89"
+                  }
+                }
+              },
+              "mitre": "None (Benign)",
+              "severity": "INFO"
+            }
+          },
+          "cross-tenant": {
+            "http": 200,
+            "data": {
+              "scenario": "CROSS_TENANT_VIOLATION",
+              "name": "타 테넌트 자원 무단 접근 (Alice -> Bob's South doc)",
+              "expected": "DENY (403 Forbidden)",
+              "status": 403,
+              "result": {
+                "action_id": "230da6af-4350-4132-9497-5e43312dbce5",
+                "decision": "DENY",
+                "state": "DENIED",
+                "reason_codes": [
+                  "RESOURCE_OUT_OF_SCOPE"
+                ],
+                "approval_id": null,
+                "approval_state": null,
+                "execution_id": "bc03f8f1-371a-4754-b1a0-4fb1998f25a2",
+                "trace_id": "1383c4ad-bd22-4194-8b9c-3b6d0354ee37",
+                "policy_version": "demo-v2",
+                "result": null
+              },
+              "mitre": "T1078 (Valid Accounts / Cross-Scope)",
+              "severity": "HIGH"
+            }
+          },
+          "injection": {
+            "http": 200,
+            "data": {
+              "scenario": "PROMPT_INJECTION",
+              "name": "간접 프롬프트 인젝션 패턴 검사 (다층 탐지)",
+              "expected": "SUSPICIOUS (200 OK with flag)",
+              "status": 200,
+              "result": {
+                "inspection_id": "33c6fcd0-d67e-49dc-a20e-b1145e4dbe03",
+                "verdict": "SUSPICIOUS",
+                "reason_codes": [
+                  "PROMPT_INJECTION_PATTERN"
+                ],
+                "scanner_version": "rules-v2",
+                "content_hash": "62a0ea7039eab31e4d18dd14c79a2fb6511c856476a1783c2c9d935682feb1f8"
+              },
+              "mitre": "T1059 (Command & Scripting Interpreter / Injection)",
+              "severity": "CRITICAL"
+            }
+          },
+          "obfuscation": {
+            "http": 200,
+            "data": {
+              "scenario": "UNICODE_OBFUSCATION",
+              "name": "유니코드 제로너비 공백 은닉 인젝션 공격",
+              "expected": "SUSPICIOUS (정규화 후 탐지)",
+              "status": 200,
+              "result": {
+                "inspection_id": "9fb122e7-8ef7-4b9b-8a90-f832e4e727a5",
+                "verdict": "SUSPICIOUS",
+                "reason_codes": [
+                  "PROMPT_INJECTION_PATTERN"
+                ],
+                "scanner_version": "rules-v2",
+                "content_hash": "dbeb472e2555566603fd205c2f711bf5cc85cfe948dcc003ce4a1c8c8eac8060"
+              },
+              "mitre": "T1027 (Obfuscated / Encrypted Information)",
+              "severity": "HIGH"
+            }
+          },
+          "unapproved": {
+            "http": 200,
+            "data": {
+              "scenario": "UNAPPROVED_HIGH_RISK_ACTION",
+              "name": "미승인 고위험 보고서 전송 시도",
+              "expected": "REQUIRE_APPROVAL (202 Accepted)",
+              "status": 202,
+              "result": {
+                "action_id": "e1f7904f-6b84-4489-92f8-e9496ba05e3a",
+                "decision": "REQUIRE_APPROVAL",
+                "state": "PENDING_APPROVAL",
+                "reason_codes": [],
+                "approval_id": "8bb76bc0-1a2c-4995-a49e-808f9f183dfd",
+                "approval_state": "PENDING",
+                "execution_id": "28e301c8-cf9c-4588-946c-c686bcd13f19",
+                "trace_id": "7876746e-1770-4b9a-b76b-7624984eb193",
+                "policy_version": "demo-v2",
+                "result": null
+              },
+              "mitre": "T1048 (Exfiltration Over Alternative Protocol)",
+              "severity": "HIGH"
+            }
+          },
+          "audit-verify": {
+            "http": 200,
+            "data": {
+              "scenario": "AUDIT_VERIFY",
+              "name": "감사 로그 Merkle Hash Chain 무결성 검증",
+              "expected": "VALID (200 OK)",
+              "status": 200,
+              "result": {
+                "status": "VALID",
+                "total_records": 10,
+                "chained_records": 10,
+                "tampered_record_ids": [],
+                "latest_chain_hash": "783772d44d32abd93bf02bcd87c7fc28a2b3010588866e205cfe9e73c7a3517b"
+              },
+              "mitre": "T1562 (Impair Defenses / Audit Tampering)",
+              "severity": "INFO"
+            }
+          }
+        },
+        "binary": {
+          "sha256": "dea844b4aeb1041ad7e903d031e25c2e7da8cf233885c0acb7103676a720d7e6",
+          "bytes": 10641007
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T30",
+      "name": "독립 EXE의 DB 요청·분석·작동 진단",
+      "expected": "정상·민감·대량은 승인 대기, 비정상은 차단, 진단 통과",
+      "actual": {
+        "scenarios": {
+          "normal": {
+            "http": 200,
+            "state": "PENDING_APPROVAL",
+            "risk": 15
+          },
+          "sensitive": {
+            "http": 200,
+            "state": "PENDING_APPROVAL",
+            "risk": 70
+          },
+          "bulk": {
+            "http": 200,
+            "state": "PENDING_APPROVAL",
+            "risk": 40
+          },
+          "abnormal": {
+            "http": 200,
+            "state": "DENIED",
+            "risk": 55
+          }
+        },
+        "diagnostic": {
+          "checked_at": 1793465154.0637705,
+          "passed": true,
+          "checks": [
+            {
+              "name": "게이트웨이",
+              "passed": true,
+              "detail": "ready",
+              "latency_ms": 0.88
+            },
+            {
+              "name": "보안 에이전트",
+              "passed": true,
+              "detail": "정상·정책 위반 입력 분석 자체 점검 통과",
+              "latency_ms": 0.21
+            },
+            {
+              "name": "보호 DB",
+              "passed": true,
+              "detail": "검증용 SQLite DB 읽기 연결 정상",
+              "latency_ms": 1.49
+            },
+            {
+              "name": "감사 DB",
+              "passed": true,
+              "detail": "감사 기록 저장소 연결됨",
+              "latency_ms": 0.13
+            },
+            {
+              "name": "감사 로그 무결성",
+              "passed": true,
+              "detail": "14개 해시 연결 검증, 변조 의심 0건"
+            }
+          ],
+          "scope": "실제 연결과 분석 자체 점검입니다. 전체 네트워크 격리 검증은 포함하지 않습니다."
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "T31",
+      "name": "EXE 자동 종료",
+      "expected": "exit 0",
+      "actual": {
+        "exit_code": 0
+      },
+      "status": "PASS"
+    }
+  ],
+  "not_run": [
+    "Docker 다중 네트워크 격리·PostgreSQL 실동작",
+    "외부 LLM 및 외부 데이터셋 평가",
+    "코드 서명·다른 Windows PC 실행"
+  ]
+}

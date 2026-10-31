@@ -10,6 +10,7 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+from security_agent.catalog import initialize_demo_database, execute_catalog_query
 
 DATA = Path(__file__).resolve().parent.parent / "fixtures" / "documents"
 DATABASE = os.environ.get("TOOL_DATABASE_PATH", "/data/tool.sqlite3")
@@ -43,6 +44,7 @@ def connect():
     CREATE TRIGGER IF NOT EXISTS outbox_no_update BEFORE UPDATE ON outbox BEGIN SELECT RAISE(ABORT,'outbox is append only'); END;
     CREATE TRIGGER IF NOT EXISTS outbox_no_delete BEFORE DELETE ON outbox BEGIN SELECT RAISE(ABORT,'outbox is append only'); END;
                 """)
+                initialize_demo_database(c)
                 _INITIALIZED.add(DATABASE)
     return c
 
@@ -84,6 +86,9 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         c = connect()
         try:
+            if path == '/internal/db-health':
+                c.execute('SELECT ticket_id FROM asg_operations LIMIT 1').fetchone()
+                return self.send_json(200, {'status':'ready','detail':'검증용 SQLite DB 읽기 연결 정상','mode':'fictional_sqlite_lab'})
             if path.startswith("/internal/artifacts/"):
                 aid = unquote(path.rsplit("/", 1)[1])
                 r = c.execute("SELECT id,owner,tenant,document_id,content,content_hash,created FROM artifacts WHERE id=?", (aid,)).fetchone()
@@ -118,7 +123,17 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send_json(403, {"error": "TASK_FORBIDDEN"})
                 args = req["arguments"]
                 c.execute("BEGIN IMMEDIATE")
-                if req["tool"] == "read_document" and set(args) == {"document_id"}:
+                if req['tool'] == 'query_database':
+                    roles={'agent-alice':'report-submitter','agent-bob':'report-writer'}
+                    if (req['principal'],req['user']) not in {('agent-alice','alice'),('agent-bob','bob')}:
+                        c.execute('ROLLBACK')
+                        return self.send_json(403,{'error':'DB_PRINCIPAL_FORBIDDEN'})
+                    try:
+                        result=execute_catalog_query(c,args,req['tenant'],roles[req['principal']])
+                    except ValueError:
+                        c.execute('ROLLBACK')
+                        return self.send_json(403,{'error':'DB_QUERY_FORBIDDEN'})
+                elif req["tool"] == "read_document" and set(args) == {"document_id"}:
                     doc_id = args["document_id"]
                     doc = DOCS.get(doc_id)
                     if not doc or doc_id not in task[2] or (doc[0], doc[1]) != task[:2]:

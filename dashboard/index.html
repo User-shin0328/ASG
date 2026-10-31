@@ -1,76 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Agent Gateway Review</title>
-  <style>
-    body{font:16px system-ui;max-width:1000px;margin:3rem auto;padding:0 1rem;color:#172033;background:#f5f7fb}
-    h1{font-size:1.7rem}.card{background:white;padding:1.2rem;border-radius:12px;margin:1rem 0;box-shadow:0 2px 12px #17203310}
-    input,button{font:inherit;padding:.65rem;border:1px solid #ccd3e0;border-radius:6px}#token{display:block;width:100%;max-width:32rem;box-sizing:border-box;margin-top:.35rem}button{cursor:pointer;background:#173a70;color:white;margin:.25rem}button:disabled{opacity:.5;cursor:not-allowed}
-    .muted{color:#68738a}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6fa;padding:1rem;border-radius:8px}
-    .row{border-top:1px solid #e4e8ef;padding:.8rem 0}.status{margin-left:.5rem}
-  </style>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark">
+  <title>ASG · DB 접근 보안 관제</title><link rel="stylesheet" href="/app.css"><script src="/app.js" defer></script>
 </head>
 <body>
-  <h1>Agent Gateway · Approval Review</h1>
-  <p class="muted">The reviewer token stays in this tab's memory and is never saved to local storage.</p>
-  <section class="card">
-    <label>Reviewer token <input id="token" type="password" autocomplete="off" size="52"></label>
-    <button id="load-approvals">Load pending approvals</button>
-    <button id="load-audit">Load audit events</button>
-    <button id="export-audit" disabled>Download audit JSON</button>
-    <span id="status" class="muted status" aria-live="polite"></span>
-  </section>
-  <section class="card"><h2>Pending approvals</h2><div id="items">Enter your reviewer token to load requests.</div></section>
-  <section class="card"><h2>Recent audit events</h2><div id="audit-items">Enter your reviewer token to load events.</div></section>
-  <script>
-    const $=id=>document.getElementById(id);
-    const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    let auditExport=null;
-    async function api(path,method='GET',body){
-      const response=await fetch(path,{method,headers:{Authorization:'Bearer '+$('token').value,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});
-      const data=await response.json();
-      if(!response.ok)throw Error(data.message||data.error||response.status);
-      return data;
-    }
-    async function loadApprovals(){
-      $('status').textContent='Loading approvals…';
-      try{
-        const data=await api('/v1/approvals');
-        $('items').innerHTML=data.items.length?data.items.map(item=>`<article class="row"><b>${esc(item.tool)}</b> · action ${esc(item.action_id)}<pre>${esc(JSON.stringify({principal:item.principal,task_id:item.task_id,arguments:item.arguments,destination:item.review_snapshot?.destination_id,content:item.review_snapshot?.content,content_hash:item.review_snapshot?.content_hash},null,2))}</pre><button data-id="${esc(item.approval_id)}" data-decision="approve">Approve</button><button data-id="${esc(item.approval_id)}" data-decision="reject">Reject</button></article>`).join(''):'No approvals are waiting.';
-        $('status').textContent=`Loaded ${data.items.length} approval(s).`;
-      }catch(error){$('status').textContent=error.message;}
-    }
-    async function loadAudit(){
-      $('status').textContent='Loading audit events…';
-      auditExport=null;$('export-audit').disabled=true;
-      try{
-        const data=await api('/v1/audit/events');
-        auditExport={exported_at:new Date().toISOString(),events:data.items};
-        $('export-audit').disabled=false;
-        $('audit-items').innerHTML=data.items.length?data.items.map(event=>`<article class="row"><b>${esc(event.event)}</b> · ${esc(event.actor)}<div class="muted">${esc(new Date(event.at*1000).toLocaleString())} · trace ${esc(event.trace_id)}</div><pre>${esc(JSON.stringify({action_id:event.action_id,details:event.details},null,2))}</pre></article>`).join(''):'No audit events are available.';
-        $('status').textContent=`Loaded ${data.items.length} audit event(s).`;
-      }catch(error){$('status').textContent=error.message;}
-    }
-    $('load-approvals').onclick=loadApprovals;
-    $('load-audit').onclick=loadAudit;
-    $('token').addEventListener('input',()=>{auditExport=null;$('export-audit').disabled=true;});
-    $('export-audit').onclick=()=>{
-      if(!auditExport)return;
-      const blob=new Blob([JSON.stringify(auditExport,null,2)],{type:'application/json'});
-      const link=document.createElement('a');
-      link.href=URL.createObjectURL(blob);
-      link.download=`gateway-audit-${new Date().toISOString().replaceAll(':','-')}.json`;
-      link.click();
-      setTimeout(()=>URL.revokeObjectURL(link.href),0);
-    };
-    $('items').onclick=async event=>{
-      const button=event.target.closest('button[data-id]');
-      if(!button)return;
-      try{await api('/v1/approvals/'+encodeURIComponent(button.dataset.id)+'/decision','POST',{decision:button.dataset.decision});await loadApprovals();}
-      catch(error){$('status').textContent=error.message;}
-    };
-  </script>
+  <a class="skip" href="#main">본문으로 이동</a>
+  <button id="menu-toggle" class="mobile-menu" type="button" aria-controls="sidebar" aria-expanded="false">메뉴</button>
+  <aside id="sidebar" class="sidebar">
+    <a class="brand" href="/" aria-label="ASG 보안 현황"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7h9v18H5M27 7h-9v18h9M11 16h10"/></svg><strong>ASG</strong></a>
+    <p class="product-name">Agent Security Gateway</p>
+    <nav aria-label="주요 메뉴">
+      <a href="/" data-route="overview"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h4V3H3zM13 17h4V8h-4zM3 17h4v-3H3zM13 4h4V3h-4"/></svg>보안 현황</a>
+      <a href="/approvals" data-route="approvals"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14H5zM8 7h4M8 11l2 2 4-5"/></svg>승인 검토<span id="pending-count" class="nav-count">0</span></a>
+      <a href="/audit" data-route="audit"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h9l3 3v11H4zM7 8h6M7 11h6M7 14h4"/></svg>감사 기록</a>
+      <a href="/tests" data-route="tests"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h3l2-6 4 12 2-6h3"/></svg>작동 테스트</a>
+    </nav>
+    <div class="sidebar-bottom"><span class="scope-label">현재 환경</span><strong id="environment">확인 중</strong><p>가상 데이터 검증 DB<br>사내 운영 DB 미연결</p><details id="connection" hidden><summary>검토자 연결</summary><form id="auth"><label for="token">검토자 토큰</label><input id="token" type="password" autocomplete="off" placeholder="토큰 입력"><button type="submit">연결</button></form></details></div>
+  </aside>
+  <main id="main" class="main">
+    <header class="page-header"><div><h1 id="page-title">보안 현황</h1><p id="page-description">DB 접근 요청과 보안 분석 결과를 확인합니다.</p></div><button id="refresh" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 8a6 6 0 1 0-1 6M16 3v5h-5"/></svg>새로고침</button></header>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <div id="page-content"><p class="loading">실제 요청과 서비스 상태를 불러오고 있습니다.</p></div>
+    <footer><span>ASG · DB 접근 보안 관제</span><span id="updated">연결 확인 중</span></footer>
+  </main>
+  <dialog id="request-dialog" aria-labelledby="report-title"><div class="dialog-header"><div><h2 id="report-title">DB 접근 요청 상세보고서</h2><p id="report-id" class="code"></p></div><button id="close-report" type="button" aria-label="보고서 닫기">닫기</button></div><div id="report-content"></div></dialog>
 </body>
 </html>

@@ -190,6 +190,8 @@ class Gateway:
         if not self.db.is_postgres:
             self._schema()
         self._register_configured_tokens()
+        from gateway.app.db_access import DBAccessService
+        self.db_access = DBAccessService(self)
 
     def _schema(self) -> None:
         self.db.executescript("""

@@ -1,24 +1,6 @@
-# ASG (AI Agent Secure Gateway) - 공격 & 트래픽 발생기 PowerShell 실행 스크립트
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$Host.UI.RawUI.WindowTitle = "ASG Attack & Traffic Simulator"
-
-$PyExe = "python"
-$HasPython = Get-Command python -ErrorAction SilentlyContinue
-
-if (-not $HasPython -or $HasPython.Version -eq "0.0.0.0") {
-    $CodexPy = "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
-    if (Test-Path $CodexPy) {
-        $PyExe = $CodexPy
-    } else {
-        $PyCandidate = Get-Command py -ErrorAction SilentlyContinue
-        if ($PyCandidate) {
-            $PyExe = "py"
-        } else {
-            Write-Host "[오류] 시스템에서 유효한 Python 3.10+ 버전을 찾을 수 없습니다." -ForegroundColor Red
-            Exit 1
-        }
-    }
-}
-
-$ScriptPath = Join-Path $PSScriptRoot "..\scripts\traffic_generator.py"
-& $PyExe $ScriptPath --mode menu
+$ErrorActionPreference = 'Stop'
+$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$Python = Join-Path $ProjectRoot '.venv/Scripts/python.exe'
+if (-not (Test-Path -LiteralPath $Python)) { throw 'Run testing/setup.ps1 first.' }
+Push-Location $ProjectRoot
+try { & $Python -m testing.console; exit $LASTEXITCODE } finally { Pop-Location }

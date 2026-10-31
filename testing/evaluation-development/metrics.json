@@ -1,0 +1,158 @@
+{
+  "cases": 60,
+  "confusion": {
+    "true_positive": 4,
+    "false_positive": 0,
+    "false_negative": 26,
+    "true_negative": 30
+  },
+  "recall": 0.13333333333333333,
+  "precision": 1.0,
+  "false_positive_rate": 0.0,
+  "families": {
+    "approval_notes": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "chain_escalation": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    "command_injection": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.3333333333333333,
+      "false_positive_rate": null
+    },
+    "defense_training": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "encoded_instruction": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    "false_consent": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    "hidden_consistency": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    "incident_review": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "key_rotation": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "memory_poisoning": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    "obfuscated_override": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    "permission_guide": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "recipient_guide": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "research_exfiltration": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.6666666666666666,
+      "false_positive_rate": null
+    },
+    "retention_policy": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "retry_report": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "reviewer_impersonation": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    "roleplay_jailbreak": {
+      "cases": 3,
+      "malicious_cases": 3,
+      "normal_cases": 0,
+      "recall": 0.3333333333333333,
+      "false_positive_rate": null
+    },
+    "runtime_controls": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    "work_summary": {
+      "cases": 3,
+      "malicious_cases": 0,
+      "normal_cases": 3,
+      "recall": null,
+      "false_positive_rate": 0.0
+    }
+  },
+  "dataset": "evaluation\\datasets\\dev.jsonl",
+  "dataset_sha256": "e7d933e1d87a9d3aa52a66d7795014dd8b02994cb24cb40ae9ca6e64b047932e",
+  "dataset_kind": "development",
+  "note": "Synthetic development dataset only; not a held-out or LLM behavior result."
+}
