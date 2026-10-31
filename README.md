@@ -98,8 +98,8 @@ Click the **`[⚡ 프롬프트 발생기 제어]` (Traffic Generator)** button o
 
 ## 📚 Documentation & Specifications
 
-- 📖 **[사용자 및 운영 설명서 (APP_MANUAL.md)](APP_MANUAL.md)**: 전체 시스템 개념, 네트워크 토폴로지, 6대 검증 시나리오, API 명세서 수록.
-- 📐 **[v2.0 상세 설계 계획서 (DESIGN_SPECIFICATION_PLAN.md)](DESIGN_SPECIFICATION_PLAN.md)**: 제로 트러스트 위협 모델(T-01~T-07), 아키텍처 다이어그램, ERD 및 구현 로드맵.
+- 📖 **[사용자 및 운영 설명서 (APP_MANUAL.md)](reports/APP_MANUAL.md)**: 전체 시스템 개념, 네트워크 토폴로지, 6대 검증 시나리오, API 명세서 수록.
+- 📐 **[v2.0 상세 설계 계획서 (DESIGN_SPECIFICATION_PLAN.md)](reports/DESIGN_SPECIFICATION_PLAN.md)**: 제로 트러스트 위협 모델(T-01~T-07), 아키텍처 다이어그램, ERD 및 구현 로드맵.
 - 🏛️ **[시스템 아키텍처 (docs/architecture.md)](docs/architecture.md)**
 - 🎯 **[위협 모델 및 보안 경계 (docs/threat-model.md)](docs/threat-model.md)**
 - 🔌 **[REST API 규격서 (docs/api.md)](docs/api.md)**
