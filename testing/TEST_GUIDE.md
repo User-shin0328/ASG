@@ -6,6 +6,8 @@
 
 ## 1. 준비와 환경
 
+**보존형 가상 PostgreSQL DB:** 2,700행을 넣은 별도 DB의 생성·재실행·25단계 예상 결과와 보고서는 [VALIDATION_DB_GUIDE.md](VALIDATION_DB_GUIDE.md)에 있습니다. 테스트 후 DB를 삭제하지 않으며 `testing/run_validation.ps1 -TestOnly`로 검증합니다.
+
 **PostgreSQL 추가 절차 (2026-11-02):** 아래 1~11절은 기본 SQLite 로컬·실행파일 검증입니다. 실제 사내 DB 종류는 PostgreSQL로 선택했으며, 운영 DB에는 아직 연결하지 않았습니다. 별도 임시 PostgreSQL을 사용하는 단계별 환경·예상 결과는 [PostgreSQL 연결 설명서](../docs/POSTGRESQL_CONNECTION.md)의 6절, 실제 14단계 결과는 [PostgreSQL 보고서](results/postgresql/REPORT.md)에 있습니다. `python -m testing.postgresql_checks`로 별도 재현하며, 로컬 PASS와 PostgreSQL 결과를 구분해 확인하세요.
 
 | 목적 | 필요 환경 |

@@ -45,6 +45,8 @@
 
 ## 테스트·재빌드·문서
 
+가상 데이터 2,700행을 넣은 별도 PostgreSQL 검증 DB와 재사용 가능한 테스트는 [검증 DB 설명서](testing/VALIDATION_DB_GUIDE.md)를 참고하세요. `testing/run_validation.ps1`로 생성·25단계 테스트·대시보드 기동을 수행합니다. 기존 SQLite 실행파일 환경과 분리하며, 검증 DB와 감사 기록은 테스트 후에도 보존합니다.
+
 ```powershell
 .\testing\setup.ps1
 .\scripts\build_exe.ps1

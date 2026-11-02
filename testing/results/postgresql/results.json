@@ -1,6 +1,6 @@
 {
   "result": "PASS",
-  "started": "2026-11-02T17:51:22.096272+09:00",
+  "started": "2026-11-02T18:12:13.581166+09:00",
   "checks": [
     {
       "name": "게이트웨이 감사 DB와 보호 DB의 실제 PostgreSQL 연결",
@@ -17,17 +17,17 @@
             "name": "게이트웨이",
             "status": "up",
             "detail": "ready",
-            "checked_at": 1793609484.5061643,
-            "latency_ms": 1.52
+            "checked_at": 1793610735.7624483,
+            "latency_ms": 1.62
           },
           {
             "key": "security_agent",
             "name": "보안 에이전트",
             "status": "up",
             "engine": "db-security-rules-v1",
-            "checked_at": 1793609484.506184,
+            "checked_at": 1793610735.7629726,
             "last_analysis_at": null,
-            "latency_ms": 0.47,
+            "latency_ms": 0.45,
             "detail": "정상·정책 위반 입력 분석 자체 점검 통과"
           },
           {
@@ -35,16 +35,16 @@
             "name": "보호 DB",
             "status": "up",
             "detail": "PostgreSQL 읽기 전용 연결·등록 대상 권한 정상",
-            "checked_at": 1793609484.5885959,
-            "latency_ms": 81.98
+            "checked_at": 1793610735.8335667,
+            "latency_ms": 70.2
           },
           {
             "key": "audit_db",
             "name": "감사 DB",
             "status": "up",
             "detail": "감사 기록 저장소 연결됨",
-            "checked_at": 1793609484.5902426,
-            "latency_ms": 1.97
+            "checked_at": 1793610735.8346343,
+            "latency_ms": 1.49
           }
         ]
       }
@@ -141,25 +141,25 @@
             "name": "게이트웨이",
             "passed": true,
             "detail": "ready",
-            "latency_ms": 25.07
+            "latency_ms": 2.24
           },
           {
             "name": "보안 에이전트",
             "passed": true,
             "detail": "정상·정책 위반 입력 분석 자체 점검 통과",
-            "latency_ms": 0.24
+            "latency_ms": 0.22
           },
           {
             "name": "보호 DB",
             "passed": true,
             "detail": "PostgreSQL 읽기 전용 연결·등록 대상 권한 정상",
-            "latency_ms": 23.6
+            "latency_ms": 85.81
           },
           {
             "name": "감사 DB",
             "passed": true,
             "detail": "감사 기록 저장소 연결됨",
-            "latency_ms": 0.8
+            "latency_ms": 0.72
           },
           {
             "name": "감사 로그 무결성",

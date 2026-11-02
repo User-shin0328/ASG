@@ -1,0 +1,62 @@
+{
+  "fictional": true,
+  "tables": {
+    "asg_operations": {
+      "rows": 2400,
+      "fictional_samples": [
+        {
+          "tenant": "north",
+          "ticket_id": "north-T-0001",
+          "category": "network",
+          "status": "open",
+          "description": "FICTIONAL validation support record 1"
+        },
+        {
+          "tenant": "north",
+          "ticket_id": "north-T-0002",
+          "category": "access",
+          "status": "open",
+          "description": "FICTIONAL validation support record 2"
+        }
+      ]
+    },
+    "asg_directory": {
+      "rows": 200,
+      "fictional_samples": [
+        {
+          "tenant": "north",
+          "employee_id": "north-E-001",
+          "name": "가상 직원 north 001",
+          "department": "지원팀",
+          "work_email": "fictional-north-1@example.test"
+        },
+        {
+          "tenant": "north",
+          "employee_id": "north-E-002",
+          "name": "가상 직원 north 002",
+          "department": "운영팀",
+          "work_email": "fictional-north-2@example.test"
+        }
+      ]
+    },
+    "asg_payroll": {
+      "rows": 100,
+      "fictional_samples": [
+        {
+          "tenant": "north",
+          "employee_id": "north-E-001",
+          "department": "운영팀",
+          "salary": 3010000,
+          "bank_account": "MOCK-ACCOUNT-001"
+        },
+        {
+          "tenant": "north",
+          "employee_id": "north-E-002",
+          "department": "운영팀",
+          "salary": 3020000,
+          "bank_account": "MOCK-ACCOUNT-002"
+        }
+      ]
+    }
+  }
+}
