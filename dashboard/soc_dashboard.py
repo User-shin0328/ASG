@@ -19,7 +19,7 @@ class SocDashboardHandler(Handler):
         if not self.valid_host():
             return self.respond(403, {"error": "LOOPBACK_HOST_REQUIRED"})
         if urlparse(self.path).path == "/api/context":
-            return self.respond(200, {"mode": "local", "label": "로컬 테스트 · SQLite", "simulator": True})
+            return self.respond(200, {"mode": "local", "label": "로컬 검증 · DB 확인 중", "simulator": True})
         return super().do_GET()
 
     def do_POST(self):

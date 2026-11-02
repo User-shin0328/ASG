@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+import re
 import threading
 from contextlib import contextmanager
 from pathlib import Path
@@ -41,7 +42,8 @@ class Database:
 
     def __init__(self, database: str):
         self.database = database
-        self.is_postgres = database.startswith(("postgresql://", "postgres://", "host="))
+        self.is_postgres = database.startswith(("postgresql://", "postgres://")) or bool(
+            re.search(r'(?:^|\s)(?:host|hostaddr|dbname|user|service)\s*=', database))
         self._lock = threading.RLock()
         if self.is_postgres:
             import psycopg

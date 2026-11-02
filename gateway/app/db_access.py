@@ -8,6 +8,7 @@ import uuid
 from gateway.app.core import GatewayError, digest, scan_untrusted_text
 from security_agent.assessment import SecurityAgent, AGENT_VERSION
 from security_agent.catalog import CATALOG, validate_query
+from security_agent.db_target import target_config
 
 KST=timezone(timedelta(hours=9))
 WINDOW=1800
@@ -50,6 +51,7 @@ class DBAccessService:
         self.db=gateway.db
         self.lock=gateway.lock
         self.agent=SecurityAgent(scan_untrusted_text)
+        self.target=target_config()
         if not self.db.is_postgres:
             self.db.executescript(SCHEMA+'''
             CREATE TRIGGER IF NOT EXISTS db_events_no_update BEFORE UPDATE ON db_access_events BEGIN SELECT RAISE(ABORT,'db events are append only'); END;
@@ -57,7 +59,7 @@ class DBAccessService:
             ''')
 
     def policy_hash(self):
-        return digest({'policy':self.gateway.policy,'catalog':CATALOG,'engine':AGENT_VERSION,'all_db_reads_require_human_approval':True})
+        return digest({'policy':self.gateway.policy,'catalog':CATALOG,'engine':AGENT_VERSION,'all_db_reads_require_human_approval':True,'target':self.target})
 
     def reviewer(self,p):
         if p.kind!='reviewer':raise GatewayError(403,'REVIEWER_REQUIRED','검토자 권한이 필요합니다.')
@@ -78,7 +80,8 @@ class DBAccessService:
         dataset=CATALOG.get(args.get('dataset_id'),{}) if isinstance(args.get('dataset_id'),str) else {}
         result.update({'request_id':obj['id'],'state':state,'arguments':args,'analysis':analysis,
             'dataset_name':dataset.get('name','등록되지 않은 데이터'),
-            'database_name':'사내 검증 DB','mode':'fictional_sqlite_lab',
+            'database_name':'보호 PostgreSQL DB' if analysis.get('db_target',{}).get('backend')=='postgresql' else '사내 검증 DB',
+            'mode':analysis.get('db_target',{}).get('backend','sqlite'),
             'execution_id':obj['execution_id'],'receipt_id':obj['receipt_id']})
         if full:
             result['approval_binding']={'request_hash':obj['request_hash'],'snapshot_hash':obj['snapshot_hash'],'policy_hash':obj['policy_hash']}
@@ -113,6 +116,7 @@ class DBAccessService:
                     'sensitive':False,'bulk':False,'abnormal':True,'reason_codes':['SECURITY_AGENT_UNAVAILABLE'],
                     'reasons':['보안 분석에 실패하여 요청을 차단했습니다.'],'recommendation':'분석 서비스를 복구한 뒤 새로 요청하세요.','decision':'DENY'}
             decision=analysis['decision']
+            analysis['db_target']=dict(self.target)
             pending=self.db.execute("SELECT COUNT(*) AS count FROM db_access_requests WHERE principal=? AND state IN ('PENDING_APPROVAL','APPROVED') AND expires_at>?",(p.id,now)).fetchone()['count']
             if decision!='DENY' and pending>=self.gateway.policy['limits']['pending_approvals_per_principal']:
                 analysis.update({'decision':'DENY','abnormal':True,'risk_score':max(80,analysis['risk_score']),'risk_level':'critical',
@@ -185,7 +189,7 @@ class DBAccessService:
             try:
                 result=self.gateway._tool_request('POST','/internal/execute',{'execution_id':row['execution_id'],'action_id':request_id,
                     'principal':p.id,'user':p.user,'tenant':p.tenant,'task_id':p.task,'tool':'query_database',
-                    'arguments':args,'request_hash':row['request_hash']})
+                    'arguments':args|{'_asg_target_id':self.target['id']},'request_hash':row['request_hash']})
             except GatewayError:
                 self.db.execute("UPDATE db_access_requests SET state='UNKNOWN' WHERE id=?",(request_id,))
                 self._event(row,p.id,'DB_EXECUTION_UNKNOWN',{'execution_id':row['execution_id']})
@@ -261,7 +265,7 @@ class DBAccessService:
         probe('protected_db','보호 DB',lambda:self.gateway._tool_request('GET','/internal/db-health')['detail'])
         probe('audit_db','감사 DB',lambda:'감사 기록 저장소 연결됨' if self.db.execute('SELECT COUNT(*) AS count FROM db_access_events').fetchone() else '')
         return {'checked_at':time.time(),'items':items,'all_healthy':all(item['status']=='up' for item in items),
-            'deployment':'로컬 검증 DB · 가상 데이터 · 실제 사내 DB 미연결'}
+            'deployment':'PostgreSQL 연결 모드' if self.target['backend']=='postgresql' else '로컬 검증 DB · 가상 데이터 · 실제 사내 DB 미연결', 'target':self.target}
 
     def diagnostics(self,p):
         with self.lock:

@@ -51,7 +51,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path == "/api/context":
-            return self.respond(200, {"mode": "container", "label": "Docker · PostgreSQL", "simulator": False})
+            return self.respond(200, {"mode": "container", "label": "컨테이너 · 인증 후 확인", "simulator": False})
         if path in STATIC:
             filename, mime = STATIC[path]
             return self.respond(200, (ROOT / filename).read_bytes(), mime)

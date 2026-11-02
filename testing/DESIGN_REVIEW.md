@@ -54,3 +54,5 @@ Impeccable Operate와 테이스트스킬 Data terminal(seed 994061310)을 현재
 증거: `.impeccable/db-final/`, `screenshots/db-report-overview.png`, `screenshots/db-report.png`, `screenshots/db-review-form.png`, `screenshots/db-diagnostics.png`, `screenshots/db-dashboard-preview.png`.
 
 현재 DB·엔진의 범위는 화면에도 명시합니다. 가상 데이터 SQLite이며 실제 사내 DB 미연결, 정책·행위 규칙 엔진이며 LLM의 침해 확률이 아닙니다.
+
+2026-11-02: PostgreSQL 선택 시 환경 라벨과 테스트 페이지 설명이 실제 설정에 맞게 바뀌도록 수정했습니다. 임시 실제 PostgreSQL의 원클릭 점검 화면을 브라우저에서 조작·확인했으며 `screenshots/postgresql-diagnostics.png`에 보존했습니다. 기존 레이아웃을 유지한 상태 정보 수정이며 새 시각 디자인 리뷰를 받았다고 표현하지 않습니다. 사내 운영 DB가 연결됐다는 표시도 하지 않습니다.

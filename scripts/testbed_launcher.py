@@ -53,11 +53,12 @@ def configure_packaged_loopback_http():
 
 
 class LocalLab:
-    def __init__(self, data_dir: Path, gateway_port=0, tool_port=0, dashboard_port=18511):
+    def __init__(self, data_dir: Path, gateway_port=0, tool_port=0, dashboard_port=18511, gateway_database=None):
         self.data_dir = Path(data_dir).resolve()
         self.ports = (gateway_port, tool_port, dashboard_port)
         self.servers, self.threads = [], []
         self.gateway = None
+        self.gateway_database = gateway_database
 
     def start(self):
         from gateway.app.core import Gateway
@@ -96,7 +97,7 @@ class LocalLab:
             self.gateway_url = f"http://127.0.0.1:{actual_gp}"
             self.url = f"http://127.0.0.1:{actual_dp}"
             tool_url = f"http://127.0.0.1:{actual_tp}"
-            self.gateway = Gateway(str(self.data_dir / "gateway.sqlite3"), {k: v for k, v in self.tokens.items() if k != "tool"}, tool_url, self.tokens["tool"])
+            self.gateway = Gateway(self.gateway_database or str(self.data_dir / "gateway.sqlite3"), {k: v for k, v in self.tokens.items() if k != "tool"}, tool_url, self.tokens["tool"])
             GatewayHandler.gateway = self.gateway
             SocDashboardHandler.generator = TrafficGenerator(self.gateway_url, self.tokens["agent-alice"], self.tokens["agent-bob"], self.tokens["reviewer-demo"])
             SocDashboardHandler.gateway_url = self.gateway_url

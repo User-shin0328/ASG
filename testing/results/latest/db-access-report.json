@@ -1,21 +1,21 @@
 {
-  "id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+  "id": "fa569bec-5ff7-4f34-aa8b-4145310f56d9",
   "principal": "agent-alice",
   "user_name": "alice",
   "tenant": "north",
   "task_id": "task-alice-001",
-  "requested_at": 1793465145.606736,
+  "requested_at": 1793609724.1325634,
   "source_ip": "127.0.0.1",
   "client": "Python-urllib/3.12",
   "risk_score": 15,
   "decision": "REQUIRE_APPROVAL",
-  "expires_at": 1793466045.606736,
+  "expires_at": 1793610624.1325634,
   "reviewer": "reviewer-demo",
   "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-  "decided_at": 1793465145.6147366,
+  "decided_at": 1793609724.159636,
   "result_count": 25,
-  "trace_id": "14731f2f-1eaa-47d4-aa5d-a91e0da1be3a",
-  "request_id": "f8ab1a7e-92bc-4cb2-9e21-b5d194d321e3",
+  "trace_id": "5090ce79-e9e8-4f6b-84b6-6a4164d8f669",
+  "request_id": "fa569bec-5ff7-4f34-aa8b-4145310f56d9",
   "state": "SUCCEEDED",
   "arguments": {
     "dataset_id": "operations",
@@ -41,21 +41,25 @@
     ],
     "recommendation": "업무 목적과 요청자의 담당 범위를 확인한 뒤 일회성 조회를 승인하세요.",
     "decision": "REQUIRE_APPROVAL",
-    "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다."
+    "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다.",
+    "db_target": {
+      "backend": "sqlite",
+      "id": "sqlite-lab-v1"
+    }
   },
   "dataset_name": "운영 지원 이력",
   "database_name": "사내 검증 DB",
-  "mode": "fictional_sqlite_lab",
-  "execution_id": "c7f4a9f1-a8b0-4bcd-bc35-1bc1f4c95100",
-  "receipt_id": "receipt-74631052-494b-40ca-be5f-9099ba7dd585",
+  "mode": "sqlite",
+  "execution_id": "6db82c0b-a703-4483-82a0-8db04216d1c2",
+  "receipt_id": "receipt-5749add6-e701-4028-a181-c8d54b40d1bd",
   "approval_binding": {
     "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
-    "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5",
-    "policy_hash": "5d8b2bea056f668d7f1c6a868b38b0cd484735eb9f492f2ce157d978ac3da4b8"
+    "snapshot_hash": "a308a7973ae11a38557d0aec5508cd68c0f732c8487d56f4ff281a639efce59c",
+    "policy_hash": "9f020daef6e9753b8ab45bea614a574b83c33da1195b71e2bc53a6384425b481"
   },
   "timeline": [
     {
-      "at": 1793465145.608736,
+      "at": 1793609724.1345673,
       "actor": "agent-alice",
       "event": "DB_REQUESTED",
       "details": {
@@ -64,33 +68,33 @@
         "risk_score": 15,
         "source_ip": "127.0.0.1",
         "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
-        "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5"
+        "snapshot_hash": "a308a7973ae11a38557d0aec5508cd68c0f732c8487d56f4ff281a639efce59c"
       }
     },
     {
-      "at": 1793465145.6147366,
+      "at": 1793609724.1606448,
       "actor": "reviewer-demo",
       "event": "DB_APPROVED",
       "details": {
         "reason": "업무 범위와 열·조회량을 확인했습니다.",
-        "snapshot_hash": "c9c524b1ef038d2ad9ab1f0761e30dcb90a6fbd196cbf9fe62b6a722bba2a6a5"
+        "snapshot_hash": "a308a7973ae11a38557d0aec5508cd68c0f732c8487d56f4ff281a639efce59c"
       }
     },
     {
-      "at": 1793465145.622735,
+      "at": 1793609724.1685557,
       "actor": "agent-alice",
       "event": "DB_EXECUTION_STARTED",
       "details": {
-        "execution_id": "c7f4a9f1-a8b0-4bcd-bc35-1bc1f4c95100"
+        "execution_id": "6db82c0b-a703-4483-82a0-8db04216d1c2"
       }
     },
     {
-      "at": 1793465145.6357358,
+      "at": 1793609724.1819117,
       "actor": "agent-alice",
       "event": "DB_EXECUTION_SUCCEEDED",
       "details": {
         "row_count": 25,
-        "receipt_id": "receipt-74631052-494b-40ca-be5f-9099ba7dd585"
+        "receipt_id": "receipt-5749add6-e701-4028-a181-c8d54b40d1bd"
       }
     }
   ]

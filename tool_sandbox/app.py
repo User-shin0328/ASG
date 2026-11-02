@@ -10,7 +10,8 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
-from security_agent.catalog import initialize_demo_database, execute_catalog_query
+from security_agent.catalog import initialize_demo_database
+from tool_sandbox import protected_db
 
 DATA = Path(__file__).resolve().parent.parent / "fixtures" / "documents"
 DATABASE = os.environ.get("TOOL_DATABASE_PATH", "/data/tool.sqlite3")
@@ -44,7 +45,8 @@ def connect():
     CREATE TRIGGER IF NOT EXISTS outbox_no_update BEFORE UPDATE ON outbox BEGIN SELECT RAISE(ABORT,'outbox is append only'); END;
     CREATE TRIGGER IF NOT EXISTS outbox_no_delete BEFORE DELETE ON outbox BEGIN SELECT RAISE(ABORT,'outbox is append only'); END;
                 """)
-                initialize_demo_database(c)
+                if protected_db.target_config()['backend'] == 'sqlite':
+                    initialize_demo_database(c)
                 _INITIALIZED.add(DATABASE)
     return c
 
@@ -62,7 +64,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(raw)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(raw)
+        try:
+            self.wfile.write(raw)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
 
     def authorized(self):
         if not TOKEN:
@@ -87,8 +92,10 @@ class Handler(BaseHTTPRequestHandler):
         c = connect()
         try:
             if path == '/internal/db-health':
-                c.execute('SELECT ticket_id FROM asg_operations LIMIT 1').fetchone()
-                return self.send_json(200, {'status':'ready','detail':'검증용 SQLite DB 읽기 연결 정상','mode':'fictional_sqlite_lab'})
+                try:
+                    return self.send_json(200, protected_db.health(c))
+                except Exception:
+                    return self.send_json(503, {'error':'PROTECTED_DB_UNAVAILABLE'})
             if path.startswith("/internal/artifacts/"):
                 aid = unquote(path.rsplit("/", 1)[1])
                 r = c.execute("SELECT id,owner,tenant,document_id,content,content_hash,created FROM artifacts WHERE id=?", (aid,)).fetchone()
@@ -129,7 +136,9 @@ class Handler(BaseHTTPRequestHandler):
                         c.execute('ROLLBACK')
                         return self.send_json(403,{'error':'DB_PRINCIPAL_FORBIDDEN'})
                     try:
-                        result=execute_catalog_query(c,args,req['tenant'],roles[req['principal']])
+                        query_args=dict(args)
+                        target=query_args.pop('_asg_target_id',None)
+                        result=protected_db.execute_query(c,query_args,req['tenant'],roles[req['principal']],target)
                     except ValueError:
                         c.execute('ROLLBACK')
                         return self.send_json(403,{'error':'DB_QUERY_FORBIDDEN'})

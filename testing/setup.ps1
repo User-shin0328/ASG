@@ -15,4 +15,6 @@ if (-not (Test-Path -LiteralPath $EnvPython)) {
 }
 & $EnvPython -m pip install -r (Join-Path $PSScriptRoot 'build-requirements.lock')
 if ($LASTEXITCODE -ne 0) { throw 'Build dependency installation failed.' }
+& $EnvPython -m pip install -r (Join-Path $ProjectRoot 'requirements.lock')
+if ($LASTEXITCODE -ne 0) { throw 'Runtime dependency installation failed.' }
 Write-Host 'Ready. Run .\testing\run_tests.ps1 or .\scripts\build_exe.ps1'

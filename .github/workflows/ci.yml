@@ -23,7 +23,9 @@ jobs:
         uses: pypa/gh-action-pip-audit@v1.1.0
         with:
           inputs: requirements.lock
-      - run: python -m compileall -q gateway tool_sandbox demo_agent dashboard scripts tests evaluation
+      - name: Install locked runtime dependencies
+        run: python -m pip install -r requirements.lock
+      - run: python -m compileall -q gateway security_agent tool_sandbox demo_agent dashboard scripts testing tests evaluation
       - name: Run unit tests
         run: |
           mkdir -p reports/ci

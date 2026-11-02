@@ -1,6 +1,8 @@
 FROM python:3.12-alpine
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app
 WORKDIR /app
+COPY requirements.lock /app/requirements.lock
+RUN pip install --no-cache-dir -r /app/requirements.lock
 RUN apk upgrade --no-cache \
     && apk add --no-cache shadow
 RUN groupadd --system --gid 10002 sandbox && useradd --system --uid 10002 --gid sandbox --home-dir /nonexistent --shell /usr/sbin/nologin sandbox

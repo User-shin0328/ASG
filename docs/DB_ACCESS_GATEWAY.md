@@ -131,3 +131,11 @@ $env:AGENT_ALICE_TOKEN = $env:ASG_LAB_ALICE_TOKEN
 ## 10. 현재 검증 근거
 
 [통합 설명서](../testing/TEST_GUIDE.md)에는 재현 순서와 예상·실제 결과를 함께 기록합니다. [결과보고서](../testing/results/latest/REPORT.md)는 실제 소스 테스트와 독립 실행파일 검증을 포함합니다. 같은 빌드인지 SHA-256으로 확인할 수 있습니다.
+
+## 11. PostgreSQL 보호 DB 확장 (2026-11-02)
+
+실제 사내 DB 종류를 PostgreSQL로 선택한 것에 맞춰 `tool_sandbox/protected_db.py`를 추가했습니다. 이제 보호 DB는 SQLite 기본값 또는 PostgreSQL을 선택할 수 있습니다. 게이트웨이 감사 DB의 PostgreSQL과 업무 조회 대상 PostgreSQL은 별도 연결입니다. 운영 연결 정보나 실제 스키마는 아직 입력하지 않았습니다.
+
+PostgreSQL은 등록된 관계의 매개변수화 SELECT, 읽기 전용 트랜잭션, 제한 시간, 전용 계정과 인증서 검증을 사용합니다. 공개 대상 ID를 정책 해시에 결합하고 도구 계층에서도 대조합니다. 이번 변경 전 대기·승인 요청은 정책 바인딩이 달라지므로 새 요청으로 제출해야 합니다.
+
+임시 PostgreSQL에서 실제 감사·요청·승인·조회 흐름을 검증한 결과는 [별도 보고서](../testing/results/postgresql/REPORT.md)에 있습니다. 이는 운영 DB·인증서·기업 IdP·네트워크 격리 검증을 뜻하지 않습니다. 상세 설정, DBA의 뷰 매핑, 권한 예시, 대상 ID 버전 관리와 재현 절차는 [POSTGRESQL_CONNECTION.md](POSTGRESQL_CONNECTION.md)를 기준으로 봅니다. 이전 절의 SQLite 설명은 기본 로컬 모드에 해당합니다.

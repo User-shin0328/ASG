@@ -191,7 +191,7 @@ def main():
 
     completed=datetime.now(KST)
     result='FAIL' if any(c['status']=='FAIL' for c in checks) else 'PARTIAL' if any(c['status']=='NOT_RUN' for c in checks) else 'PASS'
-    report={'result':result,'started':started.isoformat(),'completed':completed.isoformat(),'python':sys.version,'platform':sys.platform,'executable':exe_meta,'checks':checks,'not_run':['Docker 다중 네트워크 격리·PostgreSQL 실동작','외부 LLM 및 외부 데이터셋 평가','코드 서명·다른 Windows PC 실행']}
+    report={'result':result,'started':started.isoformat(),'completed':completed.isoformat(),'python':sys.version,'platform':sys.platform,'executable':exe_meta,'checks':checks,'not_run':['Docker 다중 네트워크 격리·사내 PostgreSQL 운영 연결(임시 PostgreSQL 기능 검증은 별도 보고서)','외부 LLM 및 외부 데이터셋 평가','코드 서명·다른 Windows PC 실행']}
     (output/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     lines=['# ASG 실제 테스트 결과보고서','',f'- 실행: {started:%Y-%m-%d %H:%M:%S} ~ {completed:%H:%M:%S} (Asia/Seoul)',f'- 전체 판정: **{result}**',f'- Python: {sys.version.split()[0]} / {sys.platform}','- 로컬 HTTP·SQLite·모의 전송함을 사용했습니다. 실제 외부 발송은 없습니다.','', '| ID | 테스트 | 결과 |','|---|---|---|']
     lines += [f"| {c['id']} | {c['name']} | {c['status']} |" for c in checks]

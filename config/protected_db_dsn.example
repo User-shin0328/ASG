@@ -1,0 +1,3 @@
+# Copy only the next line to secrets/protected_db_dsn.txt and replace locally.
+# Do not paste the resulting file into chat or commit it.
+host=db.internal.example port=5432 dbname=business user=asg_reader password=REPLACE_LOCALLY sslmode=verify-full sslrootcert=/run/secrets/protected_db_ca

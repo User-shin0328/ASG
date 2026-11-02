@@ -1,0 +1,25 @@
+# Protected business DB is distinct from the Gateway audit PostgreSQL service.
+# Only tool-sandbox receives the protected DB connection secret.
+services:
+  gateway:
+    environment:
+      PROTECTED_DB_BACKEND: postgresql
+      PROTECTED_DB_TARGET_ID: ${PROTECTED_DB_TARGET_ID:?Set a stable versioned target ID}
+  tool-sandbox:
+    environment:
+      PROTECTED_DB_BACKEND: postgresql
+      PROTECTED_DB_TARGET_ID: ${PROTECTED_DB_TARGET_ID:?Set a stable versioned target ID}
+      PROTECTED_DB_SCHEMA: ${PROTECTED_DB_SCHEMA:-asg_access}
+      PROTECTED_DB_DSN_FILE: /run/secrets/protected_db_dsn
+    secrets: [protected_db_dsn, protected_db_ca]
+    networks: [tool_net, protected_db_net]
+networks:
+  # Egress to the corporate DB is available only to the tool service on this network.
+  # Deploy an outbound firewall/ACL restricting it to the approved DB host/port.
+  protected_db_net:
+    driver: bridge
+secrets:
+  protected_db_dsn:
+    file: ./secrets/protected_db_dsn.txt
+  protected_db_ca:
+    file: ./secrets/protected_db_ca.crt
