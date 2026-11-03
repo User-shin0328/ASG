@@ -1,101 +1,13 @@
-# Local runbook
+# 실행·검증 안내
 
-## Requirements
+1. `testing/setup.ps1`로 테스트 환경을 준비합니다.
+2. `scripts/build_exe.ps1`로 현재 소스의 ASG.exe를 만듭니다.
+3. `testing/run_tests.ps1`로 회귀·HTTP·실행파일 검증을 수행합니다.
+4. `python -m testing.postgresql_checks --policy-controls`로 별도 PostgreSQL과 독립 Gateway 연결 두 개의 경쟁을 검증합니다.
+5. 가상 데이터 보존 환경은 [VALIDATION_DB_GUIDE](../testing/VALIDATION_DB_GUIDE.md)를 따릅니다. 기존 DB에는 004 마이그레이션이 필요합니다.
 
-- Docker Desktop using Linux containers and Docker Compose.
-- Python 3.12 or newer only if running the helper and tests directly on the host; initialization also runs in a container.
+기본 실행파일은 SQLite 로컬 검증용입니다. 정책 파일을 바꿔 재기동하면 이전 정책의 대기·승인·범위 승인은 재사용하지 않습니다. 요청당·누적 한도는 config/db_access.json에 명시합니다.
 
-## Initialize and start
+응답 유실로 결과 확인 필요가 된 요청은 보고서의 영수증 대조 기능으로 확인합니다. 대조는 새 SQL을 실행하지 않으며, 영수증이 없으면 예약을 임의 환급하지 않습니다. 별도 운영자의 안전한 조사 절차가 필요합니다.
 
-From the project root in PowerShell. The initialization step creates opaque demo tokens in `.env` and strong database secrets under the ignored `secrets/` directory; it keeps existing valid values and does not print secret values.
-
-Resolve the Docker Desktop executables once. This supports both a PATH installation and the per-user Windows installation:
-
-```powershell
-$DockerCli = (Get-Command docker.exe -ErrorAction SilentlyContinue).Source
-if (-not $DockerCli) { $DockerCli = Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\resources\bin\docker.exe' }
-$ComposeCli = (Get-Command docker-compose.exe -ErrorAction SilentlyContinue).Source
-if (-not $ComposeCli) { $ComposeCli = Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\resources\bin\docker-compose.exe' }
-if (-not (Test-Path $DockerCli) -or -not (Test-Path $ComposeCli)) { throw 'Docker Desktop CLI or Compose executable was not found.' }
-```
-
-Validate Compose interpolation before creating local credentials. The template supplies placeholder tokens for configuration parsing only; do not use it to start services.
-
-```powershell
-& $ComposeCli --env-file .env.example config --quiet
-```
-
-```powershell
-& $DockerCli run --rm --mount "type=bind,source=$($PWD.Path),target=/workspace" --workdir /workspace python:3.12-slim python -m scripts.init_demo
-& $ComposeCli up --build -d
-& $ComposeCli exec -T gateway python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3); print(r.status, r.read().decode())"
-```
-
-The first command uses the Python image already required by the project, so no host Python installation is needed to create local credentials.
-
-Open the dashboard at `http://127.0.0.1:18501`. Read the reviewer token from the local ignored `.env` and enter it in the page. Load the audit events before downloading the JSON export; editing the reviewer token clears the previously fetched export data. Tokens are never committed. Only the dashboard is published to the Windows host, bound to loopback. The Gateway API and tool sandbox stay on internal Docker networks.
-
-PostgreSQL starts on an internal data network with no host-published port. Compose runs the versioned migration job before starting the Gateway. The Gateway uses a restricted database role; the administrator password is used only during initial setup and migrations.
-
-## Rotate a demo agent or reviewer token
-
-Rotation revokes the existing token hash in PostgreSQL, replaces the selected value in the ignored local `.env`, and never prints the new token. Run this only after the stack is initialized. It briefly stops Gateway access while the token is replaced:
-
-```powershell
-& $ComposeCli stop gateway
-& $ComposeCli --profile admin run --rm token-admin python /app/scripts/rotate_demo_token.py alice
-& $ComposeCli up -d gateway
-```
-
-Use `bob` or `reviewer` instead of `alice` to rotate those credentials. The database keeps revoked hashes so restarting with an old token cannot reactivate it. The new credential is read from `.env` only by local services after the Gateway restarts.
-
-The short-lived `token-admin` profile writes the mounted local `.env`; it uses a read-only container with only the `DAC_OVERRIDE` capability to support host file permissions. It joins only the internal data network and does not publish ports. Keep normal Gateway and agent containers unprivileged.
-
-`config/policy.yaml` is YAML 1.2 written in JSON-compatible syntax so the runtime can parse it with Python's standard library. Startup rejects missing fields, unknown fields, invalid limits, a non-DENY default, or a report-submission rule without reviewer approval. Policy version, tool roles, argument fields, destinations, request/argument limits, the 60-second per-agent action budget, the pending-approval budget, and approval duration are loaded from this file. Budget exhaustion returns HTTP 429 before an action or tool side effect is recorded. Idempotent retries of an existing action return the existing action and do not consume another budget slot.
-
-Gateway tool-service calls time out after 3 seconds by default. `TOOL_REQUEST_TIMEOUT_SECONDS` can override this from greater than 0 through 60 seconds; invalid values stop Gateway startup before it opens the database. The fault-injection Compose overlay uses 45 seconds only to provide a controlled restart window in the isolated test stack.
-
-Docker Desktop needs a host-facing bridge for dashboard port forwarding, so the dashboard also joins `dashboard_host_net`. At startup, `dashboard/start.sh` resolves the fixed Gateway address, installs an nftables output chain with default-drop policy, then removes all capabilities and runs the app as UID 10003. The filter permits loopback, established replies to host-initiated connections, Docker's local DNS resolver, and the resolved Gateway IPv4 address on TCP 8000. If firewall setup or Gateway name resolution fails, the dashboard exits before serving the UI. The healthcheck requires both a default-drop chain and a successful local Gateway readiness request.
-
-## Deterministic demo
-
-```powershell
-& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode normal
-& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode injection
-```
-
-The normal example reads only Alice's assigned fictional report. The injection example records a suspicious string, then attempts Bob's report and receives a policy denial. The Gateway API is not published to the Windows host; use the demo-agent container for agent requests and the dashboard for reviewer approval. No external report transmission occurs.
-
-### Six final scenarios
-
-Follow the [six-case demo matrix](final-demo-matrix.md). The remaining deterministic commands are:
-
-```powershell
-& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode unapproved-report
-& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode approval
-& $ComposeCli --profile demo run --rm demo-agent python -m demo_agent.deterministic --mode execute-approved --action-id <action-id>
-```
-
-For scenario 3, run the optional host-side model against Alice's assigned adversarial fixture with the local model installed: `python -m demo_agent.llm_agent --document-id report-alice-attack --model qwen2.5-coder:7b`. It may not produce a malicious tool call; report its actual tool choice and Gateway result. The Gateway inspection and permission checks remain the enforcement evidence. Scenario 6 repeats the same `execute-approved` command and checks that the existing receipt is returned.
-
-Run the isolated-agent and tool-authentication smoke checks with:
-
-```powershell
-& $ComposeCli --profile demo run --rm --no-deps demo-agent python -m demo_agent.network_checks
-$toolNet = (& $DockerCli network ls --filter "label=com.docker.compose.network=tool_net" --format "{{.Name}}" | Select-Object -First 1).Trim()
-& $DockerCli run --rm --network $toolNet ai-agent-security-gateway-demo-agent python -m demo_agent.network_checks --tool-auth
-```
-
-These checks require the profiled demo-agent image to be built. They confirm the agent can reach only the Gateway among the tested endpoints and that a client on the tool network without service credentials gets HTTP 401.
-
-An optional model adapter is available with `python -m demo_agent.llm_agent --model qwen2.5-coder:7b`. Run it on the Windows host with Python 3.12 so the local model and dashboard loopback proxy are reachable. It expects Ollama at `OLLAMA_URL` (default `http://127.0.0.1:11434`) and forwards Gateway requests through `http://127.0.0.1:18501`. In PowerShell, load the local agent token without printing it with `$env:AGENT_ALICE_TOKEN = ((Get-Content .env | Where-Object { $_ -like 'AGENT_ALICE_TOKEN=*' }) -replace '^AGENT_ALICE_TOKEN=', '')`. The model service receives task text and tool results but no Gateway credential. The hardened Compose agent network deliberately cannot reach host services, including Ollama; enabling the classifier inside that container therefore fails closed. On the host adapter only, set `$env:INPUT_CLASSIFIER_ENABLED = 'true'` to run the semantic Qwen prefilter and the packaged validation-frozen n-gram detector on task text and retrieved documents. `INPUT_CLASSIFIER_NGRAM_ENABLED` defaults to `true` when the semantic classifier is enabled; set it to `false` to run semantic-only. Enabling the n-gram layer without the semantic classifier is a configuration error. Either malicious verdict or a classifier/inspection error stops the task or withholds the document. A model integrity/provenance failure is fail-closed. The combined label is an OR of the two detector labels and never grants tool permission. The default timeout is 60 seconds to tolerate local model cold starts; the local n-gram score is deterministic and runs in-process. The documented results and domain limits are in the evaluation report; the deterministic adapter remains the repeatable baseline.
-
-## Tests and shutdown
-
-```powershell
-python -m unittest discover -v
-python -m evaluation.run
-& $ComposeCli down
-```
-
-`& $ComposeCli down -v` also deletes demo state. Use it only when intentionally resetting the exercise. Never place production documents or credentials in these fixtures.
+기존 Ollama·의미 분류기·모델 실행 설정은 제거했습니다. 호스트에 설치된 다른 소프트웨어는 관리하지 않습니다.

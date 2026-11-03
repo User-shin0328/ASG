@@ -1,0 +1,8 @@
+{
+  "sha256": "1905d613f52af8949374137a75a698a8e3aaa246eba09bc50e0397f80c93ea24",
+  "bytes": 15207031,
+  "matches_acceptance_binary": true,
+  "policy_module_present": true,
+  "db_policy_config_present": true,
+  "removed_modules_present": []
+}

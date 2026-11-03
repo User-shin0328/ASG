@@ -1,34 +1,35 @@
 {
-  "id": "fa569bec-5ff7-4f34-aa8b-4145310f56d9",
+  "id": "804e7c48-0df8-499c-94d8-f9be5563cf41",
   "principal": "agent-alice",
   "user_name": "alice",
   "tenant": "north",
   "task_id": "task-alice-001",
-  "requested_at": 1793609724.1325634,
+  "requested_at": 1793668452.967009,
   "source_ip": "127.0.0.1",
   "client": "Python-urllib/3.12",
   "risk_score": 15,
   "decision": "REQUIRE_APPROVAL",
-  "expires_at": 1793610624.1325634,
+  "expires_at": 1793669352.967009,
   "reviewer": "reviewer-demo",
   "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-  "decided_at": 1793609724.159636,
+  "decided_at": 1793668452.9980087,
   "result_count": 25,
-  "trace_id": "5090ce79-e9e8-4f6b-84b6-6a4164d8f669",
-  "request_id": "fa569bec-5ff7-4f34-aa8b-4145310f56d9",
+  "trace_id": "832ce2f1-19e0-40f7-96f6-964509eb4d08",
+  "request_id": "804e7c48-0df8-499c-94d8-f9be5563cf41",
   "state": "SUCCEEDED",
   "arguments": {
     "dataset_id": "operations",
     "columns": [
       "ticket_id",
-      "status"
+      "status",
+      "description"
     ],
     "filters": {},
     "row_limit": 25,
     "purpose": "승인 기반 DB 조회 통합 검증입니다."
   },
   "analysis": {
-    "engine": "db-security-rules-v1",
+    "engine": "db-security-rules-v2",
     "method": "policy_and_behavior_rules",
     "risk_score": 15,
     "risk_level": "low",
@@ -41,25 +42,33 @@
     ],
     "recommendation": "업무 목적과 요청자의 담당 범위를 확인한 뒤 일회성 조회를 승인하세요.",
     "decision": "REQUIRE_APPROVAL",
-    "limitations": "설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다.",
+    "limitations": "정책·행위 규칙 분석이며 위험 점수는 침해 확률이 아닙니다.",
     "db_target": {
       "backend": "sqlite",
       "id": "sqlite-lab-v1"
+    },
+    "authorization": {
+      "mode": "human",
+      "role": "report-submitter"
     }
   },
   "dataset_name": "운영 지원 이력",
   "database_name": "사내 검증 DB",
   "mode": "sqlite",
-  "execution_id": "6db82c0b-a703-4483-82a0-8db04216d1c2",
-  "receipt_id": "receipt-5749add6-e701-4028-a181-c8d54b40d1bd",
+  "execution_id": "e6762e63-3900-407b-a852-de88e3c756bb",
+  "receipt_id": "receipt-9bae6e87-17e6-4d59-b23d-4d7b1261987b",
+  "authorization": {
+    "mode": "human",
+    "role": "report-submitter"
+  },
   "approval_binding": {
-    "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
-    "snapshot_hash": "a308a7973ae11a38557d0aec5508cd68c0f732c8487d56f4ff281a639efce59c",
-    "policy_hash": "9f020daef6e9753b8ab45bea614a574b83c33da1195b71e2bc53a6384425b481"
+    "request_hash": "a81c3f9b4544daf9eb283da019917fc95dba708d457c4ec6ba2150af22aedf1a",
+    "snapshot_hash": "8442085d0d6001055d1ec95da36cf24712a8714af9d4523e2c2266be023c0911",
+    "policy_hash": "8cc415fe226f517737c91a807dda9075187b8d1440bf33c16e8c4db2267b36d4"
   },
   "timeline": [
     {
-      "at": 1793609724.1345673,
+      "at": 1793668452.969008,
       "actor": "agent-alice",
       "event": "DB_REQUESTED",
       "details": {
@@ -67,34 +76,38 @@
         "decision": "REQUIRE_APPROVAL",
         "risk_score": 15,
         "source_ip": "127.0.0.1",
-        "request_hash": "4e40dfbb3dd93669a66a151485af0a72f17fae69a722df51d17532a54d67d7bd",
-        "snapshot_hash": "a308a7973ae11a38557d0aec5508cd68c0f732c8487d56f4ff281a639efce59c"
+        "request_hash": "a81c3f9b4544daf9eb283da019917fc95dba708d457c4ec6ba2150af22aedf1a",
+        "snapshot_hash": "8442085d0d6001055d1ec95da36cf24712a8714af9d4523e2c2266be023c0911"
       }
     },
     {
-      "at": 1793609724.1606448,
+      "at": 1793668452.9990075,
       "actor": "reviewer-demo",
       "event": "DB_APPROVED",
       "details": {
         "reason": "업무 범위와 열·조회량을 확인했습니다.",
-        "snapshot_hash": "a308a7973ae11a38557d0aec5508cd68c0f732c8487d56f4ff281a639efce59c"
+        "snapshot_hash": "8442085d0d6001055d1ec95da36cf24712a8714af9d4523e2c2266be023c0911"
       }
     },
     {
-      "at": 1793609724.1685557,
+      "at": 1793668453.0285027,
       "actor": "agent-alice",
       "event": "DB_EXECUTION_STARTED",
       "details": {
-        "execution_id": "6db82c0b-a703-4483-82a0-8db04216d1c2"
+        "execution_id": "e6762e63-3900-407b-a852-de88e3c756bb",
+        "authorization": {
+          "mode": "human",
+          "role": "report-submitter"
+        }
       }
     },
     {
-      "at": 1793609724.1819117,
+      "at": 1793668453.0437517,
       "actor": "agent-alice",
       "event": "DB_EXECUTION_SUCCEEDED",
       "details": {
         "row_count": 25,
-        "receipt_id": "receipt-5749add6-e701-4028-a181-c8d54b40d1bd"
+        "receipt_id": "receipt-9bae6e87-17e6-4d59-b23d-4d7b1261987b"
       }
     }
   ]

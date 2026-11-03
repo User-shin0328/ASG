@@ -1,0 +1,10 @@
+[
+  {
+    "http": 403,
+    "error": "SCOPE_GRANT_INVALID"
+  },
+  {
+    "http": 403,
+    "error": "SCOPE_GRANT_INVALID"
+  }
+]

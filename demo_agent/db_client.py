@@ -22,7 +22,7 @@ def main():
     status,data=send_request(args.gateway+'/v1/db/requests','POST',headers,{'dataset_id':args.dataset,
         'columns':args.columns,'filters':{},'row_limit':args.row_limit,'purpose':args.purpose})
     print(json.dumps({'http':status,'request':data},ensure_ascii=False,indent=2))
-    if status!=202:return 1
+    if status not in {200,202}:return 1
     endpoint=args.gateway+'/v1/db/requests/'+data['id']
     deadline=time.monotonic()+args.wait_seconds
     while time.monotonic()<deadline:

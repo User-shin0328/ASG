@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from security_agent.catalog import CATALOG, validate_query
 
-AGENT_VERSION='db-security-rules-v1'
+AGENT_VERSION='db-security-rules-v2'
 
 
 class SecurityAgent:
@@ -11,7 +11,7 @@ class SecurityAgent:
         self.scanner=scanner
         self.last_analysis_at=None
 
-    def assess(self, arguments, principal, recent_requests=0):
+    def assess(self, arguments, principal, recent_requests=0, warning=100, block=600):
         errors=validate_query(arguments,principal)
         spec=CATALOG.get(arguments.get('dataset_id')) if isinstance(arguments.get('dataset_id'),str) else None
         requested=arguments.get('columns') if isinstance(arguments.get('columns'),list) else []
@@ -23,13 +23,13 @@ class SecurityAgent:
         suspicious=bool(isinstance(purpose,str) and self.scanner(purpose))
         if suspicious:
             errors.append('SUSPICIOUS_INSTRUCTIONS')
-        if recent_requests>=30:
+        if recent_requests>=block:
             errors.append('ABNORMAL_REQUEST_RATE')
-        abnormal=bool(errors) or recent_requests>=10
+        abnormal=bool(errors) or recent_requests>=warning
         reasons=[]
         if sensitive:reasons.append('민감·고위험 열의 정보 조회를 요청했습니다.')
         if bulk:reasons.append(f'한 번에 {row_limit:,}행을 요청해 대량 조회 기준(1,000행)에 해당합니다.')
-        if recent_requests>=10:reasons.append(f'동일 에이전트의 최근 1분 요청이 {recent_requests}건으로 증가했습니다.')
+        if recent_requests>=warning:reasons.append(f'동일 에이전트의 최근 1분 요청이 {recent_requests}건으로 증가했습니다.')
         if errors:reasons.append('필수 정책 위반: '+', '.join(dict.fromkeys(errors)))
         if not reasons:reasons.append('등록된 데이터와 열, 조회량 범위 안의 읽기 요청입니다.')
         score=min(100,15+(55 if restricted else 35*int(sensitive))+25*int(bulk)+40*int(abnormal))
@@ -42,7 +42,7 @@ class SecurityAgent:
             'risk_level':'critical' if score>=80 else 'high' if score>=60 else 'medium' if score>=30 else 'low',
             'sensitive':sensitive,'bulk':bulk,'abnormal':abnormal,'reason_codes':list(dict.fromkeys(errors)),
             'reasons':reasons,'recommendation':recommendation,'decision':decision,
-            'limitations':'설명 가능한 정책·행위 규칙 분석이며 학습형 LLM 확률 또는 침해 확률이 아닙니다.'}
+            'limitations':'정책·행위 규칙 분석이며 위험 점수는 침해 확률이 아닙니다.'}
 
     def health(self):
         sample={'dataset_id':'operations','columns':['ticket_id'],'filters':{},'row_limit':10,'purpose':'health probe for allowed data'}

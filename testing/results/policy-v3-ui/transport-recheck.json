@@ -1,0 +1,9 @@
+{
+  "initial_acceptance": "T13 returned 503 with WinError 10053; 117 regression tests and other 30 acceptance checks passed",
+  "focused_recheck": {
+    "requests": 50,
+    "http403": 50,
+    "other_statuses": 0
+  },
+  "interpretation": "Transient transport failure was not reproduced; no retry masking added to the security assertion; full acceptance rerun required."
+}

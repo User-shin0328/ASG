@@ -88,27 +88,37 @@ class Handler(BaseHTTPRequestHandler):
             query = parse_qs(urlparse(self.path).query)
             if path == '/v1/db/requests' and self.command == 'POST':
                 result = service.create(p,self.body(),self.headers.get('Idempotency-Key',''),self.client_address[0],self.headers.get('User-Agent',''))
-                return (403 if result['decision']=='DENY' else 202),result
+                return (403 if result['decision']=='DENY' else 200 if result['decision']=='ALLOW' else 202),result
             if path == '/v1/db/requests' and self.command == 'GET':
                 try: page=int(query.get('page',['1'])[0])
                 except ValueError: raise GatewayError(422,'INVALID_PAGE','페이지 번호가 올바르지 않습니다.')
                 return 200,service.listing(p,query.get('date',[None])[0],query.get('pending',['false'])[0]=='true',query.get('sort',['newest'])[0],page)
             if path == '/v1/db/overview' and self.command == 'GET':return 200,service.overview(p)
             if path == '/v1/db/status' and self.command == 'GET':return 200,service.status(p)
+            if path == '/v1/db/grants' and self.command == 'GET':return 200,service.grants(p)
+            if path == '/v1/db/budgets' and self.command == 'GET':return 200,service.budgets(p)
+            revoke=re.fullmatch(r'/v1/db/grants/([a-zA-Z0-9-]+)/revoke',path)
+            if revoke and self.command=='POST':
+                body=self.body()
+                if set(body)!={'reason'}:raise GatewayError(422,'INVALID_REQUEST','reason이 필요합니다.')
+                return 200,service.revoke_grant(p,revoke.group(1),body['reason'])
             if path == '/v1/db/diagnostics' and self.command == 'POST':
                 if self.body(): raise GatewayError(422,'INVALID_REQUEST','본문은 빈 객체여야 합니다.')
                 return 200,service.diagnostics(p)
-            match=re.fullmatch(r'/v1/db/requests/([a-zA-Z0-9-]+)(?:/(decision|execute))?',path)
+            match=re.fullmatch(r'/v1/db/requests/([a-zA-Z0-9-]+)(?:/(decision|execute|reconcile))?',path)
             if match:
                 request_id,operation=match.groups()
                 if not operation and self.command=='GET':return 200,service.detail(p,request_id)
                 if operation=='decision' and self.command=='POST':
                     body=self.body()
-                    if set(body)!={'decision','reason'}:raise GatewayError(422,'INVALID_REQUEST','decision과 reason이 필요합니다.')
-                    return 200,service.decide(p,request_id,body['decision'],body['reason'])
+                    if set(body) not in ({'decision','reason'},{'decision','reason','scope_grant'}):raise GatewayError(422,'INVALID_REQUEST','decision과 reason이 필요합니다.')
+                    return 200,service.decide(p,request_id,body['decision'],body['reason'],body.get('scope_grant'))
                 if operation=='execute' and self.command=='POST':
                     if self.body():raise GatewayError(422,'INVALID_REQUEST','본문은 빈 객체여야 합니다.')
                     return 200,service.execute(p,request_id)
+                if operation=='reconcile' and self.command=='POST':
+                    if self.body():raise GatewayError(422,'INVALID_REQUEST','본문은 빈 객체여야 합니다.')
+                    return 200,service.reconcile(p,request_id)
             raise GatewayError(404,'NOT_FOUND','DB API를 찾을 수 없습니다.')
         if path == "/v1/actions" and self.command == "POST":
             idem = self.headers.get("Idempotency-Key", "")

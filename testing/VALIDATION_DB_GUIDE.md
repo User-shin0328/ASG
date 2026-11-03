@@ -1,3 +1,5 @@
+> 2026-11-03 정책 버전 변경: 기본 열의 일반 요청은 자동 허용됩니다. 아래의 승인 전 차단 시나리오는 description 열을 포함한 예외 요청으로 검증합니다. 보존형 DB에는 004 마이그레이션이 필요합니다. 현재 설계와 최신 결과는 TEST_GUIDE.md를 기준으로 봅니다.
+
 # 가상 데이터 PostgreSQL 검증 DB와 테스트
 
 이 환경은 실제 사내 DB와 별개입니다. PostgreSQL 17.11 전용 컨테이너와 전용 볼륨에 가상 업무 데이터를 넣었습니다. 접속은 `127.0.0.1`에만 공개하며 운영 계정·주소를 사용하지 않습니다.
@@ -36,16 +38,18 @@ Docker Desktop을 켜고 프로젝트 폴더에서 실행합니다.
 .\.venv\Scripts\python.exe -m testing.postgresql_checks --keep-db
 # 기존 검증 DB를 보존한 상태로 전체 재검증
 .\.venv\Scripts\python.exe -m testing.postgresql_checks --keep-db --reuse
+# 자동 정책·누적 예산·범위 승인 경쟁 7단계까지 포함
+.\.venv\Scripts\python.exe -m testing.postgresql_checks --keep-db --reuse --policy-controls
 ```
 
-예상 결과는 25단계 전부 PASS입니다. 보고서는 실행 때 갱신되므로 실패 시 FAIL과 실패 위치를 그대로 확인합니다. 기존의 자동 삭제되는 4행 최소 검증(`python -m testing.postgresql_checks`)과는 별도 환경입니다.
+기본 예상 결과는 25단계 전부 PASS이며 `--policy-controls`를 붙이면 7개 정책 검사가 추가되어 32단계입니다. 보고서는 실행 때 갱신되므로 실패 시 FAIL과 실패 위치를 그대로 확인합니다. 기존의 자동 삭제되는 4행 최소 검증(`python -m testing.postgresql_checks`)과는 별도 환경입니다.
 
 ## 3. 순서별 테스트와 예상 결과
 
 | 순서 | 실제 수행하는 검증 | 예상 결과 |
 |---:|---|---|
 | 1 | 감사 DB·보호 DB 연결과 보안 분석 점검 | 실제 PostgreSQL 연결 정상 |
-| 2 | 일반 요청을 만든 직후 실행 | 승인 대기 202, 실행은 409 |
+| 2 | description 열을 포함한 예외 요청을 만든 직후 실행 | 승인 대기 202, 실행은 409 |
 | 3 | 검토자 역할로 근거를 남겨 승인하고 실행 | 25행 반환, north 정보만 포함 |
 | 4 | 동일 요청 재실행 | 같은 영수증, replayed=true |
 | 5 | 상세 감사 보고서 조회 | PostgreSQL 대상, 반환량, 처리 이력 저장 |
@@ -81,9 +85,9 @@ Docker Desktop을 켜고 프로젝트 폴더에서 실행합니다.
 기본 주소는 `http://127.0.0.1:18863`입니다. 이미 실행 중이면 같은 창을 사용하고, 다른 포트가 필요하면 `--dashboard-port 18864`를 붙입니다. `run_validation.ps1`을 `-TestOnly` 없이 실행하면 테스트 후 대시보드도 엽니다(서버 기동 후 출력된 주소에 접속).
 
 1. 작동 테스트에서 보호 DB가 정상인지 확인합니다.
-2. 일반·민감·대량 시나리오 중 하나로 요청을 생성합니다.
-3. 승인 검토에서 요청자·열·목적·보안 분석을 확인합니다.
-4. 근거를 적고 승인하거나 거절합니다. 승인만으로 데이터가 조회되지는 않습니다.
+2. 일반·민감·대량 시나리오 중 하나로 요청을 생성합니다. 기본 열의 일반 요청은 자동 허용됩니다.
+3. 승인 검토에는 예외 요청만 나타납니다. 요청자·열·목적·보안 분석을 확인합니다.
+4. 근거를 적고 일회 또는 반복 업무 승인, 거절을 선택합니다. 승인만으로 데이터가 조회되지는 않습니다.
 5. 실제 조회는 자동 테스트의 3·15·16·17단계에서 확인합니다. 직접 에이전트 명령으로 체험하려면 아래 선택 절차를 사용합니다.
 6. 감사 기록에서 날짜를 선택하고 상세 보고서를 엽니다.
 
@@ -101,16 +105,19 @@ $env:ASG_LAB_ALICE_TOKEN = [Convert]::ToBase64String($ValidationBytes)
 .\.venv\Scripts\python.exe -m testing.validation_dashboard
 ```
 
-두 번째 PowerShell에서 다음을 실행하고 브라우저의 승인 검토에서 승인합니다. 클라이언트가 승인을 확인하면 보존형 PostgreSQL DB에서 25행을 실제로 받아옵니다.
+두 번째 PowerShell에서 다음을 실행합니다. 기본 열의 첫 명령은 자동 허용되어 보존형 PostgreSQL DB에서 25행을 실제로 받아옵니다. 두 번째 명령은 description을 포함해 사람 검토가 필요하며 브라우저에서 승인하면 실행합니다.
 
 ```powershell
 $ValidationLab = Get-Content 'testing/.runtime/postgresql-validation/lab/session.json' -Raw | ConvertFrom-Json
 $env:GATEWAY_URL = $ValidationLab.gateway
 $env:AGENT_ALICE_TOKEN = Get-Content 'testing/.runtime/postgresql-validation/agent-token.txt' -Raw
 .\.venv\Scripts\python.exe -m demo_agent.db_client --row-limit 25
+.\.venv\Scripts\python.exe -m demo_agent.db_client --row-limit 25 --columns ticket_id description
 ```
 
 에이전트 토큰 파일도 Git 제외 경로의 가상 환경 전용 비밀입니다. 같은 DB를 사용하는 대시보드와 자동 테스트는 동시에 띄우지 말고 기존 검증 서버를 종료한 뒤 실행하세요.
+
+두 번째 요청을 화면에서 반복 업무로 승인한 뒤 같은 명령을 다시 실행하면 같은 열·필터·목적과 남은 한도 안에서 사람의 추가 승인 없이 실행됩니다. 승인 검토 하단에서 호출·행 수가 증가하는지 확인하고 이유를 입력해 취소하세요. 이후 같은 description 요청은 새 사람 검토가 필요합니다. 자동 기본 정책에 해당하는 첫 명령까지 취소되는 것은 아닙니다.
 
 ## 5. 보존·중지·다시 실행
 
@@ -135,8 +142,8 @@ docker stop $ValidationSession.container
 # PostgreSQL 연결 실제 검증 결과
 
 - 판정: **PASS**
-- 시작: 2026-11-02T18:08:17.614429+09:00
-- 보존형 PostgreSQL 17.11, 가상 데이터, 게이트웨이 감사 DB와 보호 DB 분리. 운영 DB 미접속.
+- 시작: 2026-11-03T10:13:17.950879+09:00
+- 보존형 가상 데이터 PostgreSQL 17.11, 게이트웨이 감사 DB와 보호 DB 분리. 운영 DB 미접속.
 
 | 검증 | 결과 |
 |---|---|
@@ -153,6 +160,13 @@ docker stop $ValidationSession.container
 | 실행 계층도 대상 불일치 거부 | PASS |
 | 연결 장애는 빨간 상태이며 인증정보 미노출 | PASS |
 | 복구 후 원클릭 실제 진단과 감사 체인 | PASS |
+| 명시적 자동 정책으로 실제 PostgreSQL 조회 | PASS |
+| 독립 PostgreSQL 연결의 누적 예산 경쟁 | PASS |
+| 범위 승인 마지막 횟수의 PostgreSQL 경쟁 | PASS |
+| 다른 게이트웨이 연결에서도 취소가 즉시 적용 | PASS |
+| 응답 유실 예약과 만료 후 영수증 대조 | PASS |
+| 자동 허용 40건을 사람 검토 없이 실행 | PASS |
+| 다중 연결 처리 후 감사 해시 체인 | PASS |
 | 세 종류 가상 데이터 2,700행 적재 | PASS |
 | 민감 연락처의 승인 후 실제 조회 | PASS |
 | 고위험 급여·계좌 가상 데이터 조회 | PASS |
@@ -165,18 +179,6 @@ docker stop $ValidationSession.container
 | 민감·대량·비정상 요청이 30분 위험도에 반영 | PASS |
 | DB 재시작 후 가상 데이터·감사 기록 보존 | PASS |
 | 보호 DB 행 보존 | PASS |
-
-관찰값: [results.json](results/postgresql-validation/results.json)
-
-운영 인증서 배포·사내 DB·기업 IdP·Docker 네트워크 격리는 이 결과의 검증 범위가 아닙니다.
-
-## 보존된 검증 환경
-
-- 보호 DB: `asg_validation_business`
-- 감사 DB: `asg_validation_gateway`
-- 가상 운영 이력 2,400행 / 임직원 연락처 200행 / 급여·정산 100행
-- DB와 전용 볼륨은 테스트 후에도 보존합니다. 접속 비밀 파일은 Git 제외 경로에만 있습니다.
-- 단계별 재현·예상 결과: [검증 DB 설명서](VALIDATION_DB_GUIDE.md)
 
 ## 1. 게이트웨이 감사 DB와 보호 DB의 실제 PostgreSQL 연결
 
@@ -196,17 +198,17 @@ docker stop $ValidationSession.container
       "name": "게이트웨이",
       "status": "up",
       "detail": "ready",
-      "checked_at": 1793610497.9134436,
-      "latency_ms": 2.04
+      "checked_at": 1793668398.1466506,
+      "latency_ms": 2.1
     },
     {
       "key": "security_agent",
       "name": "보안 에이전트",
       "status": "up",
-      "engine": "db-security-rules-v1",
-      "checked_at": 1793610497.9139671,
+      "engine": "db-security-rules-v2",
+      "checked_at": 1793668398.1471758,
       "last_analysis_at": null,
-      "latency_ms": 0.48,
+      "latency_ms": 0.47,
       "detail": "정상·정책 위반 입력 분석 자체 점검 통과"
     },
     {
@@ -214,16 +216,16 @@ docker stop $ValidationSession.container
       "name": "보호 DB",
       "status": "up",
       "detail": "PostgreSQL 읽기 전용 연결·등록 대상 권한 정상",
-      "checked_at": 1793610497.9378207,
-      "latency_ms": 23.9
+      "checked_at": 1793668398.1724398,
+      "latency_ms": 25.76
     },
     {
       "key": "audit_db",
       "name": "감사 DB",
       "status": "up",
       "detail": "감사 기록 저장소 연결됨",
-      "checked_at": 1793610497.9394267,
-      "latency_ms": 1.93
+      "checked_at": 1793668398.1752396,
+      "latency_ms": 2.31
     }
   ]
 }
@@ -368,7 +370,7 @@ docker stop $ValidationSession.container
       "name": "게이트웨이",
       "passed": true,
       "detail": "ready",
-      "latency_ms": 1.66
+      "latency_ms": 1.55
     },
     {
       "name": "보안 에이전트",
@@ -380,24 +382,132 @@ docker stop $ValidationSession.container
       "name": "보호 DB",
       "passed": true,
       "detail": "PostgreSQL 읽기 전용 연결·등록 대상 권한 정상",
-      "latency_ms": 20.44
+      "latency_ms": 46.42
     },
     {
       "name": "감사 DB",
       "passed": true,
       "detail": "감사 기록 저장소 연결됨",
-      "latency_ms": 0.66
+      "latency_ms": 0.8
     },
     {
       "name": "감사 로그 무결성",
       "passed": true,
-      "detail": "39개 해시 연결 검증, 변조 의심 0건"
+      "detail": "280개 해시 연결 검증, 변조 의심 0건"
     }
   ]
 }
 ```
 
-## 14. 세 종류 가상 데이터 2,700행 적재
+## 14. 명시적 자동 정책으로 실제 PostgreSQL 조회
+
+- 실제 판정: **PASS**
+- 실제 관찰값:
+
+```json
+{
+  "state": "SUCCEEDED",
+  "authorization": {
+    "mode": "automatic",
+    "rule_id": "operations-basic-v1",
+    "role": "report-submitter"
+  },
+  "rows": 2
+}
+```
+
+## 15. 독립 PostgreSQL 연결의 누적 예산 경쟁
+
+- 실제 판정: **PASS**
+- 실제 관찰값:
+
+```json
+{
+  "statuses": [
+    200,
+    429
+  ],
+  "used": {
+    "used_calls": 2,
+    "used_rows": 4,
+    "window_seconds": 1800,
+    "max_calls": 1000,
+    "max_rows": 5
+  }
+}
+```
+
+## 16. 범위 승인 마지막 횟수의 PostgreSQL 경쟁
+
+- 실제 판정: **PASS**
+- 실제 관찰값:
+
+```json
+{
+  "statuses": [
+    200,
+    429
+  ],
+  "usage": {
+    "calls": 1,
+    "rows": 1
+  }
+}
+```
+
+## 17. 다른 게이트웨이 연결에서도 취소가 즉시 적용
+
+- 실제 판정: **PASS**
+- 실제 관찰값:
+
+```json
+{
+  "status": 403,
+  "error": "SCOPE_GRANT_INVALID"
+}
+```
+
+## 18. 응답 유실 예약과 만료 후 영수증 대조
+
+- 실제 판정: **PASS**
+- 실제 관찰값:
+
+```json
+{
+  "initial_status": 503,
+  "reserved_rows": 2,
+  "reconciled_rows": 2
+}
+```
+
+## 19. 자동 허용 40건을 사람 검토 없이 실행
+
+- 실제 판정: **PASS**
+- 실제 관찰값:
+
+```json
+{
+  "requests": 40,
+  "success": 40,
+  "elapsed_seconds": 4.19,
+  "concurrency": 8,
+  "note": "기능 검증 부하이며 운영 처리량 보증이 아닙니다."
+}
+```
+
+## 20. 다중 연결 처리 후 감사 해시 체인
+
+- 실제 판정: **PASS**
+- 실제 관찰값:
+
+```json
+{
+  "status": "VALID",
+  "records": 465
+}
+```
+
+## 21. 세 종류 가상 데이터 2,700행 적재
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -410,7 +520,7 @@ docker stop $ValidationSession.container
 }
 ```
 
-## 15. 민감 연락처의 승인 후 실제 조회
+## 22. 민감 연락처의 승인 후 실제 조회
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -422,7 +532,7 @@ docker stop $ValidationSession.container
 }
 ```
 
-## 16. 고위험 급여·계좌 가상 데이터 조회
+## 23. 고위험 급여·계좌 가상 데이터 조회
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -434,7 +544,7 @@ docker stop $ValidationSession.container
 }
 ```
 
-## 17. 대량 요청의 승인 전 차단·승인 후 1,000행 조회
+## 24. 대량 요청의 승인 전 차단·승인 후 1,000행 조회
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -446,7 +556,7 @@ docker stop $ValidationSession.container
 }
 ```
 
-## 18. 사람이 거절한 요청은 조회 불가
+## 25. 사람이 거절한 요청은 조회 불가
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -458,7 +568,7 @@ docker stop $ValidationSession.container
 }
 ```
 
-## 19. 다른 테넌트 급여 요청 자동 차단
+## 26. 다른 테넌트 급여 요청 자동 차단
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -470,7 +580,7 @@ docker stop $ValidationSession.container
 }
 ```
 
-## 20. 검토자에게 DB 실행 권한을 주지 않음
+## 27. 검토자에게 DB 실행 권한을 주지 않음
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -481,7 +591,7 @@ docker stop $ValidationSession.container
 }
 ```
 
-## 21. 실행 계층의 south 행 범위
+## 28. 실행 계층의 south 행 범위
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -493,19 +603,19 @@ docker stop $ValidationSession.container
 }
 ```
 
-## 22. 날짜별 감사 DB에서 완료·거절 이력 조회
+## 29. 날짜별 감사 DB에서 완료·거절 이력 조회
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
 
 ```json
 {
-  "date": "2026-11-02",
-  "request_count": 16
+  "date": "2026-11-03",
+  "request_count": 104
 }
 ```
 
-## 23. 민감·대량·비정상 요청이 30분 위험도에 반영
+## 30. 민감·대량·비정상 요청이 30분 위험도에 반영
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -516,13 +626,13 @@ docker stop $ValidationSession.container
   "factors": {
     "sensitive": 4,
     "bulk": 2,
-    "abnormal": 2
+    "abnormal": 4
   },
   "window_seconds": 1800
 }
 ```
 
-## 24. DB 재시작 후 가상 데이터·감사 기록 보존
+## 31. DB 재시작 후 가상 데이터·감사 기록 보존
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -530,11 +640,11 @@ docker stop $ValidationSession.container
 ```json
 {
   "operations_rows": 2400,
-  "audit_events": 56
+  "audit_events": 482
 }
 ```
 
-## 25. 보호 DB 행 보존
+## 32. 보호 DB 행 보존
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -544,5 +654,17 @@ docker stop $ValidationSession.container
   "rows_after_all_checks": 2400
 }
 ```
+
+관찰값: [results.json](results/postgresql-validation/results.json)
+
+운영 인증서 배포·사내 DB·기업 IdP·Docker 네트워크 격리는 이 결과의 검증 범위가 아닙니다.
+
+## 보존된 검증 환경
+
+- 보호 DB: `asg_validation_business`
+- 감사 DB: `asg_validation_gateway`
+- 가상 운영 이력 2,400행 / 임직원 연락처 200행 / 급여·정산 100행
+- DB와 전용 볼륨은 테스트 후에도 보존합니다. 접속 비밀 파일은 Git 제외 경로에만 있습니다.
+- 단계별 재현·예상 결과: [검증 DB 설명서](VALIDATION_DB_GUIDE.md)
 
 <!-- ASG_VALIDATION_RESULT_END -->

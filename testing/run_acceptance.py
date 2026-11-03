@@ -102,7 +102,7 @@ def main():
             status,audit=send_request(lab.url+'/v1/audit/events')
             (output/'audit-events.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2),encoding='utf-8')
             record('대시보드 감사 연결','200, 실제 감사 이벤트 > 0',{'status':status,'count':len(audit.get('items',[]))},status==200 and len(audit.get('items',[]))>0)
-            db_args={'dataset_id':'operations','columns':['ticket_id','status'],'filters':{},'row_limit':25,'purpose':'승인 기반 DB 조회 통합 검증입니다.'}
+            db_args={'dataset_id':'operations','columns':['ticket_id','status','description'],'filters':{},'row_limit':25,'purpose':'승인 기반 DB 조회 통합 검증입니다.'}
             db_headers=dict(agent_headers,**{'Idempotency-Key':str(uuid.uuid4())})
             status,requested=send_request(lab.gateway_url+'/v1/db/requests','POST',db_headers,db_args)
             record('DB 접근 요청·보안 에이전트 분석','202 PENDING_APPROVAL, 분석 근거와 추천 대응 제공',requested,status==202 and requested.get('state')=='PENDING_APPROVAL' and bool(requested.get('analysis',{}).get('recommendation')))
@@ -176,7 +176,7 @@ def main():
                     http,data=send_request(url+'/api/db-demo','POST',{'X-ASG-Request':'1'},{'scenario':scenario})
                     db_samples[scenario]={'http':http,'state':data.get('request',{}).get('state'),'risk':data.get('request',{}).get('risk_score')}
                 http,check=send_request(url+'/v1/db/diagnostics','POST',{'X-ASG-Request':'1'},{},timeout=15)
-                record('독립 EXE의 DB 요청·분석·작동 진단','정상·민감·대량은 승인 대기, 비정상은 차단, 진단 통과',{'scenarios':db_samples,'diagnostic':check},http==200 and check.get('passed') and all(v['http']==200 and v['state']==('DENIED' if k=='abnormal' else 'PENDING_APPROVAL') for k,v in db_samples.items()))
+                record('독립 EXE의 DB 요청·분석·작동 진단','일반은 자동 허용, 민감·대량은 승인 대기, 비정상은 차단, 진단 통과',{'scenarios':db_samples,'diagnostic':check},http==200 and check.get('passed') and all(v['http']==200 and v['state']==('DENIED' if k=='abnormal' else 'APPROVED' if k=='normal' else 'PENDING_APPROVAL') for k,v in db_samples.items()))
                 stdout,_=process.communicate(timeout=35)
                 (output/'exe-smoke.log').write_text(stdout,encoding='utf-8')
                 record('EXE 자동 종료','exit 0',{'exit_code':process.returncode},process.returncode==0)
@@ -191,7 +191,7 @@ def main():
 
     completed=datetime.now(KST)
     result='FAIL' if any(c['status']=='FAIL' for c in checks) else 'PARTIAL' if any(c['status']=='NOT_RUN' for c in checks) else 'PASS'
-    report={'result':result,'started':started.isoformat(),'completed':completed.isoformat(),'python':sys.version,'platform':sys.platform,'executable':exe_meta,'checks':checks,'not_run':['Docker 다중 네트워크 격리·사내 PostgreSQL 운영 연결(임시 PostgreSQL 기능 검증은 별도 보고서)','외부 LLM 및 외부 데이터셋 평가','코드 서명·다른 Windows PC 실행']}
+    report={'result':result,'started':started.isoformat(),'completed':completed.isoformat(),'python':sys.version,'platform':sys.platform,'executable':exe_meta,'checks':checks,'not_run':['Docker 다중 네트워크 격리·사내 PostgreSQL 운영 연결(임시 PostgreSQL 기능 검증은 별도 보고서)','코드 서명·다른 Windows PC 실행'],'excluded':['LLM·학습형 분류기와 관련 외부 모델 평가: 프로젝트 실행 범위에서 제거']}
     (output/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     lines=['# ASG 실제 테스트 결과보고서','',f'- 실행: {started:%Y-%m-%d %H:%M:%S} ~ {completed:%H:%M:%S} (Asia/Seoul)',f'- 전체 판정: **{result}**',f'- Python: {sys.version.split()[0]} / {sys.platform}','- 로컬 HTTP·SQLite·모의 전송함을 사용했습니다. 실제 외부 발송은 없습니다.','', '| ID | 테스트 | 결과 |','|---|---|---|']
     lines += [f"| {c['id']} | {c['name']} | {c['status']} |" for c in checks]

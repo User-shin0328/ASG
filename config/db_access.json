@@ -1,0 +1,7 @@
+{
+  "version": "db-policy-v3",
+  "automatic_rules": [{"id":"operations-basic-v1","dataset_id":"operations","columns":["ticket_id","category","status"],"roles":["report-reader","report-writer","report-submitter"],"tasks":["task-alice-001","task-bob-001"],"max_rows":100}],
+  "budget": {"window_seconds":1800,"max_calls":1000,"max_rows":5000},
+  "request_rate": {"warning":100,"block":600},
+  "grant_limits": {"max_ttl_seconds":3600,"max_calls":100,"max_total_rows":10000}
+}

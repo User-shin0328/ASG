@@ -1,3 +1,5 @@
+> 과거 버전의 실험·설계 기록입니다. 모델 실행 코드는 2026-11-03 제거했으며 아래 내용은 현재 구현·완료 상태를 뜻하지 않습니다. 현재 기준은 docs/POLICY_GATEWAY_IMPLEMENTATION_PLAN.md와 최신 실제 테스트 결과입니다.
+
 # L01-L04 four-arm agent evaluation preregistration
 
 **Registered before execution:** 2026-10-01 (Asia/Seoul)

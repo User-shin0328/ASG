@@ -1,0 +1,32 @@
+{
+  "executions": [
+    {
+      "mode": "scope_grant",
+      "http": 200,
+      "rows": 25
+    },
+    {
+      "mode": "human",
+      "http": 200,
+      "rows": 25
+    },
+    {
+      "mode": "automatic",
+      "http": 200,
+      "rows": 25
+    }
+  ],
+  "budgets": {
+    "items": [
+      {
+        "principal": "agent-alice",
+        "used_calls": 3,
+        "used_rows": 75,
+        "window_seconds": 1800,
+        "max_calls": 1000,
+        "max_rows": 5000
+      }
+    ],
+    "window_seconds": 1800
+  }
+}

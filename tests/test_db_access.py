@@ -15,7 +15,7 @@ from scripts.traffic_generator import send_request
 
 
 def query(**changes):
-    return dict({'dataset_id':'operations','columns':['ticket_id','status'],'filters':{},'row_limit':25,
+    return dict({'dataset_id':'operations','columns':['ticket_id','status','description'],'filters':{},'row_limit':25,
         'purpose':'운영 지원 현황을 확인하기 위한 검증 요청입니다.'},**changes)
 
 
@@ -32,7 +32,7 @@ class DBPolicyTests(unittest.TestCase):
     def create(self,payload=None,principal=None,key=None):
         return self.service.create(principal or self.alice,payload or query(),key or str(uuid.uuid4()),'192.0.2.15','Unit test agent')
 
-    def test_all_valid_reads_need_human_approval(self):
+    def test_exception_reads_need_human_approval(self):
         r=self.create()
         self.assertEqual(r['state'],'PENDING_APPROVAL')
         self.assertEqual(r['analysis']['decision'],'REQUIRE_APPROVAL')
@@ -181,7 +181,7 @@ class DBHTTPIntegrationTests(unittest.TestCase):
         status,result=send_request(url+'/execute','POST',self.headers,{})
         self.assertEqual(status,200)
         self.assertEqual(result['result_count'],25)
-        self.assertEqual(set(result['result']['result']['rows'][0]),{'ticket_id','status'})
+        self.assertEqual(set(result['result']['result']['rows'][0]),{'ticket_id','status','description'})
         _,again=send_request(url+'/execute','POST',self.headers,{})
         self.assertTrue(again['replayed'])
         self.assertEqual(result['receipt_id'],again['receipt_id'])

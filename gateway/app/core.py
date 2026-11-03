@@ -243,6 +243,14 @@ class Gateway:
         return Principal(principal_id, data["kind"], data["role"], data["user"], data["tenant"], data.get("task"))
 
     def _audit(self, trace: str, action: str | None, actor: str, event: str, details: dict[str, Any]) -> None:
+        with self.lock:
+            if self.db.is_postgres:
+                with self.db.connection.transaction():
+                    self.db.execute("SELECT pg_advisory_xact_lock(hashtextextended('asg-audit-chain',0))")
+                    return self._append_audit(trace,action,actor,event,details)
+            return self._append_audit(trace,action,actor,event,details)
+
+    def _append_audit(self, trace: str, action: str | None, actor: str, event: str, details: dict[str, Any]) -> None:
         # Never persist credentials or full document text in audit details.
         safe = {k: v for k, v in details.items() if k not in {"token", "content", "body", "authorization"}}
         last_row = self.db.execute("SELECT id, details FROM audit ORDER BY id DESC LIMIT 1").fetchone()

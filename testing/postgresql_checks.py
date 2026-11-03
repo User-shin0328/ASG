@@ -88,6 +88,7 @@ def run_retained_checks(record,call,create,approve,execute):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--preview',action='store_true',help='Keep the fictional lab open until Enter is pressed')
+    parser.add_argument('--policy-controls',action='store_true',help='Run two-connection automatic-policy and quota checks')
     parser.add_argument('--keep-db',action='store_true',help='Retain a dedicated fictional DB and local connection files')
     parser.add_argument('--reuse',action='store_true',help='Retest the owned fictional DB without reseeding or deleting data')
     parser.add_argument('--data-dir',type=Path,default=ROOT/'testing/.runtime/postgresql-validation')
@@ -194,7 +195,7 @@ def main():
                 def call(path,method='GET',payload=None,who='agent-alice'):
                     return send_request(lab.gateway_url+path,method,{'Authorization':'Bearer '+lab.tokens[who],'Idempotency-Key':str(uuid.uuid4())},payload)
                 def create(**overrides):
-                    args={'dataset_id':'operations','columns':['ticket_id','status'],'filters':{},'row_limit':25,'purpose':'PostgreSQL 승인 조회 검증입니다.'}|overrides
+                    args={'dataset_id':'operations','columns':['ticket_id','status','description'],'filters':{},'row_limit':25,'purpose':'PostgreSQL 승인 조회 검증입니다.'}|overrides
                     return call('/v1/db/requests','POST',args)
                 def execute(request):return call('/v1/db/requests/'+request['id']+'/execute','POST',{})
                 def approve(request):return call('/v1/db/requests/'+request['id']+'/decision','POST',{'decision':'approve','reason':'가상 PostgreSQL 요청 범위를 확인했습니다.'},'reviewer-demo')
@@ -248,6 +249,9 @@ def main():
                 dsn.write_text(reader,encoding='utf-8')
                 code,diag=call('/v1/db/diagnostics','POST',{},'reviewer-demo')
                 record('복구 후 원클릭 실제 진단과 감사 체인',code==200 and diag['passed'],{'checks':diag['checks']})
+                if args.policy_controls:
+                    from testing.policy_controls_checks import run_policy_checks
+                    run_policy_checks(lab,record)
                 # Finish the approved target-binding sample so repeated manual use starts cleanly.
                 if args.keep_db:
                     execute(bound)
@@ -294,7 +298,8 @@ def main():
         report['scope']='Retained fictional PostgreSQL validation DB. No corporate DB or production network involved.'
         report['database']={'container':name,'gateway_database':gateway_name,'protected_database':business_name,'fictional':True}
     (out/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
-    lines=['# PostgreSQL 연결 실제 검증 결과','',f'- 판정: **{result}**',f'- 시작: {started}','- 임시 PostgreSQL 17.11, 가상 데이터, 게이트웨이 감사 DB와 보호 DB 분리. 운영 DB 미접속.','', '| 검증 | 결과 |','|---|---|']
+    environment='보존형 가상 데이터 PostgreSQL 17.11' if args.keep_db else '임시 PostgreSQL 17.11'
+    lines=['# PostgreSQL 연결 실제 검증 결과','',f'- 판정: **{result}**',f'- 시작: {started}',f'- {environment}, 게이트웨이 감사 DB와 보호 DB 분리. 운영 DB 미접속.','', '| 검증 | 결과 |','|---|---|']
     lines += [f"| {c['name']} | {c['status']} |" for c in checks]
     for index,check in enumerate(checks,1):
         lines += ['',f"## {index}. {check['name']}",'',f"- 실제 판정: **{check['status']}**",'- 실제 관찰값:','','```json',json.dumps(check['actual'],ensure_ascii=False,indent=2),'```']

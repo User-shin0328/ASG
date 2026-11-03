@@ -1,0 +1,14 @@
+Replace model integration with explicit DB access policy controls
+
+Remove the LLM adapter, learned classifiers, model assets and related runners.
+Authorize routine reads through explicit rules, review only exceptions, and
+support bounded, revocable scope grants and rolling query budgets.
+
+Reserve capacity atomically, settle actual rows, retain uncertain reservations,
+reconcile stored receipts and serialize PostgreSQL audit-chain appends.
+Update the dashboard, migration, policy plan and detailed validation guides.
+
+Validation: 118 regression tests, 31 local/portable-EXE checks, 21 temporary
+PostgreSQL checks and 32 retained fictional-DB checks passed. Responsive
+approval review passed at 1440/768/390px; one existing small-text warning remains.
+Corporate DB, IdP, production throughput and network isolation are not validated.

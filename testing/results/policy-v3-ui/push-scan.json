@@ -1,0 +1,11 @@
+{
+  "indexed_files": 197,
+  "unique_blobs_checked": 195,
+  "forbidden_local_paths": [],
+  "high_confidence_pattern_findings": 0,
+  "private_runtime_values_in_index": false,
+  "private_values_checked": 4,
+  "history_blobs_checked": 816,
+  "history_pattern_findings": 0,
+  "raw_secrets_retained": false
+}

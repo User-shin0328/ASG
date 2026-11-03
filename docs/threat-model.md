@@ -1,29 +1,9 @@
-# Threat model
+# 현재 위협 모델과 한계
 
-## Assets and trust boundaries
+클라이언트가 보낸 역할·테넌트·승인 주장을 신뢰하지 않습니다. 서버가 신원을 결정하고 등록된 데이터/열/필터/행 수만 허용합니다. 임의 SQL과 쓰기는 허용하지 않습니다.
 
-- Protect fictional user reports, generated summaries, agent/reviewer credentials, task assignments, approval state, and action/receipt linkage.
-- Treat the agent, document text, model output, request arguments, and tool response text as untrusted.
-- Trust the host administrator, Gateway code/configuration, reviewer identity, and tool sandbox implementation for this exercise.
-- Host root, Docker daemon compromise, kernel escape, and malicious Gateway operators are outside the current scope.
+자동 허용은 명시적인 정책과 현재 권한에만 근거합니다. 반복 승인은 정확한 범위·정책 버전·만료·누적 횟수/행 수로 제한합니다. 미확정 실행량을 자동 환급하지 않으며 조회 영수증을 재사용합니다.
 
-## Attacker capabilities
+자유문장 공격 검사는 보조 규칙입니다. 문장의 진실성이나 모든 프롬프트 공격을 판별한다고 주장하지 않습니다. 결과 점수는 침해 확률이 아닙니다.
 
-An attacker may add prompt injection to a document, alter tool names and arguments, claim another user or role in request JSON, replay or race requests, change data after approval, or attempt direct tool access.
-
-## Controls implemented in the reference MVP
-
-| Threat | Control | Evidence source |
-|---|---|---|
-| Spoofed identity or role | Opaque token maps to server-owned principal; strict action fields | `tests/test_gateway.py` |
-| Cross-tenant document read | Task assignment and owner/tenant checks in Gateway and sandbox | same |
-| Tool abuse | Fixed allowlist, strict per-tool arguments, fixed destination ID | same and sandbox receipts |
-| Approval substitution/replay | Content hash, policy version, reviewer scope, expiration, single consumption | same |
-| Request retry | Scoped idempotency key and tool execution receipt | same |
-| Prompt injection | Versioned pattern scanner records verdict; policy remains independent | same |
-| Untrusted rendered text | Dashboard HTML escaping and restrictive headers | `dashboard/index.html` |
-| Unintended host exposure | Dashboard binds only to host loopback; Gateway, tool, and PostgreSQL APIs are not published | `compose.yaml`; local Docker inspection |
-
-## Limits
-
-The scanner is a small demonstration rule set with expected misses and false positives. It is not an LLM security classifier or DLP. PostgreSQL audit rows reject application-role update/delete/truncate, but a database or host administrator can still alter the database or its storage. The isolated local N01-N06 matrix covers documented service names, direct service addresses, selected host aliases/interface/port pairs, the default route, a public IPv4 TCP destination, tool authentication, capabilities, mounts, and the Docker socket. Those probes do not establish universal network isolation, IPv6/protocol coverage, or a host/Docker administrator boundary. Dashboard egress uses a default-drop nftables output chain with tested exceptions for loopback, established replies, Docker DNS, and the internal Gateway; its probe is limited to one public IPv4 TCP destination. Four exploratory actual-model runs and a separate 360-trial fictional workload study were performed; neither establishes broad model behavior or production risk rates. Local fault, approval, and cross-process stress results are documented in `docs/evaluation-report.md`; they are bounded single-host evidence, not production-capacity qualification.
+로컬 검증 UI는 같은 OS 사용자로부터의 격리나 기업 로그인 경계가 아닙니다. DB/호스트 관리자 변조, 모든 프로토콜의 네트워크 우회, 실제 사내 업무 권한, 고가용성·생산 처리량은 별도 검증이 필요합니다. 누적 행 수는 고유 레코드 수나 데이터 바이트 단위 DLP가 아닙니다.

@@ -238,7 +238,7 @@ Gateway, security analysis, protected DB, and audit DB status are measured by ac
 
 A native dialog provides protected focus for request review. It shows when, who, gateway-observed source IP, tenant/task, database/dataset, requested columns, row limit, filters, purpose, explainable analysis, recommendation, and processing history. Pending requests add reason-based approval/rejection; completed decisions show reviewer and outcome. Trace and approval hashes remain under a native disclosure.
 
-All valid structured DB reads require human approval. Approval grants a bound, one-time authorization; the originating agent separately asks to execute the read. Reports display metadata and processing evidence, not the returned business rows.
+Explicit policy can authorize routine structured DB reads automatically. Other valid requests require human review; policy violations remain blocked. A reviewer can issue one-time authorization or a scoped grant bounded by duration, calls, and total rows. The originating agent separately asks to execute the read. Reports display metadata and processing evidence, not the returned business rows. Approval review also lists scoped grants with reason-based revocation and principal query budgets.
 
 ### Feedback and Motion
 

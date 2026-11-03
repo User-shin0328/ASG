@@ -51,6 +51,10 @@ def start_and_wait(folder):
         try:
             with psycopg.connect((folder/'admin-dsn.txt').read_text(encoding='utf-8')) as c:
                 c.execute('SELECT 1').fetchone()
+                exists=c.execute("SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='db_access_requests' AND column_name='authorization_mode'").fetchone()
+                if not exists:
+                    migration=Path(__file__).resolve().parents[1]/'migrations/004_db_policy_grants.sql'
+                    c.execute(migration.read_text(encoding='utf-8'))
             return state
         except psycopg.OperationalError:
             if time.monotonic()>deadline:raise RuntimeError('Fictional PostgreSQL did not become ready') from None

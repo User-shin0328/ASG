@@ -1,19 +1,14 @@
-# Requirements traceability
+# 현재 요구사항과 검증 대상
 
-| ID | Requirement | Current implementation | Verification | Status |
-|---|---|---|---|---|
-| REQ-01 | Every tool action passes through the Gateway | Agent network has no tool-sandbox membership; fixed gateway tool client | Local agent-to-Gateway success; N01-N06 name/IP/host/public-route/auth/mount checks passed in isolated Docker boundary run | Agent boundary verified locally; host-admin threat boundary remains separate |
-| REQ-02 | Server-verified identity and task delegation | Persistent SHA-256 token-hash registry resolves to server-owned principal/task; administrator-only local rotation revokes prior hashes and updates ignored `.env`; strict body schema | Isolated Compose rotation accepted the new token (200), rejected the old token (401), and retained revocation after Gateway restart | Implemented; locally verified for Alice's demo credential |
-| REQ-03 | Role, owner, tenant, and task resource authorization | Fixed allowlist with gateway and sandbox checks | P01-P08 tests | Implemented for demo fixtures |
-| REQ-04 | Strict tool-specific argument validation | Exact field sets, types, length limits, registered IDs, opaque resource identifiers | V01-V06; path-like document IDs and URL/IP/email destinations are rejected before tool calls | Local boundary and negative cases passed; broad fuzzing remains open |
-| REQ-05 | Approval covers exact content, destination, policy, and is single-use | Snapshot digest, reviewer tenant, expiry, PostgreSQL transaction and row lock | H01-H08; rejection, expiry, policy change, forged approval, and independent-process race cases | Enumerated local cases passed; longer concurrency stress remains open |
-| REQ-06 | Retries and concurrent submissions cannot duplicate side effects | Principal-scoped idempotency, PostgreSQL advisory lock, stable execution ID and tool receipt | X01-X05; cross-principal key isolation, two-process races, F01-F03 recovery | Enumerated local cases passed; broader stress remains open |
-| REQ-07 | Input inspection is recorded but is not authorization | Rules-v2 Gateway inspection plus optional fail-closed local semantic prefilter in the host-run Agent adapter; trusted task scope is a separate read-only classification field; policy remains independent | Author-created synthetic dev 30/30 and heldout v1-v7; pinned deepset direct-prompt diagnostic; pinned InjecAgent base/enhanced indirect-tool-response diagnostics; L01-L04 separately uses virtual tools | Frozen author-created v7: semantic prefilter 86%/0%, meeting the numeric target on that set; rules v2 measured 36%/26%. Previously observed v6 recheck is not independent evidence. InjecAgent base task-context diagnostic: 75.6%/0%; enhanced setting: 100%/0% on generated pairs with a wrapper cue and invalid for acceptance. The authored holdout does not establish external generalization. Neither detection layer grants authorization |
-| REQ-08 | Auditable execution and recovery | PostgreSQL append-only triggers and restricted grants; receipt lookup and UNKNOWN recovery | F01/F02/F03 live isolated outage, response-loss, and restart cases; F04 container startup rejection; F05 unit-level safe serialization; F06 live application-role mutation rejection | Tested cases passed; F05 external log-pipeline verification is outside this local demo |
-| REQ-09 | Normal read, summarize, and approved submit workflow | Fictional docs, immutable summaries, mock outbox | E01-E04 | E01-E04 local flows passed, including the dashboard approval-button click and replay receipt reuse |
-| REQ-10 | Measure behavior with an actual LLM | Ollama-compatible host adapter with optional fail-closed semantic prefilter; real read/save and denied unapproved submission observed; preregistered model comparison completed in isolated virtual-tool arms | 360 trials, 0 model errors; 30/30 normal completions per arm; attack outcomes and submission attempts recorded in `evaluation/results/agent-matrix-2026-10-01/` | Local synthetic comparison complete. Mock-policy results do not replace live Gateway controls or establish production behavior |
-| REQ-11 | Enforce call budgets and measure latency/resources | Configured request/argument/approval and per-principal action budgets; B01-B04 and 3-/10-minute boundary/resource soaks | P08 returns 429 before adding an action/effect when forced limits are exhausted; B01-B04, 576-request 3-minute soak, and 1,015-request 10-minute soak | Enumerated local cases passed; production capacity remains open |
-| REQ-12 | Reproducible public source and release | Full commit history is on the private GitHub repository; remote Actions run passed. Public access and URL-based reproduction are not yet verified. | R01-R05 | Partial; R04 remains open while repository visibility is private |
-| REQ-13 | Dashboard host access does not enable arbitrary outbound traffic | Startup nftables output chain allows only loopback, established replies, Docker DNS, and the resolved Gateway IPv4:8000; app starts as UID 10003 with an empty capability set | Disposable Compose project on Docker Desktop: loopback UI HTTP 200, authenticated reviewer reads HTTP 200, Gateway readiness HTTP 200, public 1.1.1.1:443 connected before the filter and timed out after it; restart retained the filter and healthcheck stayed healthy | Verified on this Windows/Docker Desktop host. The probe covers TCP egress to one IPv4 destination and does not prove every protocol or host/Docker administrator isolation |
+| 요구사항 | 구현 위치 | 검증 |
+|---|---|---|
+| 명시적 정책에 따른 자동 허용 | db_policy.py / config/db_access.json | 자동 정책·정책 부재·새 이상 징후 |
+| 정책 위반 자동 차단 | catalog.py / assessment.py | 미등록 열·테넌트·행 수·입력 오류 |
+| 예외만 사람 검토 | db_access.py | 일반 200 / 예외 202 / 위반 403 |
+| 제한된 반복 업무 승인 | db_scope_grants | 목적·열·필터·신원·기간·취소·소진 |
+| 작은 요청들의 누적 조회 통제 | db_query_usage | 원자적 예약·실제 반환량 정산·동시성 |
+| 응답 유실·재시도 안전성 | execute / reconcile | 예약 유지·이중 차감 방지·영수증 대조 |
+| 감사 추적 | db_access_events / audit | 발급·취소·자동 허용·차단·실행 기록 |
+| 규칙 전용 실행 | LLM 제거 명세 | 모델 클라이언트·자산·관련 import 제거 |
 
-Policy decision, tool execution state, and reviewer decision are kept as different fields. Prompt-injection pattern matches do not grant or revoke the server's tool policy by themselves.
+실제 결과와 범위는 테스트 보고서를 기준으로 판단합니다. 운영 처리량·기업 IdP·실제 사내 DB 스키마 매핑은 완료했다고 표시하지 않습니다.
