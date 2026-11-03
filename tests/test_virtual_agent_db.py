@@ -118,17 +118,15 @@ class VirtualAgent:
 
 
 class TestVirtualAgentAndDB(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.temp = tempfile.TemporaryDirectory()
-        cls.lab = LocalLab(Path(cls.temp.name), 0, 0, 0).start()
-        cls.agent = VirtualAgent(cls.lab.gateway_url, cls.lab.tokens["agent-alice"])
-        cls.company_db = VirtualCompanyDB(cls.lab)
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.lab = LocalLab(Path(self.temp.name), 0, 0, 0).start()
+        self.agent = VirtualAgent(self.lab.gateway_url, self.lab.tokens["agent-alice"])
+        self.company_db = VirtualCompanyDB(self.lab)
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.lab.stop()
-        cls.temp.cleanup()
+    def tearDown(self):
+        self.lab.stop()
+        self.temp.cleanup()
 
     def test_01_virtual_company_db_catalog_and_isolation(self):
         """Virtual DB catalog contains operations, directory, and payroll."""
@@ -193,6 +191,12 @@ class TestVirtualAgentAndDB(unittest.TestCase):
 
     def test_06_dashboard_shows_live_metrics_and_pending_requests(self):
         """Dashboard API reflects all requests, counts, and security risk score."""
+        # This test owns its prerequisites; it also works when selected alone.
+        self.agent.query_normal()
+        self.agent.query_sensitive()
+        self.agent.query_bulk()
+        self.agent.query_abnormal()
+        self.agent.query_prompt_injection()
         status, overview = send_request(f"{self.lab.url}/v1/db/overview")
         self.assertEqual(status, 200)
         metrics = overview.get("metrics", {})

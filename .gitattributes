@@ -1,1 +1,3 @@
 *.sh text eol=lf
+# Preserve generated evidence exactly so manifest hashes survive Git checkouts.
+testing/results/latest/* -text whitespace=cr-at-eol

@@ -12,7 +12,7 @@
 .\testing\run_tests.ps1
 ```
 
-setup은 Python 가상 환경과 고정한 의존성을 준비하고, build는 현재 소스로 ASG.exe를 교체하며, run_tests는 회귀→실제 HTTP→분리된 실행파일 순서로 검사합니다. 예상 결과는 마지막 PASS와 31단계 PASS입니다. 실행파일을 켠 상태라 교체가 실패하면 해당 ASG 창을 종료하고 build만 다시 실행하세요. Python 명령이 Microsoft Store 안내를 띄우면 위 도구가 만든 `.venv\Scripts\python.exe`를 직접 사용합니다.
+setup은 Python 가상 환경과 고정한 의존성을 준비하고, build는 현재 소스로 ASG.exe를 교체하며, run_tests는 회귀→실제 HTTP→분리된 실행파일 순서로 검사합니다. 예상 결과는 마지막 PASS와 32단계 PASS입니다. 실행파일을 켠 상태라 교체가 실패하면 해당 ASG 창을 종료하고 build만 다시 실행하세요. Python 명령이 Microsoft Store 안내를 띄우면 위 도구가 만든 `.venv\Scripts\python.exe`를 직접 사용합니다.
 
 ## 2. 정책 기능별 예상 결과
 
@@ -96,7 +96,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 
 ## 7. 결과 읽기와 범위
 
-이 파일 하단은 31단계의 예상값·실제 응답·PASS/FAIL을 자동 삽입한 보고서입니다. PostgreSQL의 실제 관찰값은 별도 두 보고서와 검증 DB 설명서 하단에 있습니다. 최신 회귀 수는 하단 T01을 기준으로 확인합니다. 화면 검토 증거는 [POLICY_UI_REVIEW.md](POLICY_UI_REVIEW.md)에 분리했습니다.
+이 파일 하단은 32단계의 예상값·실제 응답·PASS/FAIL을 자동 삽입한 보고서입니다. PostgreSQL의 실제 관찰값은 별도 두 보고서와 검증 DB 설명서 하단에 있습니다. 최신 회귀 수는 하단 T01을 기준으로 확인합니다. 화면 검토 증거는 [POLICY_UI_REVIEW.md](POLICY_UI_REVIEW.md)에 분리했습니다.
 
 단위 테스트의 통과는 생산 처리량이나 모든 네트워크 경계를 증명하지 않습니다. PostgreSQL 보고서에는 실제 독립 연결 수·요청 수·동시성·관찰 시간을 기록합니다. 미확정 예약을 임의로 환급하거나 승인 대기 시간 초과를 자동 허용으로 처리하지 않습니다.
 
@@ -104,7 +104,10 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 
 ## 11. 실제 테스트 결과보고서
 
-- 실행: 2026-11-03 14:34:57 ~ 14:35:44 (Asia/Seoul)
+- 실행 ID: `20261104-000818-f4d9bd72`
+- 기준 커밋: `40b6164297ee6358f230be54664d9d8fc7a4cd10` / 미커밋 수정: True
+- 실행 소스 SHA-256: `f1d8b43a8125321c7f38cd2ffe9b1166df42baa8d007f1b786e871e948f2ec8d`
+- 실행: 2026-11-04 00:08:18 ~ 00:09:21 (Asia/Seoul)
 - 전체 판정: **PASS**
 - Python: 3.12.14 / win32
 - 로컬 HTTP·SQLite·모의 전송함을 사용했습니다. 실제 외부 발송은 없습니다.
@@ -142,6 +145,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 | T29 | 독립 EXE 기동과 6개 시나리오 | PASS |
 | T30 | 독립 EXE의 DB 요청·분석·작동 진단 | PASS |
 | T31 | EXE 자동 종료 | PASS |
+| T32 | 시험 중 실행 소스 일치 | PASS |
 
 ### T01. 기존·추가 회귀 테스트
 
@@ -152,7 +156,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 ```json
 {
   "exit_code": 0,
-  "tests": 125
+  "tests": 142
 }
 ```
 
@@ -182,18 +186,18 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   "expected": "ALLOW (200 OK)",
   "status": 200,
   "result": {
-    "action_id": "a9feeb27-ef07-4eff-8a30-61cfe22a0955",
+    "action_id": "0401d8e3-703e-46d6-a540-e5160e0ca0e8",
     "decision": "ALLOW",
     "state": "SUCCEEDED",
     "reason_codes": [],
     "approval_id": null,
     "approval_state": null,
-    "execution_id": "cb25ca8b-8304-4bf3-958d-38a602b612e7",
-    "trace_id": "21993df3-4c1a-4f55-8061-231ca580152a",
+    "execution_id": "dce90570-075e-4d11-b9a1-1415fc445a3e",
+    "trace_id": "48a47df0-5add-4faf-8e17-734c0fb7f016",
     "policy_version": "demo-v2",
     "result": {
-      "receipt_id": "receipt-36a47a1b-c052-463b-b679-bcffbf86a950",
-      "execution_id": "cb25ca8b-8304-4bf3-958d-38a602b612e7",
+      "receipt_id": "receipt-5e1c38f9-b305-4799-abff-c5297315c107",
+      "execution_id": "dce90570-075e-4d11-b9a1-1415fc445a3e",
       "result": {
         "document_id": "report-alice-001",
         "content": "Quarterly operations report for Alice (fictional)\n\nAll values in this exercise are synthetic. Service availability was 99.2 percent in the fictional sample period. Three maintenance tasks were completed. The next review is scheduled for the end of the fictional quarter.\n",
@@ -220,7 +224,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     "expected": "DENY (403 Forbidden)",
     "status": 403,
     "result": {
-      "action_id": "32616645-cbda-4079-8f83-04737d5bb116",
+      "action_id": "1f556f3e-362d-46b1-95f1-3cc66277b5d5",
       "decision": "DENY",
       "state": "DENIED",
       "reason_codes": [
@@ -228,8 +232,8 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
       ],
       "approval_id": null,
       "approval_state": null,
-      "execution_id": "938cb4c9-41df-4759-92c3-5f30df2197b9",
-      "trace_id": "21009887-3a52-46f9-b9eb-12ac89907277",
+      "execution_id": "99e7a122-5af2-41ca-966c-8a9646c904b0",
+      "trace_id": "c7e8f475-95b2-4168-b57e-00bafaa2ad7a",
       "policy_version": "demo-v2",
       "result": null
     },
@@ -262,7 +266,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   "expected": "SUSPICIOUS (200 OK with flag)",
   "status": 200,
   "result": {
-    "inspection_id": "421af296-ccaa-42ef-8e87-0220bf4a6657",
+    "inspection_id": "88df66c9-a129-49fb-b76f-dd7a61856745",
     "verdict": "SUSPICIOUS",
     "reason_codes": [
       "PROMPT_INJECTION_PATTERN"
@@ -288,7 +292,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   "expected": "SUSPICIOUS (정규화 후 탐지)",
   "status": 200,
   "result": {
-    "inspection_id": "e38b89cd-7b12-4eb0-ab56-70d36c14ee51",
+    "inspection_id": "30f4516d-0232-4529-8cab-10d59b37db40",
     "verdict": "SUSPICIOUS",
     "reason_codes": [
       "PROMPT_INJECTION_PATTERN"
@@ -314,7 +318,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   "expected": "CLEAR or SUSPICIOUS",
   "status": 200,
   "result": {
-    "inspection_id": "a87cb286-bf39-46dc-bdf8-d6078ec06d56",
+    "inspection_id": "4520375c-04f1-43c7-ae54-5ee2ab392a0c",
     "verdict": "CLEAR",
     "reason_codes": [],
     "scanner_version": "rules-v2",
@@ -338,14 +342,14 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   "expected": "REQUIRE_APPROVAL (202 Accepted)",
   "status": 202,
   "result": {
-    "action_id": "eb717b86-f731-4611-850f-f2ee8d97e427",
+    "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
     "decision": "REQUIRE_APPROVAL",
     "state": "PENDING_APPROVAL",
     "reason_codes": [],
-    "approval_id": "67968787-a567-4aa0-8f1e-fee2baf8db52",
+    "approval_id": "35193c61-c1c7-45a0-b846-2ece6f4ebac2",
     "approval_state": "PENDING",
-    "execution_id": "9a2197c4-a45b-4c8e-a695-e50cd2db502c",
-    "trace_id": "26363934-83e0-4cfb-a4d7-b3ed558788ff",
+    "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
+    "trace_id": "d9608a3c-0e6e-40a1-a2de-7ea256193c20",
     "policy_version": "demo-v2",
     "result": null
   },
@@ -381,8 +385,8 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 {
   "status": 200,
   "response": {
-    "approval_id": "67968787-a567-4aa0-8f1e-fee2baf8db52",
-    "action_id": "eb717b86-f731-4611-850f-f2ee8d97e427",
+    "approval_id": "35193c61-c1c7-45a0-b846-2ece6f4ebac2",
+    "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
     "state": "APPROVED"
   }
 }
@@ -398,21 +402,21 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 {
   "status": 200,
   "response": {
-    "action_id": "eb717b86-f731-4611-850f-f2ee8d97e427",
+    "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
     "decision": "REQUIRE_APPROVAL",
     "state": "SUCCEEDED",
     "reason_codes": [],
-    "approval_id": "67968787-a567-4aa0-8f1e-fee2baf8db52",
+    "approval_id": "35193c61-c1c7-45a0-b846-2ece6f4ebac2",
     "approval_state": "CONSUMED",
-    "execution_id": "9a2197c4-a45b-4c8e-a695-e50cd2db502c",
-    "trace_id": "26363934-83e0-4cfb-a4d7-b3ed558788ff",
+    "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
+    "trace_id": "d9608a3c-0e6e-40a1-a2de-7ea256193c20",
     "policy_version": "demo-v2",
     "result": {
-      "receipt_id": "receipt-acb3643c-665a-4d5c-bfa7-40e1741b0f82",
-      "execution_id": "9a2197c4-a45b-4c8e-a695-e50cd2db502c",
+      "receipt_id": "receipt-75ee9c37-c8f2-4bb8-b1ed-e97ffd6892ce",
+      "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
       "result": {
         "status": "submitted_to_mock_outbox",
-        "artifact_id": "artifact-dda5354b-8c9a-41f6-9168-aa3000727294",
+        "artifact_id": "artifact-055f88d1-956d-4837-911a-97d12b9a3dd2",
         "destination_id": "internal-review-outbox",
         "content_hash": "41e95c20ceb9b5cb597e25ca6aa7191c654bbedbc5afc265023a892f3e8b8d4e"
       }
@@ -420,26 +424,26 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   },
   "repeat_status": 200,
   "repeat": {
-    "action_id": "eb717b86-f731-4611-850f-f2ee8d97e427",
+    "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
     "decision": "REQUIRE_APPROVAL",
     "state": "SUCCEEDED",
     "reason_codes": [],
-    "approval_id": "67968787-a567-4aa0-8f1e-fee2baf8db52",
+    "approval_id": "35193c61-c1c7-45a0-b846-2ece6f4ebac2",
     "approval_state": "CONSUMED",
-    "execution_id": "9a2197c4-a45b-4c8e-a695-e50cd2db502c",
-    "trace_id": "26363934-83e0-4cfb-a4d7-b3ed558788ff",
+    "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
+    "trace_id": "d9608a3c-0e6e-40a1-a2de-7ea256193c20",
     "policy_version": "demo-v2",
     "result": {
-      "execution_id": "9a2197c4-a45b-4c8e-a695-e50cd2db502c",
-      "action_id": "eb717b86-f731-4611-850f-f2ee8d97e427",
-      "receipt_id": "receipt-acb3643c-665a-4d5c-bfa7-40e1741b0f82",
+      "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
+      "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
+      "receipt_id": "receipt-75ee9c37-c8f2-4bb8-b1ed-e97ffd6892ce",
       "result": {
         "status": "submitted_to_mock_outbox",
-        "artifact_id": "artifact-dda5354b-8c9a-41f6-9168-aa3000727294",
+        "artifact_id": "artifact-055f88d1-956d-4837-911a-97d12b9a3dd2",
         "destination_id": "internal-review-outbox",
         "content_hash": "41e95c20ceb9b5cb597e25ca6aa7191c654bbedbc5afc265023a892f3e8b8d4e"
       },
-      "created": 1793684120.026676
+      "created": 1793718536.4305413
     }
   },
   "outbox": 1
@@ -463,7 +467,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     "total_records": 14,
     "chained_records": 14,
     "tampered_record_ids": [],
-    "latest_chain_hash": "38bd2445f54963bff57e1a2cfd2cd50c7f17b2ad3a4b8696918441f91858f35a"
+    "latest_chain_hash": "30c84576f89a55c6d184b0c0399aaeb7cd718bc4ae09c2318170ade6d6a32606"
   },
   "mitre": "T1562 (Impair Defenses / Audit Tampering)",
   "severity": "INFO"
@@ -521,23 +525,23 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 
 ```json
 {
-  "id": "5277367f-2aca-4f72-a751-40c3b3d0257b",
+  "id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
   "principal": "agent-alice",
   "user_name": "alice",
   "tenant": "north",
   "task_id": "task-alice-001",
-  "requested_at": 1793684120.0553882,
+  "requested_at": 1793718536.4829545,
   "source_ip": "127.0.0.1",
   "client": "Python-urllib/3.12",
   "risk_score": 15,
   "decision": "REQUIRE_APPROVAL",
-  "expires_at": 1793685020.0553882,
+  "expires_at": 1793719436.4829545,
   "reviewer": null,
   "review_reason": null,
   "decided_at": null,
   "result_count": null,
-  "trace_id": "687ef417-44b9-4d09-b2a7-932b6dc3d659",
-  "request_id": "5277367f-2aca-4f72-a751-40c3b3d0257b",
+  "trace_id": "55174e38-5105-44ce-9436-40812a5b6de6",
+  "request_id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
   "state": "PENDING_APPROVAL",
   "arguments": {
     "dataset_id": "operations",
@@ -577,7 +581,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   "dataset_name": "운영 지원 이력",
   "database_name": "사내 검증 DB",
   "mode": "sqlite",
-  "execution_id": "f0935b1d-82dc-4c3a-86dc-33e7afe2aa71",
+  "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
   "receipt_id": null,
   "authorization": {
     "mode": "human",
@@ -590,7 +594,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   },
   "timeline": [
     {
-      "at": 1793684120.0564306,
+      "at": 1793718536.4839544,
       "actor": "agent-alice",
       "event": "DB_REQUESTED",
       "details": {
@@ -630,23 +634,23 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 
 ```json
 {
-  "id": "5277367f-2aca-4f72-a751-40c3b3d0257b",
+  "id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
   "principal": "agent-alice",
   "user_name": "alice",
   "tenant": "north",
   "task_id": "task-alice-001",
-  "requested_at": 1793684120.0553882,
+  "requested_at": 1793718536.4829545,
   "source_ip": "127.0.0.1",
   "client": "Python-urllib/3.12",
   "risk_score": 15,
   "decision": "REQUIRE_APPROVAL",
-  "expires_at": 1793685020.0553882,
+  "expires_at": 1793719436.4829545,
   "reviewer": "reviewer-demo",
   "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-  "decided_at": 1793684120.0649953,
+  "decided_at": 1793718536.511961,
   "result_count": null,
-  "trace_id": "687ef417-44b9-4d09-b2a7-932b6dc3d659",
-  "request_id": "5277367f-2aca-4f72-a751-40c3b3d0257b",
+  "trace_id": "55174e38-5105-44ce-9436-40812a5b6de6",
+  "request_id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
   "state": "APPROVED",
   "arguments": {
     "dataset_id": "operations",
@@ -686,7 +690,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   "dataset_name": "운영 지원 이력",
   "database_name": "사내 검증 DB",
   "mode": "sqlite",
-  "execution_id": "f0935b1d-82dc-4c3a-86dc-33e7afe2aa71",
+  "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
   "receipt_id": null,
   "authorization": {
     "mode": "human",
@@ -699,7 +703,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   },
   "timeline": [
     {
-      "at": 1793684120.0564306,
+      "at": 1793718536.4839544,
       "actor": "agent-alice",
       "event": "DB_REQUESTED",
       "details": {
@@ -712,7 +716,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
       }
     },
     {
-      "at": 1793684120.0655227,
+      "at": 1793718536.511961,
       "actor": "reviewer-demo",
       "event": "DB_APPROVED",
       "details": {
@@ -734,8 +738,8 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 {
   "http": 200,
   "row_count": 25,
-  "receipt_id": "receipt-fc92542c-7af4-4386-99a4-04f866fdd2ff",
-  "repeat_receipt": "receipt-fc92542c-7af4-4386-99a4-04f866fdd2ff",
+  "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e",
+  "repeat_receipt": "receipt-12437707-9427-45a1-996e-57be2698004e",
   "replayed": true
 }
 ```
@@ -750,23 +754,23 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 {
   "gateway_status": 202,
   "request": {
-    "id": "3f368b50-a320-43b6-88d9-75cd7f7007db",
+    "id": "20a58dc7-2845-4d34-bef6-075ca21dfe30",
     "principal": "agent-alice",
     "user_name": "alice",
     "tenant": "north",
     "task_id": "task-alice-001",
-    "requested_at": 1793684120.1074684,
+    "requested_at": 1793718536.5651438,
     "source_ip": "127.0.0.1",
     "client": "Python-urllib/3.12",
     "risk_score": 70,
     "decision": "REQUIRE_APPROVAL",
-    "expires_at": 1793685020.1074684,
+    "expires_at": 1793719436.5651438,
     "reviewer": null,
     "review_reason": null,
     "decided_at": null,
     "result_count": null,
-    "trace_id": "ce6837a2-53a9-4247-b3c2-491a70b719fc",
-    "request_id": "3f368b50-a320-43b6-88d9-75cd7f7007db",
+    "trace_id": "45ede51b-f905-4d38-97c7-9823fd7341c7",
+    "request_id": "20a58dc7-2845-4d34-bef6-075ca21dfe30",
     "state": "PENDING_APPROVAL",
     "arguments": {
       "dataset_id": "payroll",
@@ -806,7 +810,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     "dataset_name": "급여·정산 정보",
     "database_name": "사내 검증 DB",
     "mode": "sqlite",
-    "execution_id": "3afc70cc-1117-4d31-bea7-187b18993a11",
+    "execution_id": "69385dba-6951-4893-bc1a-96328ae4848e",
     "receipt_id": null,
     "authorization": {
       "mode": "human",
@@ -819,7 +823,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     },
     "timeline": [
       {
-        "at": 1793684120.108088,
+        "at": 1793718536.5671437,
         "actor": "agent-alice",
         "event": "DB_REQUESTED",
         "details": {
@@ -846,23 +850,23 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 {
   "gateway_status": 202,
   "request": {
-    "id": "2e8fa742-ccc5-4443-8014-a51650847335",
+    "id": "335fe3c7-d3ba-4ad5-a7f6-75be9720b979",
     "principal": "agent-alice",
     "user_name": "alice",
     "tenant": "north",
     "task_id": "task-alice-001",
-    "requested_at": 1793684120.1159124,
+    "requested_at": 1793718536.5741446,
     "source_ip": "127.0.0.1",
     "client": "Python-urllib/3.12",
     "risk_score": 40,
     "decision": "REQUIRE_APPROVAL",
-    "expires_at": 1793685020.1159124,
+    "expires_at": 1793719436.5741446,
     "reviewer": null,
     "review_reason": null,
     "decided_at": null,
     "result_count": null,
-    "trace_id": "b7f97005-5d99-4906-9852-dae08b6a195a",
-    "request_id": "2e8fa742-ccc5-4443-8014-a51650847335",
+    "trace_id": "53584082-7722-4ce2-a84a-7500be11b17a",
+    "request_id": "335fe3c7-d3ba-4ad5-a7f6-75be9720b979",
     "state": "PENDING_APPROVAL",
     "arguments": {
       "dataset_id": "operations",
@@ -902,7 +906,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     "dataset_name": "운영 지원 이력",
     "database_name": "사내 검증 DB",
     "mode": "sqlite",
-    "execution_id": "b71c13b9-81c6-41b8-bd0c-200f1836d39c",
+    "execution_id": "d20c98d2-9802-4e97-a5c0-ff31184015ac",
     "receipt_id": null,
     "authorization": {
       "mode": "human",
@@ -915,7 +919,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     },
     "timeline": [
       {
-        "at": 1793684120.1174753,
+        "at": 1793718536.5751455,
         "actor": "agent-alice",
         "event": "DB_REQUESTED",
         "details": {
@@ -942,23 +946,23 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 {
   "gateway_status": 403,
   "request": {
-    "id": "567034f9-9bf0-431a-b4c8-4251937ac26c",
+    "id": "98fea6dc-249c-4f60-a960-58126e66fe2d",
     "principal": "agent-alice",
     "user_name": "alice",
     "tenant": "north",
     "task_id": "task-alice-001",
-    "requested_at": 1793684120.1237712,
+    "requested_at": 1793718536.6051722,
     "source_ip": "127.0.0.1",
     "client": "Python-urllib/3.12",
     "risk_score": 55,
     "decision": "DENY",
-    "expires_at": 1793685020.1237712,
+    "expires_at": 1793719436.6051722,
     "reviewer": null,
     "review_reason": null,
     "decided_at": null,
     "result_count": null,
-    "trace_id": "bf9d9a3c-75b7-47a2-9ebe-3b417560b099",
-    "request_id": "567034f9-9bf0-431a-b4c8-4251937ac26c",
+    "trace_id": "9889bff3-0606-43f3-8b21-9730dfbd6ebc",
+    "request_id": "98fea6dc-249c-4f60-a960-58126e66fe2d",
     "state": "DENIED",
     "arguments": {
       "dataset_id": "operations",
@@ -999,7 +1003,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     "dataset_name": "운영 지원 이력",
     "database_name": "사내 검증 DB",
     "mode": "sqlite",
-    "execution_id": "7741d676-48af-467e-b0d7-ef50d8253344",
+    "execution_id": "927fc721-26e4-4979-af1e-f2ad37f16528",
     "receipt_id": null,
     "authorization": {
       "mode": "denied",
@@ -1012,7 +1016,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     },
     "timeline": [
       {
-        "at": 1793684120.1248415,
+        "at": 1793718536.6061711,
         "actor": "agent-alice",
         "event": "DB_REQUESTED",
         "details": {
@@ -1051,9 +1055,9 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 
 ```json
 {
-  "as_of": 1793684120.1316178,
+  "as_of": 1793718536.6357744,
   "timezone": "Asia/Seoul",
-  "day_start": 1793631600.0,
+  "day_start": 1793718000.0,
   "metrics": {
     "pending": 2,
     "allowed": 1,
@@ -1062,6 +1066,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   },
   "risk": {
     "score": 42.0,
+    "level": "주의",
     "raw_score": 42.0,
     "factors": {
       "sensitive": 1,
@@ -1084,271 +1089,271 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
   },
   "activity": [
     {
-      "at": 1793682380.1316178,
+      "at": 1793716796.6357744,
       "count": 0
     },
     {
-      "at": 1793682440.1316178,
+      "at": 1793716856.6357744,
       "count": 0
     },
     {
-      "at": 1793682500.1316178,
+      "at": 1793716916.6357744,
       "count": 0
     },
     {
-      "at": 1793682560.1316178,
+      "at": 1793716976.6357744,
       "count": 0
     },
     {
-      "at": 1793682620.1316178,
+      "at": 1793717036.6357744,
       "count": 0
     },
     {
-      "at": 1793682680.1316178,
+      "at": 1793717096.6357744,
       "count": 0
     },
     {
-      "at": 1793682740.1316178,
+      "at": 1793717156.6357744,
       "count": 0
     },
     {
-      "at": 1793682800.1316178,
+      "at": 1793717216.6357744,
       "count": 0
     },
     {
-      "at": 1793682860.1316178,
+      "at": 1793717276.6357744,
       "count": 0
     },
     {
-      "at": 1793682920.1316178,
+      "at": 1793717336.6357744,
       "count": 0
     },
     {
-      "at": 1793682980.1316178,
+      "at": 1793717396.6357744,
       "count": 0
     },
     {
-      "at": 1793683040.1316178,
+      "at": 1793717456.6357744,
       "count": 0
     },
     {
-      "at": 1793683100.1316178,
+      "at": 1793717516.6357744,
       "count": 0
     },
     {
-      "at": 1793683160.1316178,
+      "at": 1793717576.6357744,
       "count": 0
     },
     {
-      "at": 1793683220.1316178,
+      "at": 1793717636.6357744,
       "count": 0
     },
     {
-      "at": 1793683280.1316178,
+      "at": 1793717696.6357744,
       "count": 0
     },
     {
-      "at": 1793683340.1316178,
+      "at": 1793717756.6357744,
       "count": 0
     },
     {
-      "at": 1793683400.1316178,
+      "at": 1793717816.6357744,
       "count": 0
     },
     {
-      "at": 1793683460.1316178,
+      "at": 1793717876.6357744,
       "count": 0
     },
     {
-      "at": 1793683520.1316178,
+      "at": 1793717936.6357744,
       "count": 0
     },
     {
-      "at": 1793683580.1316178,
+      "at": 1793717996.6357744,
       "count": 0
     },
     {
-      "at": 1793683640.1316178,
+      "at": 1793718056.6357744,
       "count": 0
     },
     {
-      "at": 1793683700.1316178,
+      "at": 1793718116.6357744,
       "count": 0
     },
     {
-      "at": 1793683760.1316178,
+      "at": 1793718176.6357744,
       "count": 0
     },
     {
-      "at": 1793683820.1316178,
+      "at": 1793718236.6357744,
       "count": 0
     },
     {
-      "at": 1793683880.1316178,
+      "at": 1793718296.6357744,
       "count": 0
     },
     {
-      "at": 1793683940.1316178,
+      "at": 1793718356.6357744,
       "count": 0
     },
     {
-      "at": 1793684000.1316178,
+      "at": 1793718416.6357744,
       "count": 0
     },
     {
-      "at": 1793684060.1316178,
+      "at": 1793718476.6357744,
       "count": 0
     },
     {
-      "at": 1793684120.1316178,
+      "at": 1793718536.6357744,
       "count": 4
     }
   ],
   "risk_trend": [
     {
-      "at": 1793682320.1316178,
+      "at": 1793716736.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682380.1316178,
+      "at": 1793716796.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682440.1316178,
+      "at": 1793716856.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682500.1316178,
+      "at": 1793716916.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682560.1316178,
+      "at": 1793716976.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682620.1316178,
+      "at": 1793717036.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682680.1316178,
+      "at": 1793717096.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682740.1316178,
+      "at": 1793717156.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682800.1316178,
+      "at": 1793717216.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682860.1316178,
+      "at": 1793717276.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682920.1316178,
+      "at": 1793717336.6357744,
       "score": 0.0
     },
     {
-      "at": 1793682980.1316178,
+      "at": 1793717396.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683040.1316178,
+      "at": 1793717456.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683100.1316178,
+      "at": 1793717516.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683160.1316178,
+      "at": 1793717576.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683220.1316178,
+      "at": 1793717636.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683280.1316178,
+      "at": 1793717696.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683340.1316178,
+      "at": 1793717756.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683400.1316178,
+      "at": 1793717816.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683460.1316178,
+      "at": 1793717876.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683520.1316178,
+      "at": 1793717936.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683580.1316178,
+      "at": 1793717996.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683640.1316178,
+      "at": 1793718056.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683700.1316178,
+      "at": 1793718116.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683760.1316178,
+      "at": 1793718176.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683820.1316178,
+      "at": 1793718236.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683880.1316178,
+      "at": 1793718296.6357744,
       "score": 0.0
     },
     {
-      "at": 1793683940.1316178,
+      "at": 1793718356.6357744,
       "score": 0.0
     },
     {
-      "at": 1793684000.1316178,
+      "at": 1793718416.6357744,
       "score": 0.0
     },
     {
-      "at": 1793684060.1316178,
+      "at": 1793718476.6357744,
       "score": 0.0
     },
     {
-      "at": 1793684120.1316178,
+      "at": 1793718536.6357744,
       "score": 42.0
     }
   ],
   "recent": [
     {
-      "id": "567034f9-9bf0-431a-b4c8-4251937ac26c",
+      "id": "98fea6dc-249c-4f60-a960-58126e66fe2d",
       "principal": "agent-alice",
       "user_name": "alice",
       "tenant": "north",
       "task_id": "task-alice-001",
-      "requested_at": 1793684120.1237712,
+      "requested_at": 1793718536.6051722,
       "source_ip": "127.0.0.1",
       "client": "Python-urllib/3.12",
       "risk_score": 55,
       "decision": "DENY",
-      "expires_at": 1793685020.1237712,
+      "expires_at": 1793719436.6051722,
       "reviewer": null,
       "review_reason": null,
       "decided_at": null,
       "result_count": null,
-      "trace_id": "bf9d9a3c-75b7-47a2-9ebe-3b417560b099",
-      "request_id": "567034f9-9bf0-431a-b4c8-4251937ac26c",
+      "trace_id": "9889bff3-0606-43f3-8b21-9730dfbd6ebc",
+      "request_id": "98fea6dc-249c-4f60-a960-58126e66fe2d",
       "state": "DENIED",
       "arguments": {
         "dataset_id": "operations",
@@ -1389,7 +1394,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
       "dataset_name": "운영 지원 이력",
       "database_name": "사내 검증 DB",
       "mode": "sqlite",
-      "execution_id": "7741d676-48af-467e-b0d7-ef50d8253344",
+      "execution_id": "927fc721-26e4-4979-af1e-f2ad37f16528",
       "receipt_id": null,
       "authorization": {
         "mode": "denied",
@@ -1397,23 +1402,23 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
       }
     },
     {
-      "id": "2e8fa742-ccc5-4443-8014-a51650847335",
+      "id": "335fe3c7-d3ba-4ad5-a7f6-75be9720b979",
       "principal": "agent-alice",
       "user_name": "alice",
       "tenant": "north",
       "task_id": "task-alice-001",
-      "requested_at": 1793684120.1159124,
+      "requested_at": 1793718536.5741446,
       "source_ip": "127.0.0.1",
       "client": "Python-urllib/3.12",
       "risk_score": 40,
       "decision": "REQUIRE_APPROVAL",
-      "expires_at": 1793685020.1159124,
+      "expires_at": 1793719436.5741446,
       "reviewer": null,
       "review_reason": null,
       "decided_at": null,
       "result_count": null,
-      "trace_id": "b7f97005-5d99-4906-9852-dae08b6a195a",
-      "request_id": "2e8fa742-ccc5-4443-8014-a51650847335",
+      "trace_id": "53584082-7722-4ce2-a84a-7500be11b17a",
+      "request_id": "335fe3c7-d3ba-4ad5-a7f6-75be9720b979",
       "state": "PENDING_APPROVAL",
       "arguments": {
         "dataset_id": "operations",
@@ -1453,7 +1458,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
       "dataset_name": "운영 지원 이력",
       "database_name": "사내 검증 DB",
       "mode": "sqlite",
-      "execution_id": "b71c13b9-81c6-41b8-bd0c-200f1836d39c",
+      "execution_id": "d20c98d2-9802-4e97-a5c0-ff31184015ac",
       "receipt_id": null,
       "authorization": {
         "mode": "human",
@@ -1461,23 +1466,23 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
       }
     },
     {
-      "id": "3f368b50-a320-43b6-88d9-75cd7f7007db",
+      "id": "20a58dc7-2845-4d34-bef6-075ca21dfe30",
       "principal": "agent-alice",
       "user_name": "alice",
       "tenant": "north",
       "task_id": "task-alice-001",
-      "requested_at": 1793684120.1074684,
+      "requested_at": 1793718536.5651438,
       "source_ip": "127.0.0.1",
       "client": "Python-urllib/3.12",
       "risk_score": 70,
       "decision": "REQUIRE_APPROVAL",
-      "expires_at": 1793685020.1074684,
+      "expires_at": 1793719436.5651438,
       "reviewer": null,
       "review_reason": null,
       "decided_at": null,
       "result_count": null,
-      "trace_id": "ce6837a2-53a9-4247-b3c2-491a70b719fc",
-      "request_id": "3f368b50-a320-43b6-88d9-75cd7f7007db",
+      "trace_id": "45ede51b-f905-4d38-97c7-9823fd7341c7",
+      "request_id": "20a58dc7-2845-4d34-bef6-075ca21dfe30",
       "state": "PENDING_APPROVAL",
       "arguments": {
         "dataset_id": "payroll",
@@ -1517,7 +1522,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
       "dataset_name": "급여·정산 정보",
       "database_name": "사내 검증 DB",
       "mode": "sqlite",
-      "execution_id": "3afc70cc-1117-4d31-bea7-187b18993a11",
+      "execution_id": "69385dba-6951-4893-bc1a-96328ae4848e",
       "receipt_id": null,
       "authorization": {
         "mode": "human",
@@ -1525,23 +1530,23 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
       }
     },
     {
-      "id": "5277367f-2aca-4f72-a751-40c3b3d0257b",
+      "id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
       "principal": "agent-alice",
       "user_name": "alice",
       "tenant": "north",
       "task_id": "task-alice-001",
-      "requested_at": 1793684120.0553882,
+      "requested_at": 1793718536.4829545,
       "source_ip": "127.0.0.1",
       "client": "Python-urllib/3.12",
       "risk_score": 15,
       "decision": "REQUIRE_APPROVAL",
-      "expires_at": 1793685020.0553882,
+      "expires_at": 1793719436.4829545,
       "reviewer": "reviewer-demo",
       "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-      "decided_at": 1793684120.0649953,
+      "decided_at": 1793718536.511961,
       "result_count": 25,
-      "trace_id": "687ef417-44b9-4d09-b2a7-932b6dc3d659",
-      "request_id": "5277367f-2aca-4f72-a751-40c3b3d0257b",
+      "trace_id": "55174e38-5105-44ce-9436-40812a5b6de6",
+      "request_id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
       "state": "SUCCEEDED",
       "arguments": {
         "dataset_id": "operations",
@@ -1581,8 +1586,8 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
       "dataset_name": "운영 지원 이력",
       "database_name": "사내 검증 DB",
       "mode": "sqlite",
-      "execution_id": "f0935b1d-82dc-4c3a-86dc-33e7afe2aa71",
-      "receipt_id": "receipt-fc92542c-7af4-4386-99a4-04f866fdd2ff",
+      "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
+      "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e",
       "authorization": {
         "mode": "human",
         "role": "report-submitter"
@@ -1634,23 +1639,23 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 {
   "http": 200,
   "report": {
-    "id": "5277367f-2aca-4f72-a751-40c3b3d0257b",
+    "id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
     "principal": "agent-alice",
     "user_name": "alice",
     "tenant": "north",
     "task_id": "task-alice-001",
-    "requested_at": 1793684120.0553882,
+    "requested_at": 1793718536.4829545,
     "source_ip": "127.0.0.1",
     "client": "Python-urllib/3.12",
     "risk_score": 15,
     "decision": "REQUIRE_APPROVAL",
-    "expires_at": 1793685020.0553882,
+    "expires_at": 1793719436.4829545,
     "reviewer": "reviewer-demo",
     "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-    "decided_at": 1793684120.0649953,
+    "decided_at": 1793718536.511961,
     "result_count": 25,
-    "trace_id": "687ef417-44b9-4d09-b2a7-932b6dc3d659",
-    "request_id": "5277367f-2aca-4f72-a751-40c3b3d0257b",
+    "trace_id": "55174e38-5105-44ce-9436-40812a5b6de6",
+    "request_id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
     "state": "SUCCEEDED",
     "arguments": {
       "dataset_id": "operations",
@@ -1690,8 +1695,8 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     "dataset_name": "운영 지원 이력",
     "database_name": "사내 검증 DB",
     "mode": "sqlite",
-    "execution_id": "f0935b1d-82dc-4c3a-86dc-33e7afe2aa71",
-    "receipt_id": "receipt-fc92542c-7af4-4386-99a4-04f866fdd2ff",
+    "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
+    "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e",
     "authorization": {
       "mode": "human",
       "role": "report-submitter"
@@ -1703,7 +1708,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     },
     "timeline": [
       {
-        "at": 1793684120.0564306,
+        "at": 1793718536.4839544,
         "actor": "agent-alice",
         "event": "DB_REQUESTED",
         "details": {
@@ -1716,7 +1721,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
         }
       },
       {
-        "at": 1793684120.0655227,
+        "at": 1793718536.511961,
         "actor": "reviewer-demo",
         "event": "DB_APPROVED",
         "details": {
@@ -1725,11 +1730,11 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
         }
       },
       {
-        "at": 1793684120.0717928,
+        "at": 1793718536.5189607,
         "actor": "agent-alice",
         "event": "DB_EXECUTION_STARTED",
         "details": {
-          "execution_id": "f0935b1d-82dc-4c3a-86dc-33e7afe2aa71",
+          "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
           "authorization": {
             "mode": "human",
             "role": "report-submitter"
@@ -1737,12 +1742,12 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
         }
       },
       {
-        "at": 1793684120.0917928,
+        "at": 1793718536.5518703,
         "actor": "agent-alice",
         "event": "DB_EXECUTION_SUCCEEDED",
         "details": {
           "row_count": 25,
-          "receipt_id": "receipt-fc92542c-7af4-4386-99a4-04f866fdd2ff"
+          "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e"
         }
       }
     ]
@@ -1758,32 +1763,32 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 
 ```json
 {
-  "checked_at": 1793684120.1405816,
+  "checked_at": 1793718536.6478028,
   "passed": true,
   "checks": [
     {
       "name": "게이트웨이",
       "passed": true,
       "detail": "ready",
-      "latency_ms": 0.86
+      "latency_ms": 0.75
     },
     {
       "name": "보안 에이전트",
       "passed": true,
       "detail": "정상·정책 위반 입력 분석 자체 점검 통과",
-      "latency_ms": 0.17
+      "latency_ms": 0.23
     },
     {
       "name": "보호 DB",
       "passed": true,
       "detail": "검증용 SQLite DB 읽기 연결 정상",
-      "latency_ms": 1.52
+      "latency_ms": 2.42
     },
     {
       "name": "감사 DB",
       "passed": true,
       "detail": "감사 기록 저장소 연결됨",
-      "latency_ms": 0.17
+      "latency_ms": 0.21
     },
     {
       "name": "감사 로그 무결성",
@@ -1843,18 +1848,18 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
         "expected": "ALLOW (200 OK)",
         "status": 200,
         "result": {
-          "action_id": "57b956a0-7bc3-4c3a-bc4b-50b7d43e26de",
+          "action_id": "85bdd651-28ab-4bbb-ab95-7de366521095",
           "decision": "ALLOW",
           "state": "SUCCEEDED",
           "reason_codes": [],
           "approval_id": null,
           "approval_state": null,
-          "execution_id": "38f68a74-55c5-45b2-8f44-20b10fa15ecc",
-          "trace_id": "016c1731-50f8-4b49-8731-5607e8cc3195",
+          "execution_id": "944a8f2f-9d1c-475d-875a-522552ad3c55",
+          "trace_id": "e4da9243-ec9a-46df-be5a-613482f02cfc",
           "policy_version": "demo-v2",
           "result": {
-            "receipt_id": "receipt-97c60e66-424e-4d15-8f7a-2726be207d2d",
-            "execution_id": "38f68a74-55c5-45b2-8f44-20b10fa15ecc",
+            "receipt_id": "receipt-08d0c606-3655-4a29-a931-0b5b1bab1161",
+            "execution_id": "944a8f2f-9d1c-475d-875a-522552ad3c55",
             "result": {
               "document_id": "report-alice-001",
               "content": "Quarterly operations report for Alice (fictional)\n\nAll values in this exercise are synthetic. Service availability was 99.2 percent in the fictional sample period. Three maintenance tasks were completed. The next review is scheduled for the end of the fictional quarter.\n",
@@ -1874,7 +1879,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
         "expected": "DENY (403 Forbidden)",
         "status": 403,
         "result": {
-          "action_id": "e92623cd-6ac2-452e-bd99-0b023772f3fa",
+          "action_id": "4f33dffd-ef5c-4a04-bc03-83223784a96b",
           "decision": "DENY",
           "state": "DENIED",
           "reason_codes": [
@@ -1882,8 +1887,8 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
           ],
           "approval_id": null,
           "approval_state": null,
-          "execution_id": "d4228c87-7d3f-44ea-951a-8c3c5938bc0e",
-          "trace_id": "13f57468-53da-46a0-8399-21168be13660",
+          "execution_id": "c9184069-e25c-4cbe-aa6b-371120992427",
+          "trace_id": "128d3a46-d569-41f7-8a27-3ed26fe94d14",
           "policy_version": "demo-v2",
           "result": null
         },
@@ -1899,7 +1904,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
         "expected": "SUSPICIOUS (200 OK with flag)",
         "status": 200,
         "result": {
-          "inspection_id": "7e06476d-a543-4042-83eb-45f208b8b4ce",
+          "inspection_id": "51a81e8c-7916-4967-8524-3a08be52791b",
           "verdict": "SUSPICIOUS",
           "reason_codes": [
             "PROMPT_INJECTION_PATTERN"
@@ -1919,7 +1924,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
         "expected": "SUSPICIOUS (정규화 후 탐지)",
         "status": 200,
         "result": {
-          "inspection_id": "ebbd6fb3-c599-4f9b-9dfd-1afb8a77735b",
+          "inspection_id": "ab8a95e8-8f1d-4cb9-a7ae-6875163b1076",
           "verdict": "SUSPICIOUS",
           "reason_codes": [
             "PROMPT_INJECTION_PATTERN"
@@ -1939,14 +1944,14 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
         "expected": "REQUIRE_APPROVAL (202 Accepted)",
         "status": 202,
         "result": {
-          "action_id": "35394aab-7029-4c80-87a0-705994e07a69",
+          "action_id": "178250d3-27b5-41ce-9ac2-7ee27d5ec521",
           "decision": "REQUIRE_APPROVAL",
           "state": "PENDING_APPROVAL",
           "reason_codes": [],
-          "approval_id": "934a4dcd-7d8a-4248-928c-ada725a91401",
+          "approval_id": "df7fb1d1-6791-4277-98ac-bd0b9eed9ecc",
           "approval_state": "PENDING",
-          "execution_id": "a8d8d196-78e4-47e6-8e8d-5a85363a8acd",
-          "trace_id": "b2b49896-8aa6-42db-ac3a-225dcfeddbe7",
+          "execution_id": "00d07de6-cec5-4d55-917c-ee9f444786c3",
+          "trace_id": "0c72d317-46f7-4c71-a7bf-98ac553e3754",
           "policy_version": "demo-v2",
           "result": null
         },
@@ -1966,7 +1971,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
           "total_records": 10,
           "chained_records": 10,
           "tampered_record_ids": [],
-          "latest_chain_hash": "37282abd5318d2abdda7a98d58d4b31a365c26967afdaa35fae27938104fb969"
+          "latest_chain_hash": "74083838e0164ffee13202f52d8511362dc34011b4ade42f48496e57921a73c3"
         },
         "mitre": "T1562 (Impair Defenses / Audit Tampering)",
         "severity": "INFO"
@@ -1974,8 +1979,8 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     }
   },
   "binary": {
-    "sha256": "d497c1f5279e7135ca22193dff62e21d858cfd33bb7f1220947dd955c95dfe98",
-    "bytes": 14174875
+    "sha256": "b84e88f9be65a40b3543fb95eef5ce0cdda1cef6e0a1c08ec25519b74d86a146",
+    "bytes": 15206904
   }
 }
 ```
@@ -2011,26 +2016,26 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
     }
   },
   "diagnostic": {
-    "checked_at": 1793684129.1104734,
+    "checked_at": 1793718546.151963,
     "passed": true,
     "checks": [
       {
         "name": "게이트웨이",
         "passed": true,
         "detail": "ready",
-        "latency_ms": 22.8
+        "latency_ms": 13.51
       },
       {
         "name": "보안 에이전트",
         "passed": true,
         "detail": "정상·정책 위반 입력 분석 자체 점검 통과",
-        "latency_ms": 0.18
+        "latency_ms": 0.22
       },
       {
         "name": "보호 DB",
         "passed": true,
         "detail": "검증용 SQLite DB 읽기 연결 정상",
-        "latency_ms": 16.77
+        "latency_ms": 16.39
       },
       {
         "name": "감사 DB",
@@ -2061,6 +2066,18 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 }
 ```
 
+### T32. 시험 중 실행 소스 일치
+
+- 예상 결과: 시작·종료 시 소스 지문 일치
+- 실제 판정: **PASS**
+- 관찰값 및 응답 원문:
+
+```json
+{
+  "source_sha256": "f1d8b43a8125321c7f38cd2ffe9b1166df42baa8d007f1b786e871e948f2ec8d"
+}
+```
+
 ### 미실행 범위
 
 - Docker 다중 네트워크 격리·사내 PostgreSQL 운영 연결(임시 PostgreSQL 기능 검증은 별도 보고서): NOT_RUN
@@ -2074,5 +2091,7 @@ PostgreSQL 추가 7단계는 자동 실제 SELECT, 두 연결의 전체 예산 �
 - 감사 이벤트: [audit-events.json](results/latest/audit-events.json)
 - 실행파일 로그: [exe-smoke.log](results/latest/exe-smoke.log)
 - 테스트는 별도 임시 디렉터리를 사용하며 사용자 실행 데이터는 삭제하지 않습니다.
+
+증거 파일의 정합성: [manifest.json](results/latest/manifest.json). `python -m testing.report_evidence`로 검사합니다.
 
 <!-- ASG_RESULT_END -->

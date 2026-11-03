@@ -1,7 +1,7 @@
 # PostgreSQL 연결 실제 검증 결과
 
 - 판정: **PASS**
-- 시작: 2026-11-03T10:14:00.810840+09:00
+- 시작: 2026-11-04T00:03:24.017027+09:00
 - 임시 PostgreSQL 17.11, 게이트웨이 감사 DB와 보호 DB 분리. 운영 DB 미접속.
 
 | 검증 | 결과 |
@@ -46,17 +46,17 @@
       "name": "게이트웨이",
       "status": "up",
       "detail": "ready",
-      "checked_at": 1793668443.024571,
-      "latency_ms": 14.23
+      "checked_at": 1793718207.1046708,
+      "latency_ms": 2.38
     },
     {
       "key": "security_agent",
       "name": "보안 에이전트",
       "status": "up",
       "engine": "db-security-rules-v2",
-      "checked_at": 1793668443.024571,
+      "checked_at": 1793718207.105208,
       "last_analysis_at": null,
-      "latency_ms": 0.49,
+      "latency_ms": 0.5,
       "detail": "정상·정책 위반 입력 분석 자체 점검 통과"
     },
     {
@@ -64,16 +64,16 @@
       "name": "보호 DB",
       "status": "up",
       "detail": "PostgreSQL 읽기 전용 연결·등록 대상 권한 정상",
-      "checked_at": 1793668443.0764832,
-      "latency_ms": 51.19
+      "checked_at": 1793718207.1658163,
+      "latency_ms": 60.73
     },
     {
       "key": "audit_db",
       "name": "감사 DB",
       "status": "up",
       "detail": "감사 기록 저장소 연결됨",
-      "checked_at": 1793668443.07807,
-      "latency_ms": 1.54
+      "checked_at": 1793718207.1677842,
+      "latency_ms": 1.97
     }
   ]
 }
@@ -218,7 +218,7 @@
       "name": "게이트웨이",
       "passed": true,
       "detail": "ready",
-      "latency_ms": 26.56
+      "latency_ms": 1.69
     },
     {
       "name": "보안 에이전트",
@@ -230,13 +230,13 @@
       "name": "보호 DB",
       "passed": true,
       "detail": "PostgreSQL 읽기 전용 연결·등록 대상 권한 정상",
-      "latency_ms": 49.2
+      "latency_ms": 44.11
     },
     {
       "name": "감사 DB",
       "passed": true,
       "detail": "감사 기록 저장소 연결됨",
-      "latency_ms": 0.8
+      "latency_ms": 1.02
     },
     {
       "name": "감사 로그 무결성",
@@ -337,7 +337,7 @@
 {
   "requests": 40,
   "success": 40,
-  "elapsed_seconds": 3.001,
+  "elapsed_seconds": 3.244,
   "concurrency": 8,
   "note": "기능 검증 부하이며 운영 처리량 보증이 아닙니다."
 }

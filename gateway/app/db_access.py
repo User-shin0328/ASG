@@ -316,7 +316,8 @@ class DBAccessService:
             for key,weight in RISK_WEIGHTS.items():
                 if row[key]:factors[key]+=1;components[key]+=weight*(1-age/WINDOW)
         raw=sum(components.values())
-        return {'score':min(100,round(raw,1)),'raw_score':round(raw,2),'factors':factors,
+        score=min(100,round(raw,1))
+        return {'score':score,'level':'높음' if score>=70 else '주의' if score>=30 else '낮음','raw_score':round(raw,2),'factors':factors,
             'components':{k:round(v,2) for k,v in components.items()},'weights':RISK_WEIGHTS,
             'window_seconds':WINDOW,'formula':'min(100, Σ[(민감×12 + 대량×10 + 비정상×20) × (1-경과초/1800)])',
             'meaning':'운영 위험 지표이며 침해 확률이나 모델의 신뢰도가 아닙니다.'}

@@ -180,7 +180,7 @@ Use installed fonts so the local Korean interface works without downloads. Dates
 - **Risk score:** The current operational indicator, distinct from an individual request's analysis.
 - **Identifier:** Technical trace and binding evidence kept behind details where appropriate.
 
-The report dialog title is 19px, reduced to 17px on mobile. Small chart-axis labels and selected metadata remain 11px in the observed desktop implementation.
+The report dialog title is 19px, reduced to 17px on mobile. Decision text uses 14px, decision buttons are at least 44px tall, and mobile review inputs use 16px. Small chart-axis labels and selected metadata remain 11px in the observed desktop implementation.
 
 ## Layout
 
@@ -194,7 +194,7 @@ At 760px and below, the sidebar becomes a 216px drawer opened by a visible menu 
 
 Mobile tables become labelled-by-context record layouts rather than compressed desktop grids: request time, requester/target, state or risk, requested scope, and report action remain available. Table headings are visually removed; each row is a two-column grid with wrapped content and a minimum 40px action. Desktop tables retain a contained horizontal overflow region.
 
-The report dialog is at most 860px wide and 90vh tall with internal scrolling. Its header stays visible. Two-column evidence fields become one column on mobile; report action buttons share the available width. Diagnostic introduction copy has a maximum measure of 66ch.
+The report dialog is at most 720px wide and 90vh tall with internal scrolling. Its header stays visible. Two-column evidence fields become one column on mobile; report action buttons share the available width. Diagnostic introduction copy has a maximum measure of 66ch.
 
 ## Elevation & Depth
 

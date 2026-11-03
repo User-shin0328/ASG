@@ -1,3 +1,6 @@
+ASG_RUN_ID=20261104-000818-f4d9bd72
+ASG_COMMIT=40b6164297ee6358f230be54664d9d8fc7a4cd10
+ASG_SOURCE_SHA256=f1d8b43a8125321c7f38cd2ffe9b1166df42baa8d007f1b786e871e948f2ec8d
 test_required_security_and_evidence_gates_are_present (evaluation.test_ci_workflow.CiWorkflowTests.test_required_security_and_evidence_gates_are_present) ... ok
 test_development_dataset_has_planned_30_per_label (evaluation.test_dataset.HeldoutDatasetTests.test_development_dataset_has_planned_30_per_label) ... ok
 test_heldout_datasets_are_balanced_and_family_separated (evaluation.test_dataset.HeldoutDatasetTests.test_heldout_datasets_are_balanced_and_family_separated) ... ok
@@ -87,7 +90,7 @@ test_agent_token_cannot_approve_and_pending_state_is_unchanged (tests.test_http_
 test_audit_api_requires_reviewer_and_scopes_events_by_tenant (tests.test_http_api.HttpApiTests.test_audit_api_requires_reviewer_and_scopes_events_by_tenant) ... ok
 test_audit_is_append_only_at_application_database_layer (tests.test_http_api.HttpApiTests.test_audit_is_append_only_at_application_database_layer) ... ok
 test_http_decisions_and_empty_execute_body (tests.test_http_api.HttpApiTests.test_http_decisions_and_empty_execute_body) ... ok
-test_live_health_is_public_and_action_requires_auth (tests.test_http_api.HttpApiTests.test_live_health_is_public_and_action_requires_auth) ... ERROR
+test_live_health_is_public_and_action_requires_auth (tests.test_http_api.HttpApiTests.test_live_health_is_public_and_action_requires_auth) ... ok
 test_missing_typed_and_extra_arguments_are_rejected_without_actions (tests.test_http_api.HttpApiTests.test_missing_typed_and_extra_arguments_are_rejected_without_actions) ... ok
 test_revoked_agent_credential_cannot_execute_approved_action (tests.test_http_api.HttpApiTests.test_revoked_agent_credential_cannot_execute_approved_action) ... ok
 test_postgres_init_script_uses_unix_line_endings (tests.test_init_demo.DemoInitializationTests.test_postgres_init_script_uses_unix_line_endings) ... ok
@@ -112,6 +115,22 @@ test_keyword_dsn_is_never_used_as_a_sqlite_filename (tests.test_protected_db.Pro
 test_target_mismatch_fails_before_sql (tests.test_protected_db.ProtectedDBConfigTests.test_target_mismatch_fails_before_sql) ... ok
 test_unknown_backend_and_missing_postgres_target_fail (tests.test_protected_db.ProtectedDBConfigTests.test_unknown_backend_and_missing_postgres_target_fail) ... ok
 test_switching_target_invalidates_human_approval (tests.test_protected_db.TargetBindingTests.test_switching_target_invalidates_human_approval) ... ok
+test_inconsistent_count_or_outcome_cannot_be_sealed (tests.test_report_evidence.ReportEvidenceTests.test_inconsistent_count_or_outcome_cannot_be_sealed) ... ok
+test_matching_reports_seal_and_verify (tests.test_report_evidence.ReportEvidenceTests.test_matching_reports_seal_and_verify) ... ok
+test_overwritten_log_is_detected (tests.test_report_evidence.ReportEvidenceTests.test_overwritten_log_is_detected) ... ok
+test_publication_preserves_previous_latest_and_unique_runs (tests.test_report_evidence.ReportEvidenceTests.test_publication_preserves_previous_latest_and_unique_runs) ... ok
+test_two_report_writers_cannot_run_together (tests.test_report_evidence.ReportEvidenceTests.test_two_report_writers_cannot_run_together) ... ok
+test_auto_mode_returns_failure_and_evidence_when_all_requests_fail (tests.test_simulation_reliability.SimulationContractTests.test_auto_mode_returns_failure_and_evidence_when_all_requests_fail) ... ok
+test_business_denial_is_printed_as_denied_not_pending (tests.test_simulation_reliability.SimulationContractTests.test_business_denial_is_printed_as_denied_not_pending) ... ok
+test_failed_execution_is_not_reported_as_completed (tests.test_simulation_reliability.SimulationContractTests.test_failed_execution_is_not_reported_as_completed) ... ok
+test_missing_risk_level_is_unknown_not_normal (tests.test_simulation_reliability.SimulationContractTests.test_missing_risk_level_is_unknown_not_normal) ... ok
+test_monitor_failure_limit_and_explicit_retry (tests.test_simulation_reliability.SimulationContractTests.test_monitor_failure_limit_and_explicit_retry) ... ok
+test_monitor_keeps_failed_execution_then_reads_receipt (tests.test_simulation_reliability.SimulationContractTests.test_monitor_keeps_failed_execution_then_reads_receipt) ... ok
+test_monitor_terminal_states_and_thread_shutdown (tests.test_simulation_reliability.SimulationContractTests.test_monitor_terminal_states_and_thread_shutdown) ... ok
+test_operational_risk_boundaries_and_console_use_server_label (tests.test_simulation_reliability.SimulationContractTests.test_operational_risk_boundaries_and_console_use_server_label) ... ok
+test_transport_failure_does_not_claim_block_or_success (tests.test_simulation_reliability.SimulationContractTests.test_transport_failure_does_not_claim_block_or_success) ... ok
+test_full_auto_simulation_returns_success_and_leaves_no_monitor (tests.test_simulation_reliability.SimulationReceiptIntegrationTests.test_full_auto_simulation_returns_success_and_leaves_no_monitor) ... ok
+test_real_lost_response_recovery_keeps_one_query_and_one_charge (tests.test_simulation_reliability.SimulationReceiptIntegrationTests.test_real_lost_response_recovery_keeps_one_query_and_one_charge) ... ok
 test_live_http_tools_preserve_scope_and_approval_receipt (tests.test_tool_integration.ToolServiceIntegrationTests.test_live_http_tools_preserve_scope_and_approval_receipt) ... ok
 test_audit_hash_chain_validates_successfully (tests.test_v2_enhancements.V2EnhancementsTests.test_audit_hash_chain_validates_successfully) ... ok
 test_audit_tampering_is_detected (tests.test_v2_enhancements.V2EnhancementsTests.test_audit_tampering_is_detected) ... ok
@@ -133,30 +152,7 @@ Dashboard API reflects all requests, counts, and security risk score. ... ok
 test_07_reviewer_approves_pending_request_and_agent_executes (tests.test_virtual_agent_db.TestVirtualAgentAndDB.test_07_reviewer_approves_pending_request_and_agent_executes)
 Reviewer approves pending request on dashboard, agent executes, and audit records event. ... ok
 
-======================================================================
-ERROR: test_live_health_is_public_and_action_requires_auth (tests.test_http_api.HttpApiTests.test_live_health_is_public_and_action_requires_auth)
 ----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "C:\Users\User\Desktop\ASG\tests\test_http_api.py", line 46, in test_live_health_is_public_and_action_requires_auth
-    self.assertEqual(self.request("POST", "/v1/actions", {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}}, idem="no-auth")[0], 401)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\User\Desktop\ASG\tests\test_http_api.py", line 37, in request
-    r = c.getresponse()
-        ^^^^^^^^^^^^^^^
-  File "C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\client.py", line 1478, in getresponse
-    response.begin()
-  File "C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\client.py", line 343, in begin
-    version, status, reason = self._read_status()
-                              ^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\client.py", line 304, in _read_status
-    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\socket.py", line 720, in readinto
-    return self._sock.recv_into(b)
-           ^^^^^^^^^^^^^^^^^^^^^^^
-ConnectionAbortedError: [WinError 10053] 현재 연결은 사용자의 호스트 시스템의 소프트웨어의 의해 중단되었습니다
+Ran 142 tests in 36.749s
 
-----------------------------------------------------------------------
-Ran 126 tests in 22.177s
-
-FAILED (errors=1)
+OK

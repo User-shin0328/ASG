@@ -18,6 +18,7 @@ from contextlib import closing
 
 from scripts.testbed_launcher import LocalLab
 from scripts.traffic_generator import TrafficGenerator, send_request
+from testing.report_evidence import report_lock, source_identity, seal, publish
 
 ROOT = Path(__file__).resolve().parents[1]
 KST = timezone(timedelta(hours=9))
@@ -33,16 +34,19 @@ def update_combined_guide(report_text):
     embedded=report_text.replace('# ASG 실제 테스트 결과보고서','## 11. 실제 테스트 결과보고서',1)
     embedded=re.sub(r'^## (?!11\.)','### ',embedded,flags=re.MULTILINE)
     embedded=embedded.replace('(../../TEST_GUIDE.md)','(TEST_GUIDE.md)')
-    for name in ('results.json','unittest.log','audit-events.json','exe-smoke.log'):
+    for name in ('results.json','unittest.log','audit-events.json','exe-smoke.log','manifest.json'):
         embedded=embedded.replace(']('+name+')','](results/latest/'+name+')')
     guide_path.write_text(base+'\n\n'+marker+'\n\n'+embedded+'\n<!-- ASG_RESULT_END -->\n',encoding='utf-8')
 
 
-def main():
+def run():
     parser=argparse.ArgumentParser()
     parser.add_argument('--skip-exe',action='store_true')
     args=parser.parse_args()
-    output=ROOT/'testing/results/latest'
+    started=datetime.now(KST)
+    run_id=started.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:8]
+    identity=source_identity(ROOT)
+    output=ROOT/'testing/results'/run_id
     output.mkdir(parents=True,exist_ok=True)
     checks=[]
 
@@ -50,9 +54,8 @@ def main():
         checks.append({'id':f'T{len(checks)+1:02}', 'name':name,'expected':expected,'actual':actual,'status':'PASS' if passed else 'FAIL'})
         print(f"{checks[-1]['id']} {checks[-1]['status']} {name}",flush=True)
 
-    started=datetime.now(KST)
     regression=subprocess.run([sys.executable,'-m','unittest','discover','-v'],cwd=ROOT,capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=180)
-    log=regression.stdout+regression.stderr
+    log='ASG_RUN_ID='+run_id+'\nASG_COMMIT='+identity['commit']+'\nASG_SOURCE_SHA256='+identity['source_sha256']+'\n'+regression.stdout+regression.stderr
     (output/'unittest.log').write_text(log,encoding='utf-8')
     match=re.search(r'Ran (\d+) tests',log)
     record('기존·추가 회귀 테스트','전체 테스트 성공',{'exit_code':regression.returncode,'tests':int(match.group(1)) if match else None},regression.returncode==0)
@@ -189,11 +192,14 @@ def main():
     else:
         checks.append({'id':'EXE','name':'독립 EXE','expected':'실행 확인','actual':'--skip-exe 선택 또는 ASG.exe 없음','status':'NOT_RUN'})
 
+    record('시험 중 실행 소스 일치','시작·종료 시 소스 지문 일치',{'source_sha256':identity['source_sha256']},identity['source_sha256']==source_identity(ROOT)['source_sha256'])
     completed=datetime.now(KST)
     result='FAIL' if any(c['status']=='FAIL' for c in checks) else 'PARTIAL' if any(c['status']=='NOT_RUN' for c in checks) else 'PASS'
     report={'result':result,'started':started.isoformat(),'completed':completed.isoformat(),'python':sys.version,'platform':sys.platform,'executable':exe_meta,'checks':checks,'not_run':['Docker 다중 네트워크 격리·사내 PostgreSQL 운영 연결(임시 PostgreSQL 기능 검증은 별도 보고서)','코드 서명·다른 Windows PC 실행'],'excluded':['LLM·학습형 분류기와 관련 외부 모델 평가: 프로젝트 실행 범위에서 제거']}
+    report.update(run_id=run_id,source=identity)
     (output/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     lines=['# ASG 실제 테스트 결과보고서','',f'- 실행: {started:%Y-%m-%d %H:%M:%S} ~ {completed:%H:%M:%S} (Asia/Seoul)',f'- 전체 판정: **{result}**',f'- Python: {sys.version.split()[0]} / {sys.platform}','- 로컬 HTTP·SQLite·모의 전송함을 사용했습니다. 실제 외부 발송은 없습니다.','', '| ID | 테스트 | 결과 |','|---|---|---|']
+    lines[2:2]=['- 실행 ID: `'+run_id+'`','- 기준 커밋: `'+identity['commit']+'` / 미커밋 수정: '+str(identity['working_tree_modified']),'- 실행 소스 SHA-256: `'+identity['source_sha256']+'`']
     lines += [f"| {c['id']} | {c['name']} | {c['status']} |" for c in checks]
     for check in checks:
         lines += ['',f"## {check['id']}. {check['name']}",'',f"- 예상 결과: {check['expected']}",f"- 실제 판정: **{check['status']}**",'- 관찰값 및 응답 원문:','','```json',json.dumps(check['actual'],ensure_ascii=False,indent=2),'```']
@@ -201,12 +207,16 @@ def main():
     lines += ['','## 재현과 증거','','- 단계별 설명: [TEST_GUIDE.md](../../TEST_GUIDE.md)','- 구조화 결과: [results.json](results.json)','- 회귀 테스트 로그: [unittest.log](unittest.log)','- 감사 이벤트: [audit-events.json](audit-events.json)','- 실행파일 로그: [exe-smoke.log](exe-smoke.log)','- 테스트는 별도 임시 디렉터리를 사용하며 사용자 실행 데이터는 삭제하지 않습니다.']
     report_text='\n'.join(lines)+'\n'
     (output/'REPORT.md').write_text(report_text,encoding='utf-8')
-    update_combined_guide(report_text)
-    # A dated copy preserves the current acceptance evidence while latest can be regenerated.
-    snapshot=ROOT/'testing/results'/started.strftime('%Y%m%d-%H%M%S')
-    shutil.copytree(output,snapshot)
-    print(f'{result}: {output / "REPORT.md"}',flush=True)
+    seal(output)
+    publish(output,ROOT/'testing/results')
+    update_combined_guide(report_text+'\n증거 파일의 정합성: [manifest.json](manifest.json). `python -m testing.report_evidence`로 검사합니다.\n')
+    print(f'{result}: {ROOT / "testing/results/latest/REPORT.md"} (run {run_id})',flush=True)
     return 1 if result=='FAIL' else 0
+
+
+def main():
+    with report_lock(ROOT/'testing/results'):
+        return run()
 
 
 if __name__=='__main__':
