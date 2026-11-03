@@ -87,7 +87,7 @@ test_agent_token_cannot_approve_and_pending_state_is_unchanged (tests.test_http_
 test_audit_api_requires_reviewer_and_scopes_events_by_tenant (tests.test_http_api.HttpApiTests.test_audit_api_requires_reviewer_and_scopes_events_by_tenant) ... ok
 test_audit_is_append_only_at_application_database_layer (tests.test_http_api.HttpApiTests.test_audit_is_append_only_at_application_database_layer) ... ok
 test_http_decisions_and_empty_execute_body (tests.test_http_api.HttpApiTests.test_http_decisions_and_empty_execute_body) ... ok
-test_live_health_is_public_and_action_requires_auth (tests.test_http_api.HttpApiTests.test_live_health_is_public_and_action_requires_auth) ... ok
+test_live_health_is_public_and_action_requires_auth (tests.test_http_api.HttpApiTests.test_live_health_is_public_and_action_requires_auth) ... ERROR
 test_missing_typed_and_extra_arguments_are_rejected_without_actions (tests.test_http_api.HttpApiTests.test_missing_typed_and_extra_arguments_are_rejected_without_actions) ... ok
 test_revoked_agent_credential_cannot_execute_approved_action (tests.test_http_api.HttpApiTests.test_revoked_agent_credential_cannot_execute_approved_action) ... ok
 test_postgres_init_script_uses_unix_line_endings (tests.test_init_demo.DemoInitializationTests.test_postgres_init_script_uses_unix_line_endings) ... ok
@@ -116,8 +116,47 @@ test_live_http_tools_preserve_scope_and_approval_receipt (tests.test_tool_integr
 test_audit_hash_chain_validates_successfully (tests.test_v2_enhancements.V2EnhancementsTests.test_audit_hash_chain_validates_successfully) ... ok
 test_audit_tampering_is_detected (tests.test_v2_enhancements.V2EnhancementsTests.test_audit_tampering_is_detected) ... ok
 test_unicode_normalization_detects_obfuscated_injection (tests.test_v2_enhancements.V2EnhancementsTests.test_unicode_normalization_detects_obfuscated_injection) ... ok
+test_01_virtual_company_db_catalog_and_isolation (tests.test_virtual_agent_db.TestVirtualAgentAndDB.test_01_virtual_company_db_catalog_and_isolation)
+Virtual DB catalog contains operations, directory, and payroll. ... ok
+test_02_normal_query_auto_allowed_and_executed (tests.test_virtual_agent_db.TestVirtualAgentAndDB.test_02_normal_query_auto_allowed_and_executed)
+Normal query is automatically ALLOWed and executes successfully against DB. ... ok
+test_03_sensitive_query_requires_human_approval (tests.test_virtual_agent_db.TestVirtualAgentAndDB.test_03_sensitive_query_requires_human_approval)
+Sensitive query (salary/account) triggers REQUIRE_APPROVAL and PENDING_APPROVAL. ... ok
+test_04_bulk_query_requires_human_approval (tests.test_virtual_agent_db.TestVirtualAgentAndDB.test_04_bulk_query_requires_human_approval)
+Bulk query (>100 rows limit) triggers REQUIRE_APPROVAL. ... ok
+test_05_abnormal_query_is_automatically_denied (tests.test_virtual_agent_db.TestVirtualAgentAndDB.test_05_abnormal_query_is_automatically_denied)
+Abnormal query with illegal columns is immediately DENIED. ... ok
+test_05b_prompt_injection_is_automatically_denied (tests.test_virtual_agent_db.TestVirtualAgentAndDB.test_05b_prompt_injection_is_automatically_denied)
+Prompt injection in query purpose is immediately detected and DENIED. ... ok
+test_06_dashboard_shows_live_metrics_and_pending_requests (tests.test_virtual_agent_db.TestVirtualAgentAndDB.test_06_dashboard_shows_live_metrics_and_pending_requests)
+Dashboard API reflects all requests, counts, and security risk score. ... ok
+test_07_reviewer_approves_pending_request_and_agent_executes (tests.test_virtual_agent_db.TestVirtualAgentAndDB.test_07_reviewer_approves_pending_request_and_agent_executes)
+Reviewer approves pending request on dashboard, agent executes, and audit records event. ... ok
+
+======================================================================
+ERROR: test_live_health_is_public_and_action_requires_auth (tests.test_http_api.HttpApiTests.test_live_health_is_public_and_action_requires_auth)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\User\Desktop\ASG\tests\test_http_api.py", line 46, in test_live_health_is_public_and_action_requires_auth
+    self.assertEqual(self.request("POST", "/v1/actions", {"task_id": "task-alice-001", "tool": "read_document", "arguments": {"document_id": "report-alice-001"}}, idem="no-auth")[0], 401)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\Desktop\ASG\tests\test_http_api.py", line 37, in request
+    r = c.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\client.py", line 1478, in getresponse
+    response.begin()
+  File "C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\client.py", line 343, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\client.py", line 304, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionAbortedError: [WinError 10053] 현재 연결은 사용자의 호스트 시스템의 소프트웨어의 의해 중단되었습니다
 
 ----------------------------------------------------------------------
-Ran 118 tests in 21.697s
+Ran 126 tests in 22.177s
 
-OK
+FAILED (errors=1)
