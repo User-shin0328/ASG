@@ -1,21 +1,21 @@
 {
-  "id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+  "id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
   "principal": "agent-alice",
   "user_name": "alice",
   "tenant": "north",
   "task_id": "task-alice-001",
-  "requested_at": 1793718536.4829545,
+  "requested_at": 1793774376.3800018,
   "source_ip": "127.0.0.1",
   "client": "Python-urllib/3.12",
   "risk_score": 15,
   "decision": "REQUIRE_APPROVAL",
-  "expires_at": 1793719436.4829545,
+  "expires_at": 1793775276.3800018,
   "reviewer": "reviewer-demo",
   "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-  "decided_at": 1793718536.511961,
+  "decided_at": 1793774376.40969,
   "result_count": 25,
-  "trace_id": "55174e38-5105-44ce-9436-40812a5b6de6",
-  "request_id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+  "trace_id": "5fcf18ec-bf2d-42a2-8977-427b34709afb",
+  "request_id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
   "state": "SUCCEEDED",
   "arguments": {
     "dataset_id": "operations",
@@ -55,8 +55,8 @@
   "dataset_name": "운영 지원 이력",
   "database_name": "사내 검증 DB",
   "mode": "sqlite",
-  "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
-  "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e",
+  "execution_id": "08a52494-b2f1-4380-8c96-e8731ee2f3d3",
+  "receipt_id": "receipt-bf50761d-315e-4079-9197-7085e729f802",
   "authorization": {
     "mode": "human",
     "role": "report-submitter"
@@ -68,7 +68,7 @@
   },
   "timeline": [
     {
-      "at": 1793718536.4839544,
+      "at": 1793774376.3816223,
       "actor": "agent-alice",
       "event": "DB_REQUESTED",
       "details": {
@@ -81,7 +81,7 @@
       }
     },
     {
-      "at": 1793718536.511961,
+      "at": 1793774376.4108763,
       "actor": "reviewer-demo",
       "event": "DB_APPROVED",
       "details": {
@@ -90,11 +90,11 @@
       }
     },
     {
-      "at": 1793718536.5189607,
+      "at": 1793774376.4402406,
       "actor": "agent-alice",
       "event": "DB_EXECUTION_STARTED",
       "details": {
-        "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
+        "execution_id": "08a52494-b2f1-4380-8c96-e8731ee2f3d3",
         "authorization": {
           "mode": "human",
           "role": "report-submitter"
@@ -102,12 +102,12 @@
       }
     },
     {
-      "at": 1793718536.5518703,
+      "at": 1793774376.46301,
       "actor": "agent-alice",
       "event": "DB_EXECUTION_SUCCEEDED",
       "details": {
         "row_count": 25,
-        "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e"
+        "receipt_id": "receipt-bf50761d-315e-4079-9197-7085e729f802"
       }
     }
   ]

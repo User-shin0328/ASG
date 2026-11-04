@@ -1,9 +1,9 @@
 # ASG 실제 테스트 결과보고서
 
-- 실행 ID: `20261104-000818-f4d9bd72`
-- 기준 커밋: `40b6164297ee6358f230be54664d9d8fc7a4cd10` / 미커밋 수정: True
-- 실행 소스 SHA-256: `f1d8b43a8125321c7f38cd2ffe9b1166df42baa8d007f1b786e871e948f2ec8d`
-- 실행: 2026-11-04 00:08:18 ~ 00:09:21 (Asia/Seoul)
+- 실행 ID: `20261104-153859-9fe3b8f3`
+- 기준 커밋: `8a52afb4a2e0f31a19a967d4a3413e7dd45fedcc` / 미커밋 수정: True
+- 실행 소스 SHA-256: `b3bff0e4e71dc4f72eee61b64647b8d99f73eb7fc003196792bf3da8df4a0506`
+- 실행: 2026-11-04 15:38:59 ~ 15:40:00 (Asia/Seoul)
 - 전체 판정: **PASS**
 - Python: 3.12.14 / win32
 - 로컬 HTTP·SQLite·모의 전송함을 사용했습니다. 실제 외부 발송은 없습니다.
@@ -82,18 +82,18 @@
   "expected": "ALLOW (200 OK)",
   "status": 200,
   "result": {
-    "action_id": "0401d8e3-703e-46d6-a540-e5160e0ca0e8",
+    "action_id": "cee3e85d-62f2-4e2c-acc4-2babdf0f264d",
     "decision": "ALLOW",
     "state": "SUCCEEDED",
     "reason_codes": [],
     "approval_id": null,
     "approval_state": null,
-    "execution_id": "dce90570-075e-4d11-b9a1-1415fc445a3e",
-    "trace_id": "48a47df0-5add-4faf-8e17-734c0fb7f016",
+    "execution_id": "6b599eeb-7781-4679-8076-2a44c3ab9ac4",
+    "trace_id": "1955d317-f146-4f20-92ce-7547b48e00c0",
     "policy_version": "demo-v2",
     "result": {
-      "receipt_id": "receipt-5e1c38f9-b305-4799-abff-c5297315c107",
-      "execution_id": "dce90570-075e-4d11-b9a1-1415fc445a3e",
+      "receipt_id": "receipt-04c8fdbf-d0f1-4855-97c4-54e149f7dfb0",
+      "execution_id": "6b599eeb-7781-4679-8076-2a44c3ab9ac4",
       "result": {
         "document_id": "report-alice-001",
         "content": "Quarterly operations report for Alice (fictional)\n\nAll values in this exercise are synthetic. Service availability was 99.2 percent in the fictional sample period. Three maintenance tasks were completed. The next review is scheduled for the end of the fictional quarter.\n",
@@ -120,7 +120,7 @@
     "expected": "DENY (403 Forbidden)",
     "status": 403,
     "result": {
-      "action_id": "1f556f3e-362d-46b1-95f1-3cc66277b5d5",
+      "action_id": "f7ec6fa1-043d-4a33-bb02-f345a15e22a1",
       "decision": "DENY",
       "state": "DENIED",
       "reason_codes": [
@@ -128,8 +128,8 @@
       ],
       "approval_id": null,
       "approval_state": null,
-      "execution_id": "99e7a122-5af2-41ca-966c-8a9646c904b0",
-      "trace_id": "c7e8f475-95b2-4168-b57e-00bafaa2ad7a",
+      "execution_id": "6d49fb5d-333b-4ef5-a7b8-13102794ef76",
+      "trace_id": "fa5364db-cd7c-430e-b26c-4c78ecb3c858",
       "policy_version": "demo-v2",
       "result": null
     },
@@ -162,7 +162,7 @@
   "expected": "SUSPICIOUS (200 OK with flag)",
   "status": 200,
   "result": {
-    "inspection_id": "88df66c9-a129-49fb-b76f-dd7a61856745",
+    "inspection_id": "369f2fb3-393f-4a0c-9085-7926c3cb5fc4",
     "verdict": "SUSPICIOUS",
     "reason_codes": [
       "PROMPT_INJECTION_PATTERN"
@@ -188,7 +188,7 @@
   "expected": "SUSPICIOUS (정규화 후 탐지)",
   "status": 200,
   "result": {
-    "inspection_id": "30f4516d-0232-4529-8cab-10d59b37db40",
+    "inspection_id": "2e5d8698-d8dd-497d-86ed-d3423566a174",
     "verdict": "SUSPICIOUS",
     "reason_codes": [
       "PROMPT_INJECTION_PATTERN"
@@ -214,7 +214,7 @@
   "expected": "CLEAR or SUSPICIOUS",
   "status": 200,
   "result": {
-    "inspection_id": "4520375c-04f1-43c7-ae54-5ee2ab392a0c",
+    "inspection_id": "23c2b915-90e2-4802-acb3-da0eddeec9a6",
     "verdict": "CLEAR",
     "reason_codes": [],
     "scanner_version": "rules-v2",
@@ -238,14 +238,14 @@
   "expected": "REQUIRE_APPROVAL (202 Accepted)",
   "status": 202,
   "result": {
-    "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
+    "action_id": "01f2696a-2736-409e-a684-9055377144ee",
     "decision": "REQUIRE_APPROVAL",
     "state": "PENDING_APPROVAL",
     "reason_codes": [],
-    "approval_id": "35193c61-c1c7-45a0-b846-2ece6f4ebac2",
+    "approval_id": "22c9b006-54fb-42a7-93f7-88e244fa879e",
     "approval_state": "PENDING",
-    "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
-    "trace_id": "d9608a3c-0e6e-40a1-a2de-7ea256193c20",
+    "execution_id": "02304d3e-d7ac-4f65-8a9e-e9780b7f4204",
+    "trace_id": "0d3ba7cd-828b-4a2c-8ed4-527d7a9a4e48",
     "policy_version": "demo-v2",
     "result": null
   },
@@ -281,8 +281,8 @@
 {
   "status": 200,
   "response": {
-    "approval_id": "35193c61-c1c7-45a0-b846-2ece6f4ebac2",
-    "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
+    "approval_id": "22c9b006-54fb-42a7-93f7-88e244fa879e",
+    "action_id": "01f2696a-2736-409e-a684-9055377144ee",
     "state": "APPROVED"
   }
 }
@@ -298,21 +298,21 @@
 {
   "status": 200,
   "response": {
-    "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
+    "action_id": "01f2696a-2736-409e-a684-9055377144ee",
     "decision": "REQUIRE_APPROVAL",
     "state": "SUCCEEDED",
     "reason_codes": [],
-    "approval_id": "35193c61-c1c7-45a0-b846-2ece6f4ebac2",
+    "approval_id": "22c9b006-54fb-42a7-93f7-88e244fa879e",
     "approval_state": "CONSUMED",
-    "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
-    "trace_id": "d9608a3c-0e6e-40a1-a2de-7ea256193c20",
+    "execution_id": "02304d3e-d7ac-4f65-8a9e-e9780b7f4204",
+    "trace_id": "0d3ba7cd-828b-4a2c-8ed4-527d7a9a4e48",
     "policy_version": "demo-v2",
     "result": {
-      "receipt_id": "receipt-75ee9c37-c8f2-4bb8-b1ed-e97ffd6892ce",
-      "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
+      "receipt_id": "receipt-41d0148b-8be3-44c5-bd13-b1ba2cc7c1f0",
+      "execution_id": "02304d3e-d7ac-4f65-8a9e-e9780b7f4204",
       "result": {
         "status": "submitted_to_mock_outbox",
-        "artifact_id": "artifact-055f88d1-956d-4837-911a-97d12b9a3dd2",
+        "artifact_id": "artifact-43f4227b-deda-4f72-b511-2daef6c16e04",
         "destination_id": "internal-review-outbox",
         "content_hash": "41e95c20ceb9b5cb597e25ca6aa7191c654bbedbc5afc265023a892f3e8b8d4e"
       }
@@ -320,26 +320,26 @@
   },
   "repeat_status": 200,
   "repeat": {
-    "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
+    "action_id": "01f2696a-2736-409e-a684-9055377144ee",
     "decision": "REQUIRE_APPROVAL",
     "state": "SUCCEEDED",
     "reason_codes": [],
-    "approval_id": "35193c61-c1c7-45a0-b846-2ece6f4ebac2",
+    "approval_id": "22c9b006-54fb-42a7-93f7-88e244fa879e",
     "approval_state": "CONSUMED",
-    "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
-    "trace_id": "d9608a3c-0e6e-40a1-a2de-7ea256193c20",
+    "execution_id": "02304d3e-d7ac-4f65-8a9e-e9780b7f4204",
+    "trace_id": "0d3ba7cd-828b-4a2c-8ed4-527d7a9a4e48",
     "policy_version": "demo-v2",
     "result": {
-      "execution_id": "f1652c9d-db5e-4c30-9e6d-a6e44b02a508",
-      "action_id": "f8adc476-c32a-4c1b-a856-6d43bb8d8667",
-      "receipt_id": "receipt-75ee9c37-c8f2-4bb8-b1ed-e97ffd6892ce",
+      "execution_id": "02304d3e-d7ac-4f65-8a9e-e9780b7f4204",
+      "action_id": "01f2696a-2736-409e-a684-9055377144ee",
+      "receipt_id": "receipt-41d0148b-8be3-44c5-bd13-b1ba2cc7c1f0",
       "result": {
         "status": "submitted_to_mock_outbox",
-        "artifact_id": "artifact-055f88d1-956d-4837-911a-97d12b9a3dd2",
+        "artifact_id": "artifact-43f4227b-deda-4f72-b511-2daef6c16e04",
         "destination_id": "internal-review-outbox",
         "content_hash": "41e95c20ceb9b5cb597e25ca6aa7191c654bbedbc5afc265023a892f3e8b8d4e"
       },
-      "created": 1793718536.4305413
+      "created": 1793774376.325793
     }
   },
   "outbox": 1
@@ -363,7 +363,7 @@
     "total_records": 14,
     "chained_records": 14,
     "tampered_record_ids": [],
-    "latest_chain_hash": "30c84576f89a55c6d184b0c0399aaeb7cd718bc4ae09c2318170ade6d6a32606"
+    "latest_chain_hash": "046104c0c275c2143b16e854c6d7a0c51427b0a233de32b4675f81e479f6c798"
   },
   "mitre": "T1562 (Impair Defenses / Audit Tampering)",
   "severity": "INFO"
@@ -421,23 +421,23 @@
 
 ```json
 {
-  "id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+  "id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
   "principal": "agent-alice",
   "user_name": "alice",
   "tenant": "north",
   "task_id": "task-alice-001",
-  "requested_at": 1793718536.4829545,
+  "requested_at": 1793774376.3800018,
   "source_ip": "127.0.0.1",
   "client": "Python-urllib/3.12",
   "risk_score": 15,
   "decision": "REQUIRE_APPROVAL",
-  "expires_at": 1793719436.4829545,
+  "expires_at": 1793775276.3800018,
   "reviewer": null,
   "review_reason": null,
   "decided_at": null,
   "result_count": null,
-  "trace_id": "55174e38-5105-44ce-9436-40812a5b6de6",
-  "request_id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+  "trace_id": "5fcf18ec-bf2d-42a2-8977-427b34709afb",
+  "request_id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
   "state": "PENDING_APPROVAL",
   "arguments": {
     "dataset_id": "operations",
@@ -477,7 +477,7 @@
   "dataset_name": "운영 지원 이력",
   "database_name": "사내 검증 DB",
   "mode": "sqlite",
-  "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
+  "execution_id": "08a52494-b2f1-4380-8c96-e8731ee2f3d3",
   "receipt_id": null,
   "authorization": {
     "mode": "human",
@@ -490,7 +490,7 @@
   },
   "timeline": [
     {
-      "at": 1793718536.4839544,
+      "at": 1793774376.3816223,
       "actor": "agent-alice",
       "event": "DB_REQUESTED",
       "details": {
@@ -530,23 +530,23 @@
 
 ```json
 {
-  "id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+  "id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
   "principal": "agent-alice",
   "user_name": "alice",
   "tenant": "north",
   "task_id": "task-alice-001",
-  "requested_at": 1793718536.4829545,
+  "requested_at": 1793774376.3800018,
   "source_ip": "127.0.0.1",
   "client": "Python-urllib/3.12",
   "risk_score": 15,
   "decision": "REQUIRE_APPROVAL",
-  "expires_at": 1793719436.4829545,
+  "expires_at": 1793775276.3800018,
   "reviewer": "reviewer-demo",
   "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-  "decided_at": 1793718536.511961,
+  "decided_at": 1793774376.40969,
   "result_count": null,
-  "trace_id": "55174e38-5105-44ce-9436-40812a5b6de6",
-  "request_id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+  "trace_id": "5fcf18ec-bf2d-42a2-8977-427b34709afb",
+  "request_id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
   "state": "APPROVED",
   "arguments": {
     "dataset_id": "operations",
@@ -586,7 +586,7 @@
   "dataset_name": "운영 지원 이력",
   "database_name": "사내 검증 DB",
   "mode": "sqlite",
-  "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
+  "execution_id": "08a52494-b2f1-4380-8c96-e8731ee2f3d3",
   "receipt_id": null,
   "authorization": {
     "mode": "human",
@@ -599,7 +599,7 @@
   },
   "timeline": [
     {
-      "at": 1793718536.4839544,
+      "at": 1793774376.3816223,
       "actor": "agent-alice",
       "event": "DB_REQUESTED",
       "details": {
@@ -612,7 +612,7 @@
       }
     },
     {
-      "at": 1793718536.511961,
+      "at": 1793774376.4108763,
       "actor": "reviewer-demo",
       "event": "DB_APPROVED",
       "details": {
@@ -634,8 +634,8 @@
 {
   "http": 200,
   "row_count": 25,
-  "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e",
-  "repeat_receipt": "receipt-12437707-9427-45a1-996e-57be2698004e",
+  "receipt_id": "receipt-bf50761d-315e-4079-9197-7085e729f802",
+  "repeat_receipt": "receipt-bf50761d-315e-4079-9197-7085e729f802",
   "replayed": true
 }
 ```
@@ -650,23 +650,23 @@
 {
   "gateway_status": 202,
   "request": {
-    "id": "20a58dc7-2845-4d34-bef6-075ca21dfe30",
+    "id": "5dfe5a4d-815e-4892-b1aa-9996769c0369",
     "principal": "agent-alice",
     "user_name": "alice",
     "tenant": "north",
     "task_id": "task-alice-001",
-    "requested_at": 1793718536.5651438,
+    "requested_at": 1793774376.4905577,
     "source_ip": "127.0.0.1",
     "client": "Python-urllib/3.12",
     "risk_score": 70,
     "decision": "REQUIRE_APPROVAL",
-    "expires_at": 1793719436.5651438,
+    "expires_at": 1793775276.4905577,
     "reviewer": null,
     "review_reason": null,
     "decided_at": null,
     "result_count": null,
-    "trace_id": "45ede51b-f905-4d38-97c7-9823fd7341c7",
-    "request_id": "20a58dc7-2845-4d34-bef6-075ca21dfe30",
+    "trace_id": "45066ba5-f952-4586-99fb-9d0e821d43f1",
+    "request_id": "5dfe5a4d-815e-4892-b1aa-9996769c0369",
     "state": "PENDING_APPROVAL",
     "arguments": {
       "dataset_id": "payroll",
@@ -706,7 +706,7 @@
     "dataset_name": "급여·정산 정보",
     "database_name": "사내 검증 DB",
     "mode": "sqlite",
-    "execution_id": "69385dba-6951-4893-bc1a-96328ae4848e",
+    "execution_id": "0e845cf8-6ba7-43c9-8fae-82a06e0a15f8",
     "receipt_id": null,
     "authorization": {
       "mode": "human",
@@ -719,7 +719,7 @@
     },
     "timeline": [
       {
-        "at": 1793718536.5671437,
+        "at": 1793774376.491122,
         "actor": "agent-alice",
         "event": "DB_REQUESTED",
         "details": {
@@ -746,23 +746,23 @@
 {
   "gateway_status": 202,
   "request": {
-    "id": "335fe3c7-d3ba-4ad5-a7f6-75be9720b979",
+    "id": "e6330bbf-fc0e-4364-ab9b-987c77c7c107",
     "principal": "agent-alice",
     "user_name": "alice",
     "tenant": "north",
     "task_id": "task-alice-001",
-    "requested_at": 1793718536.5741446,
+    "requested_at": 1793774376.498064,
     "source_ip": "127.0.0.1",
     "client": "Python-urllib/3.12",
     "risk_score": 40,
     "decision": "REQUIRE_APPROVAL",
-    "expires_at": 1793719436.5741446,
+    "expires_at": 1793775276.498064,
     "reviewer": null,
     "review_reason": null,
     "decided_at": null,
     "result_count": null,
-    "trace_id": "53584082-7722-4ce2-a84a-7500be11b17a",
-    "request_id": "335fe3c7-d3ba-4ad5-a7f6-75be9720b979",
+    "trace_id": "50973c76-6059-4404-a408-9ed571303e39",
+    "request_id": "e6330bbf-fc0e-4364-ab9b-987c77c7c107",
     "state": "PENDING_APPROVAL",
     "arguments": {
       "dataset_id": "operations",
@@ -802,7 +802,7 @@
     "dataset_name": "운영 지원 이력",
     "database_name": "사내 검증 DB",
     "mode": "sqlite",
-    "execution_id": "d20c98d2-9802-4e97-a5c0-ff31184015ac",
+    "execution_id": "a5dc0796-bcf0-43c1-b83b-678ea95f26d9",
     "receipt_id": null,
     "authorization": {
       "mode": "human",
@@ -815,7 +815,7 @@
     },
     "timeline": [
       {
-        "at": 1793718536.5751455,
+        "at": 1793774376.499148,
         "actor": "agent-alice",
         "event": "DB_REQUESTED",
         "details": {
@@ -842,23 +842,23 @@
 {
   "gateway_status": 403,
   "request": {
-    "id": "98fea6dc-249c-4f60-a960-58126e66fe2d",
+    "id": "19b8bb8f-4909-49d5-9fd2-ba3d512b83da",
     "principal": "agent-alice",
     "user_name": "alice",
     "tenant": "north",
     "task_id": "task-alice-001",
-    "requested_at": 1793718536.6051722,
+    "requested_at": 1793774376.5062761,
     "source_ip": "127.0.0.1",
     "client": "Python-urllib/3.12",
     "risk_score": 55,
     "decision": "DENY",
-    "expires_at": 1793719436.6051722,
+    "expires_at": 1793775276.5062761,
     "reviewer": null,
     "review_reason": null,
     "decided_at": null,
     "result_count": null,
-    "trace_id": "9889bff3-0606-43f3-8b21-9730dfbd6ebc",
-    "request_id": "98fea6dc-249c-4f60-a960-58126e66fe2d",
+    "trace_id": "9781ee8e-d589-4912-9325-4ce902b58220",
+    "request_id": "19b8bb8f-4909-49d5-9fd2-ba3d512b83da",
     "state": "DENIED",
     "arguments": {
       "dataset_id": "operations",
@@ -899,7 +899,7 @@
     "dataset_name": "운영 지원 이력",
     "database_name": "사내 검증 DB",
     "mode": "sqlite",
-    "execution_id": "927fc721-26e4-4979-af1e-f2ad37f16528",
+    "execution_id": "edf1fa19-9c53-47a6-aafc-3df2f91f7741",
     "receipt_id": null,
     "authorization": {
       "mode": "denied",
@@ -912,7 +912,7 @@
     },
     "timeline": [
       {
-        "at": 1793718536.6061711,
+        "at": 1793774376.506795,
         "actor": "agent-alice",
         "event": "DB_REQUESTED",
         "details": {
@@ -951,7 +951,7 @@
 
 ```json
 {
-  "as_of": 1793718536.6357744,
+  "as_of": 1793774376.5314398,
   "timezone": "Asia/Seoul",
   "day_start": 1793718000.0,
   "metrics": {
@@ -985,271 +985,271 @@
   },
   "activity": [
     {
-      "at": 1793716796.6357744,
+      "at": 1793772636.5314398,
       "count": 0
     },
     {
-      "at": 1793716856.6357744,
+      "at": 1793772696.5314398,
       "count": 0
     },
     {
-      "at": 1793716916.6357744,
+      "at": 1793772756.5314398,
       "count": 0
     },
     {
-      "at": 1793716976.6357744,
+      "at": 1793772816.5314398,
       "count": 0
     },
     {
-      "at": 1793717036.6357744,
+      "at": 1793772876.5314398,
       "count": 0
     },
     {
-      "at": 1793717096.6357744,
+      "at": 1793772936.5314398,
       "count": 0
     },
     {
-      "at": 1793717156.6357744,
+      "at": 1793772996.5314398,
       "count": 0
     },
     {
-      "at": 1793717216.6357744,
+      "at": 1793773056.5314398,
       "count": 0
     },
     {
-      "at": 1793717276.6357744,
+      "at": 1793773116.5314398,
       "count": 0
     },
     {
-      "at": 1793717336.6357744,
+      "at": 1793773176.5314398,
       "count": 0
     },
     {
-      "at": 1793717396.6357744,
+      "at": 1793773236.5314398,
       "count": 0
     },
     {
-      "at": 1793717456.6357744,
+      "at": 1793773296.5314398,
       "count": 0
     },
     {
-      "at": 1793717516.6357744,
+      "at": 1793773356.5314398,
       "count": 0
     },
     {
-      "at": 1793717576.6357744,
+      "at": 1793773416.5314398,
       "count": 0
     },
     {
-      "at": 1793717636.6357744,
+      "at": 1793773476.5314398,
       "count": 0
     },
     {
-      "at": 1793717696.6357744,
+      "at": 1793773536.5314398,
       "count": 0
     },
     {
-      "at": 1793717756.6357744,
+      "at": 1793773596.5314398,
       "count": 0
     },
     {
-      "at": 1793717816.6357744,
+      "at": 1793773656.5314398,
       "count": 0
     },
     {
-      "at": 1793717876.6357744,
+      "at": 1793773716.5314398,
       "count": 0
     },
     {
-      "at": 1793717936.6357744,
+      "at": 1793773776.5314398,
       "count": 0
     },
     {
-      "at": 1793717996.6357744,
+      "at": 1793773836.5314398,
       "count": 0
     },
     {
-      "at": 1793718056.6357744,
+      "at": 1793773896.5314398,
       "count": 0
     },
     {
-      "at": 1793718116.6357744,
+      "at": 1793773956.5314398,
       "count": 0
     },
     {
-      "at": 1793718176.6357744,
+      "at": 1793774016.5314398,
       "count": 0
     },
     {
-      "at": 1793718236.6357744,
+      "at": 1793774076.5314398,
       "count": 0
     },
     {
-      "at": 1793718296.6357744,
+      "at": 1793774136.5314398,
       "count": 0
     },
     {
-      "at": 1793718356.6357744,
+      "at": 1793774196.5314398,
       "count": 0
     },
     {
-      "at": 1793718416.6357744,
+      "at": 1793774256.5314398,
       "count": 0
     },
     {
-      "at": 1793718476.6357744,
+      "at": 1793774316.5314398,
       "count": 0
     },
     {
-      "at": 1793718536.6357744,
+      "at": 1793774376.5314398,
       "count": 4
     }
   ],
   "risk_trend": [
     {
-      "at": 1793716736.6357744,
+      "at": 1793772576.5314398,
       "score": 0.0
     },
     {
-      "at": 1793716796.6357744,
+      "at": 1793772636.5314398,
       "score": 0.0
     },
     {
-      "at": 1793716856.6357744,
+      "at": 1793772696.5314398,
       "score": 0.0
     },
     {
-      "at": 1793716916.6357744,
+      "at": 1793772756.5314398,
       "score": 0.0
     },
     {
-      "at": 1793716976.6357744,
+      "at": 1793772816.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717036.6357744,
+      "at": 1793772876.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717096.6357744,
+      "at": 1793772936.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717156.6357744,
+      "at": 1793772996.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717216.6357744,
+      "at": 1793773056.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717276.6357744,
+      "at": 1793773116.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717336.6357744,
+      "at": 1793773176.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717396.6357744,
+      "at": 1793773236.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717456.6357744,
+      "at": 1793773296.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717516.6357744,
+      "at": 1793773356.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717576.6357744,
+      "at": 1793773416.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717636.6357744,
+      "at": 1793773476.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717696.6357744,
+      "at": 1793773536.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717756.6357744,
+      "at": 1793773596.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717816.6357744,
+      "at": 1793773656.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717876.6357744,
+      "at": 1793773716.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717936.6357744,
+      "at": 1793773776.5314398,
       "score": 0.0
     },
     {
-      "at": 1793717996.6357744,
+      "at": 1793773836.5314398,
       "score": 0.0
     },
     {
-      "at": 1793718056.6357744,
+      "at": 1793773896.5314398,
       "score": 0.0
     },
     {
-      "at": 1793718116.6357744,
+      "at": 1793773956.5314398,
       "score": 0.0
     },
     {
-      "at": 1793718176.6357744,
+      "at": 1793774016.5314398,
       "score": 0.0
     },
     {
-      "at": 1793718236.6357744,
+      "at": 1793774076.5314398,
       "score": 0.0
     },
     {
-      "at": 1793718296.6357744,
+      "at": 1793774136.5314398,
       "score": 0.0
     },
     {
-      "at": 1793718356.6357744,
+      "at": 1793774196.5314398,
       "score": 0.0
     },
     {
-      "at": 1793718416.6357744,
+      "at": 1793774256.5314398,
       "score": 0.0
     },
     {
-      "at": 1793718476.6357744,
+      "at": 1793774316.5314398,
       "score": 0.0
     },
     {
-      "at": 1793718536.6357744,
+      "at": 1793774376.5314398,
       "score": 42.0
     }
   ],
   "recent": [
     {
-      "id": "98fea6dc-249c-4f60-a960-58126e66fe2d",
+      "id": "19b8bb8f-4909-49d5-9fd2-ba3d512b83da",
       "principal": "agent-alice",
       "user_name": "alice",
       "tenant": "north",
       "task_id": "task-alice-001",
-      "requested_at": 1793718536.6051722,
+      "requested_at": 1793774376.5062761,
       "source_ip": "127.0.0.1",
       "client": "Python-urllib/3.12",
       "risk_score": 55,
       "decision": "DENY",
-      "expires_at": 1793719436.6051722,
+      "expires_at": 1793775276.5062761,
       "reviewer": null,
       "review_reason": null,
       "decided_at": null,
       "result_count": null,
-      "trace_id": "9889bff3-0606-43f3-8b21-9730dfbd6ebc",
-      "request_id": "98fea6dc-249c-4f60-a960-58126e66fe2d",
+      "trace_id": "9781ee8e-d589-4912-9325-4ce902b58220",
+      "request_id": "19b8bb8f-4909-49d5-9fd2-ba3d512b83da",
       "state": "DENIED",
       "arguments": {
         "dataset_id": "operations",
@@ -1290,7 +1290,7 @@
       "dataset_name": "운영 지원 이력",
       "database_name": "사내 검증 DB",
       "mode": "sqlite",
-      "execution_id": "927fc721-26e4-4979-af1e-f2ad37f16528",
+      "execution_id": "edf1fa19-9c53-47a6-aafc-3df2f91f7741",
       "receipt_id": null,
       "authorization": {
         "mode": "denied",
@@ -1298,23 +1298,23 @@
       }
     },
     {
-      "id": "335fe3c7-d3ba-4ad5-a7f6-75be9720b979",
+      "id": "e6330bbf-fc0e-4364-ab9b-987c77c7c107",
       "principal": "agent-alice",
       "user_name": "alice",
       "tenant": "north",
       "task_id": "task-alice-001",
-      "requested_at": 1793718536.5741446,
+      "requested_at": 1793774376.498064,
       "source_ip": "127.0.0.1",
       "client": "Python-urllib/3.12",
       "risk_score": 40,
       "decision": "REQUIRE_APPROVAL",
-      "expires_at": 1793719436.5741446,
+      "expires_at": 1793775276.498064,
       "reviewer": null,
       "review_reason": null,
       "decided_at": null,
       "result_count": null,
-      "trace_id": "53584082-7722-4ce2-a84a-7500be11b17a",
-      "request_id": "335fe3c7-d3ba-4ad5-a7f6-75be9720b979",
+      "trace_id": "50973c76-6059-4404-a408-9ed571303e39",
+      "request_id": "e6330bbf-fc0e-4364-ab9b-987c77c7c107",
       "state": "PENDING_APPROVAL",
       "arguments": {
         "dataset_id": "operations",
@@ -1354,7 +1354,7 @@
       "dataset_name": "운영 지원 이력",
       "database_name": "사내 검증 DB",
       "mode": "sqlite",
-      "execution_id": "d20c98d2-9802-4e97-a5c0-ff31184015ac",
+      "execution_id": "a5dc0796-bcf0-43c1-b83b-678ea95f26d9",
       "receipt_id": null,
       "authorization": {
         "mode": "human",
@@ -1362,23 +1362,23 @@
       }
     },
     {
-      "id": "20a58dc7-2845-4d34-bef6-075ca21dfe30",
+      "id": "5dfe5a4d-815e-4892-b1aa-9996769c0369",
       "principal": "agent-alice",
       "user_name": "alice",
       "tenant": "north",
       "task_id": "task-alice-001",
-      "requested_at": 1793718536.5651438,
+      "requested_at": 1793774376.4905577,
       "source_ip": "127.0.0.1",
       "client": "Python-urllib/3.12",
       "risk_score": 70,
       "decision": "REQUIRE_APPROVAL",
-      "expires_at": 1793719436.5651438,
+      "expires_at": 1793775276.4905577,
       "reviewer": null,
       "review_reason": null,
       "decided_at": null,
       "result_count": null,
-      "trace_id": "45ede51b-f905-4d38-97c7-9823fd7341c7",
-      "request_id": "20a58dc7-2845-4d34-bef6-075ca21dfe30",
+      "trace_id": "45066ba5-f952-4586-99fb-9d0e821d43f1",
+      "request_id": "5dfe5a4d-815e-4892-b1aa-9996769c0369",
       "state": "PENDING_APPROVAL",
       "arguments": {
         "dataset_id": "payroll",
@@ -1418,7 +1418,7 @@
       "dataset_name": "급여·정산 정보",
       "database_name": "사내 검증 DB",
       "mode": "sqlite",
-      "execution_id": "69385dba-6951-4893-bc1a-96328ae4848e",
+      "execution_id": "0e845cf8-6ba7-43c9-8fae-82a06e0a15f8",
       "receipt_id": null,
       "authorization": {
         "mode": "human",
@@ -1426,23 +1426,23 @@
       }
     },
     {
-      "id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+      "id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
       "principal": "agent-alice",
       "user_name": "alice",
       "tenant": "north",
       "task_id": "task-alice-001",
-      "requested_at": 1793718536.4829545,
+      "requested_at": 1793774376.3800018,
       "source_ip": "127.0.0.1",
       "client": "Python-urllib/3.12",
       "risk_score": 15,
       "decision": "REQUIRE_APPROVAL",
-      "expires_at": 1793719436.4829545,
+      "expires_at": 1793775276.3800018,
       "reviewer": "reviewer-demo",
       "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-      "decided_at": 1793718536.511961,
+      "decided_at": 1793774376.40969,
       "result_count": 25,
-      "trace_id": "55174e38-5105-44ce-9436-40812a5b6de6",
-      "request_id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+      "trace_id": "5fcf18ec-bf2d-42a2-8977-427b34709afb",
+      "request_id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
       "state": "SUCCEEDED",
       "arguments": {
         "dataset_id": "operations",
@@ -1482,8 +1482,8 @@
       "dataset_name": "운영 지원 이력",
       "database_name": "사내 검증 DB",
       "mode": "sqlite",
-      "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
-      "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e",
+      "execution_id": "08a52494-b2f1-4380-8c96-e8731ee2f3d3",
+      "receipt_id": "receipt-bf50761d-315e-4079-9197-7085e729f802",
       "authorization": {
         "mode": "human",
         "role": "report-submitter"
@@ -1535,23 +1535,23 @@
 {
   "http": 200,
   "report": {
-    "id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+    "id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
     "principal": "agent-alice",
     "user_name": "alice",
     "tenant": "north",
     "task_id": "task-alice-001",
-    "requested_at": 1793718536.4829545,
+    "requested_at": 1793774376.3800018,
     "source_ip": "127.0.0.1",
     "client": "Python-urllib/3.12",
     "risk_score": 15,
     "decision": "REQUIRE_APPROVAL",
-    "expires_at": 1793719436.4829545,
+    "expires_at": 1793775276.3800018,
     "reviewer": "reviewer-demo",
     "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-    "decided_at": 1793718536.511961,
+    "decided_at": 1793774376.40969,
     "result_count": 25,
-    "trace_id": "55174e38-5105-44ce-9436-40812a5b6de6",
-    "request_id": "f43e582d-8f22-49d2-b69a-11d1ba9bb91c",
+    "trace_id": "5fcf18ec-bf2d-42a2-8977-427b34709afb",
+    "request_id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
     "state": "SUCCEEDED",
     "arguments": {
       "dataset_id": "operations",
@@ -1591,8 +1591,8 @@
     "dataset_name": "운영 지원 이력",
     "database_name": "사내 검증 DB",
     "mode": "sqlite",
-    "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
-    "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e",
+    "execution_id": "08a52494-b2f1-4380-8c96-e8731ee2f3d3",
+    "receipt_id": "receipt-bf50761d-315e-4079-9197-7085e729f802",
     "authorization": {
       "mode": "human",
       "role": "report-submitter"
@@ -1604,7 +1604,7 @@
     },
     "timeline": [
       {
-        "at": 1793718536.4839544,
+        "at": 1793774376.3816223,
         "actor": "agent-alice",
         "event": "DB_REQUESTED",
         "details": {
@@ -1617,7 +1617,7 @@
         }
       },
       {
-        "at": 1793718536.511961,
+        "at": 1793774376.4108763,
         "actor": "reviewer-demo",
         "event": "DB_APPROVED",
         "details": {
@@ -1626,11 +1626,11 @@
         }
       },
       {
-        "at": 1793718536.5189607,
+        "at": 1793774376.4402406,
         "actor": "agent-alice",
         "event": "DB_EXECUTION_STARTED",
         "details": {
-          "execution_id": "1c3fca97-413f-4092-9228-7454ede79f5a",
+          "execution_id": "08a52494-b2f1-4380-8c96-e8731ee2f3d3",
           "authorization": {
             "mode": "human",
             "role": "report-submitter"
@@ -1638,12 +1638,12 @@
         }
       },
       {
-        "at": 1793718536.5518703,
+        "at": 1793774376.46301,
         "actor": "agent-alice",
         "event": "DB_EXECUTION_SUCCEEDED",
         "details": {
           "row_count": 25,
-          "receipt_id": "receipt-12437707-9427-45a1-996e-57be2698004e"
+          "receipt_id": "receipt-bf50761d-315e-4079-9197-7085e729f802"
         }
       }
     ]
@@ -1659,14 +1659,14 @@
 
 ```json
 {
-  "checked_at": 1793718536.6478028,
+  "checked_at": 1793774376.5926359,
   "passed": true,
   "checks": [
     {
       "name": "게이트웨이",
       "passed": true,
       "detail": "ready",
-      "latency_ms": 0.75
+      "latency_ms": 1.23
     },
     {
       "name": "보안 에이전트",
@@ -1678,13 +1678,13 @@
       "name": "보호 DB",
       "passed": true,
       "detail": "검증용 SQLite DB 읽기 연결 정상",
-      "latency_ms": 2.42
+      "latency_ms": 13.74
     },
     {
       "name": "감사 DB",
       "passed": true,
       "detail": "감사 기록 저장소 연결됨",
-      "latency_ms": 0.21
+      "latency_ms": 0.09
     },
     {
       "name": "감사 로그 무결성",
@@ -1744,18 +1744,18 @@
         "expected": "ALLOW (200 OK)",
         "status": 200,
         "result": {
-          "action_id": "85bdd651-28ab-4bbb-ab95-7de366521095",
+          "action_id": "3009792e-8b8b-489c-be22-b924ce4a2c9d",
           "decision": "ALLOW",
           "state": "SUCCEEDED",
           "reason_codes": [],
           "approval_id": null,
           "approval_state": null,
-          "execution_id": "944a8f2f-9d1c-475d-875a-522552ad3c55",
-          "trace_id": "e4da9243-ec9a-46df-be5a-613482f02cfc",
+          "execution_id": "73d6eb0c-7928-4797-af80-e94e4832518d",
+          "trace_id": "95cbc53a-09ad-42ae-b058-c67ed340cdd0",
           "policy_version": "demo-v2",
           "result": {
-            "receipt_id": "receipt-08d0c606-3655-4a29-a931-0b5b1bab1161",
-            "execution_id": "944a8f2f-9d1c-475d-875a-522552ad3c55",
+            "receipt_id": "receipt-538e1278-9f4d-48b7-a1fb-e4440d6dcb56",
+            "execution_id": "73d6eb0c-7928-4797-af80-e94e4832518d",
             "result": {
               "document_id": "report-alice-001",
               "content": "Quarterly operations report for Alice (fictional)\n\nAll values in this exercise are synthetic. Service availability was 99.2 percent in the fictional sample period. Three maintenance tasks were completed. The next review is scheduled for the end of the fictional quarter.\n",
@@ -1775,7 +1775,7 @@
         "expected": "DENY (403 Forbidden)",
         "status": 403,
         "result": {
-          "action_id": "4f33dffd-ef5c-4a04-bc03-83223784a96b",
+          "action_id": "30adabfb-b248-4a04-87fc-14b71a85da07",
           "decision": "DENY",
           "state": "DENIED",
           "reason_codes": [
@@ -1783,8 +1783,8 @@
           ],
           "approval_id": null,
           "approval_state": null,
-          "execution_id": "c9184069-e25c-4cbe-aa6b-371120992427",
-          "trace_id": "128d3a46-d569-41f7-8a27-3ed26fe94d14",
+          "execution_id": "f927cb79-95ea-476b-8c51-31bb8f9cfdf9",
+          "trace_id": "1c1086ed-6d5d-432a-bff6-732fe29aed6f",
           "policy_version": "demo-v2",
           "result": null
         },
@@ -1800,7 +1800,7 @@
         "expected": "SUSPICIOUS (200 OK with flag)",
         "status": 200,
         "result": {
-          "inspection_id": "51a81e8c-7916-4967-8524-3a08be52791b",
+          "inspection_id": "b7b67243-4868-4e8f-aa64-f6d2f85cc469",
           "verdict": "SUSPICIOUS",
           "reason_codes": [
             "PROMPT_INJECTION_PATTERN"
@@ -1820,7 +1820,7 @@
         "expected": "SUSPICIOUS (정규화 후 탐지)",
         "status": 200,
         "result": {
-          "inspection_id": "ab8a95e8-8f1d-4cb9-a7ae-6875163b1076",
+          "inspection_id": "bb4d7fa1-42ba-40bd-9ab5-06b640938fa2",
           "verdict": "SUSPICIOUS",
           "reason_codes": [
             "PROMPT_INJECTION_PATTERN"
@@ -1840,14 +1840,14 @@
         "expected": "REQUIRE_APPROVAL (202 Accepted)",
         "status": 202,
         "result": {
-          "action_id": "178250d3-27b5-41ce-9ac2-7ee27d5ec521",
+          "action_id": "8f3968c7-bd1e-45e5-bcc7-178d7da013e6",
           "decision": "REQUIRE_APPROVAL",
           "state": "PENDING_APPROVAL",
           "reason_codes": [],
-          "approval_id": "df7fb1d1-6791-4277-98ac-bd0b9eed9ecc",
+          "approval_id": "2b604e96-02bc-4ef9-9fb1-fcefdd50fb22",
           "approval_state": "PENDING",
-          "execution_id": "00d07de6-cec5-4d55-917c-ee9f444786c3",
-          "trace_id": "0c72d317-46f7-4c71-a7bf-98ac553e3754",
+          "execution_id": "395c5c00-3620-4ba2-92ca-215aca188fbd",
+          "trace_id": "1caa86e5-b279-4512-85bc-806969c14ae3",
           "policy_version": "demo-v2",
           "result": null
         },
@@ -1867,7 +1867,7 @@
           "total_records": 10,
           "chained_records": 10,
           "tampered_record_ids": [],
-          "latest_chain_hash": "74083838e0164ffee13202f52d8511362dc34011b4ade42f48496e57921a73c3"
+          "latest_chain_hash": "1ae1454c5dbbc8e1896a97d425d2d56806ddd8af54c05284c2426a6ac2cf38ab"
         },
         "mitre": "T1562 (Impair Defenses / Audit Tampering)",
         "severity": "INFO"
@@ -1875,8 +1875,8 @@
     }
   },
   "binary": {
-    "sha256": "b84e88f9be65a40b3543fb95eef5ce0cdda1cef6e0a1c08ec25519b74d86a146",
-    "bytes": 15206904
+    "sha256": "9cf763756bea67bf05d18e923b51d58e68155e71dd4e0161da24597f7fbb16d6",
+    "bytes": 14175820
   }
 }
 ```
@@ -1912,32 +1912,32 @@
     }
   },
   "diagnostic": {
-    "checked_at": 1793718546.151963,
+    "checked_at": 1793774385.5680356,
     "passed": true,
     "checks": [
       {
         "name": "게이트웨이",
         "passed": true,
         "detail": "ready",
-        "latency_ms": 13.51
+        "latency_ms": 15.15
       },
       {
         "name": "보안 에이전트",
         "passed": true,
         "detail": "정상·정책 위반 입력 분석 자체 점검 통과",
-        "latency_ms": 0.22
+        "latency_ms": 0.2
       },
       {
         "name": "보호 DB",
         "passed": true,
         "detail": "검증용 SQLite DB 읽기 연결 정상",
-        "latency_ms": 16.39
+        "latency_ms": 16.38
       },
       {
         "name": "감사 DB",
         "passed": true,
         "detail": "감사 기록 저장소 연결됨",
-        "latency_ms": 0.16
+        "latency_ms": 0.11
       },
       {
         "name": "감사 로그 무결성",
@@ -1970,7 +1970,7 @@
 
 ```json
 {
-  "source_sha256": "f1d8b43a8125321c7f38cd2ffe9b1166df42baa8d007f1b786e871e948f2ec8d"
+  "source_sha256": "b3bff0e4e71dc4f72eee61b64647b8d99f73eb7fc003196792bf3da8df4a0506"
 }
 ```
 

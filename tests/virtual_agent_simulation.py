@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
@@ -117,6 +118,54 @@ def run_scenario_2(url, token): return run_scenario(2, url, token)
 def run_scenario_3(url, token): return run_scenario(3, url, token)
 def run_scenario_4(url, token): return run_scenario(4, url, token)
 def run_scenario_5(url, token): return run_scenario(5, url, token)
+
+
+def run_concurrency_test(gateway_url, alice_token, count=10, transport=None):
+    transport = transport or send_request
+    print(f"\n--- 다중 에이전트 동시 부하 테스트 ({count}개 동시 요청 발사) ---")
+    scenario_keys = list(SCENARIOS.keys())
+    tasks = [(i + 1, scenario_keys[i % len(scenario_keys)]) for i in range(count)]
+    start_time = time.monotonic()
+    results = []
+
+    def worker(item):
+        req_idx, s_num = item
+        title, dataset, columns, rows, purpose, exp_http, exp_state = SCENARIOS[s_num]
+        hdrs = make_headers(alice_token)
+        status, response = transport(
+            gateway_url + "/v1/db/requests",
+            "POST",
+            hdrs,
+            {"dataset_id": dataset, "columns": columns, "filters": {}, "row_limit": rows,
+             "purpose": f"[동시 부하 테스트 #{req_idx}] {purpose}"}
+        )
+        state = response.get("state")
+        res = ScenarioResult(s_num, status, state, response)
+        if state == "APPROVED":
+            code, executed = transport(
+                gateway_url + "/v1/db/requests/" + response["id"] + "/execute",
+                "POST",
+                make_headers(alice_token),
+                {}
+            )
+            res.execution_http = code
+            completed(res, executed)
+        return req_idx, s_num, res
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(count, 8)) as executor:
+        futures = [executor.submit(worker, t) for t in tasks]
+        for f in concurrent.futures.as_completed(futures):
+            results.append(f.result())
+
+    elapsed = max(time.monotonic() - start_time, 0.001)
+    results.sort(key=lambda x: x[0])
+    allowed = sum(1 for _, _, r in results if r.create_state == "APPROVED")
+    pending = sum(1 for _, _, r in results if r.create_state == "PENDING_APPROVAL")
+    denied = sum(1 for _, _, r in results if r.create_state == "DENIED")
+
+    print(f"  -> 동시 요청 완료: 총 {count}건 처리 ({elapsed:.2f}초, {count / elapsed:.1f} req/s)")
+    print(f"  -> 처리 결과: 정책 허용 {allowed}건 · 승인 대기 {pending}건 · 정책 차단 {denied}건")
+    return [r for _, _, r in results]
 
 
 @dataclass
@@ -242,11 +291,12 @@ def print_overview(dashboard_url, reviewer_token, transport=None):
     return overview
 
 
-def run_interactive_cli(run, show_status, monitor, dashboard_url):
+def run_interactive_cli(run, show_status, monitor, dashboard_url, run_burst=None):
     while True:
         print(f"\n[ASG] 가상 요청 시뮬레이터 · {dashboard_url}")
         for number, spec in SCENARIOS.items():
             print(f"  [{number}] {spec[0]}")
+        print("  [C] 다중 에이전트 동시 부하 테스트 (10개 동시 발사)")
         print("  [A] 전체 실행  [S] 관제 정보  [R] 중단된 상태·영수증 확인 재시도  [0] 종료")
         try:
             choice = input("선택: ").strip().upper()
@@ -256,6 +306,8 @@ def run_interactive_cli(run, show_status, monitor, dashboard_url):
             return
         if choice in {str(n) for n in SCENARIOS}:
             run(int(choice))
+        elif choice == "C" and run_burst:
+            run_burst(10)
         elif choice == "A":
             for number in SCENARIOS:
                 run(number)
@@ -267,14 +319,21 @@ def run_interactive_cli(run, show_status, monitor, dashboard_url):
         show_status()
 
 
-def run_simulation(no_browser=False, keep_alive=True, report_file=None):
+def run_simulation(no_browser=False, keep_alive=True, report_file=None, persist_data=False, data_dir=None):
     print("[ASG] 가상 데이터 SQLite · 규칙 기반 요청 시뮬레이터")
-    print("민감·대량 요청은 사람 검토가 필요합니다. 임시 DB와 감사 이력은 종료 시 정리됩니다.")
+    if persist_data:
+        target_dir = Path(data_dir) if data_dir else ROOT / "data" / "sim_lab"
+        target_dir.mkdir(parents=True, exist_ok=True)
+        print(f"데이터 영속 모드 활성화: {target_dir} (종료 시 보존, 재실행 시 DB 유지)")
+    else:
+        print("민감·대량 요청은 사람 검토가 필요합니다. 임시 DB와 감사 이력은 종료 시 정리됩니다.")
     results, errors = [], []
     lab = monitor = None
-    with tempfile.TemporaryDirectory(prefix="asg-sim-") as temp:
+
+    def execute_in_dir(work_dir: Path):
+        nonlocal lab, monitor
         try:
-            lab = LocalLab(Path(temp), 0, 0, 0).start()
+            lab = LocalLab(work_dir, 0, 0, 0).start()
             print("대시보드: " + lab.url)
             monitor = ReviewMonitor(lab.gateway_url, lab.tokens["agent-alice"], lab.tokens["reviewer-demo"])
             if not no_browser:
@@ -283,6 +342,11 @@ def run_simulation(no_browser=False, keep_alive=True, report_file=None):
                 result = run_scenario(number, lab.gateway_url, lab.tokens["agent-alice"])
                 results.append(result)
                 monitor.register(result)
+            def run_burst(count=10):
+                burst_results = run_concurrency_test(lab.gateway_url, lab.tokens["agent-alice"], count)
+                for r in burst_results:
+                    results.append(r)
+                    monitor.register(r)
             def show_status():
                 try:
                     print_overview(lab.url, lab.tokens["reviewer-demo"])
@@ -294,7 +358,7 @@ def run_simulation(no_browser=False, keep_alive=True, report_file=None):
             show_status()
             if keep_alive:
                 monitor.start()
-                run_interactive_cli(run, show_status, monitor, lab.url)
+                run_interactive_cli(run, show_status, monitor, lab.url, run_burst=run_burst)
             else:
                 for _ in range(monitor.max_failures):
                     if not any(not r.ok and r.request.get("id") for r in results):
@@ -308,6 +372,13 @@ def run_simulation(no_browser=False, keep_alive=True, report_file=None):
                 monitor.close()
             if lab:
                 lab.stop()
+
+    if persist_data:
+        execute_in_dir(target_dir)
+    else:
+        with tempfile.TemporaryDirectory(prefix="asg-sim-") as temp:
+            execute_in_dir(Path(temp))
+
     passed = bool(results) and not errors and all(r.ok and (keep_alive or r.baseline_matches) for r in results)
     evidence = {"run_id": str(uuid.uuid4()), "checked_at": datetime.now(timezone.utc).isoformat(),
                 "result": "PASS" if passed else "FAIL", "backend": "sqlite", "fictional": True,
@@ -324,9 +395,12 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="ASG fictional agent and DB simulator")
     parser.add_argument("--no-browser", action="store_true")
     parser.add_argument("--auto", action="store_true", help="사람 입력 없이 초기 5개 시나리오를 확인하고 종료")
+    parser.add_argument("--persist-data", action="store_true", help="임시 디렉터리 대신 data/sim_lab에 데이터를 영속 저장")
+    parser.add_argument("--data-dir", type=Path, help="데이터를 영속 저장할 특정 디렉터리 경로")
     parser.add_argument("--report-file", type=Path)
     args = parser.parse_args(argv)
-    return run_simulation(args.no_browser, not args.auto, args.report_file)
+    persist = args.persist_data or (args.data_dir is not None)
+    return run_simulation(args.no_browser, not args.auto, args.report_file, persist_data=persist, data_dir=args.data_dir)
 
 
 if __name__ == "__main__":

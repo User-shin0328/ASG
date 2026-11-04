@@ -1,6 +1,6 @@
-ASG_RUN_ID=20261104-000818-f4d9bd72
-ASG_COMMIT=40b6164297ee6358f230be54664d9d8fc7a4cd10
-ASG_SOURCE_SHA256=f1d8b43a8125321c7f38cd2ffe9b1166df42baa8d007f1b786e871e948f2ec8d
+ASG_RUN_ID=20261104-153859-9fe3b8f3
+ASG_COMMIT=8a52afb4a2e0f31a19a967d4a3413e7dd45fedcc
+ASG_SOURCE_SHA256=b3bff0e4e71dc4f72eee61b64647b8d99f73eb7fc003196792bf3da8df4a0506
 test_required_security_and_evidence_gates_are_present (evaluation.test_ci_workflow.CiWorkflowTests.test_required_security_and_evidence_gates_are_present) ... ok
 test_development_dataset_has_planned_30_per_label (evaluation.test_dataset.HeldoutDatasetTests.test_development_dataset_has_planned_30_per_label) ... ok
 test_heldout_datasets_are_balanced_and_family_separated (evaluation.test_dataset.HeldoutDatasetTests.test_heldout_datasets_are_balanced_and_family_separated) ... ok
@@ -153,6 +153,6 @@ test_07_reviewer_approves_pending_request_and_agent_executes (tests.test_virtual
 Reviewer approves pending request on dashboard, agent executes, and audit records event. ... ok
 
 ----------------------------------------------------------------------
-Ran 142 tests in 36.749s
+Ran 142 tests in 35.509s
 
 OK
