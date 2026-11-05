@@ -103,17 +103,21 @@ Windows PowerShell과 Python 3.10 이상을 사용합니다. 실제 PostgreSQL �
 
 ### 최신 로컬 검증 결과
 
-2026-11-04 작업 소스와 실행파일 기준입니다. 커밋 ID뿐 아니라 보고서의 소스 지문·작업 폴더 수정 여부·실행파일 해시를 함께 확인합니다.
+2026-11-05 작업 소스와 실행파일 기준입니다. 커밋 ID뿐 아니라 보고서의 소스 지문·작업 폴더 수정 여부·실행파일 해시를 함께 확인합니다.
 
 | 검증 | 관찰 결과 | 증거 |
 |---|---|---|
-| 전체 회귀 | 142개 PASS | [통합 보고서](testing/results/latest/REPORT.md) |
+| 전체 회귀 | 172개 PASS | [통합 보고서](testing/results/latest/REPORT.md) |
 | 로컬 HTTP·독립 EXE·실행 소스 일치 | 32단계 PASS | [상세 결과](testing/results/latest/results.json) |
-| 실제 임시 PostgreSQL | 21단계 PASS | [PostgreSQL 보고서](testing/results/postgresql/REPORT.md) |
+| 실제 임시 PostgreSQL | 23단계 PASS | [PostgreSQL 보고서](testing/results/postgresql/REPORT.md) |
 | 보고서·로그 정합성 | VALID | [실행별 manifest](testing/results/latest/manifest.json) |
-| 기존 보존형 PostgreSQL | 가상 데이터 2,700행·작동 상태 정상 재확인 | [검증 범위와 수정 결과](docs/REVIEW_FIXES_40b6164.md) |
+| 기존 보존형 PostgreSQL | 이전 검증: 가상 데이터 2,700행·작동 상태 정상 | [이전 검증 범위](docs/REVIEW_FIXES_40b6164.md) |
 
-이번 수정 후 보존형 DB의 32단계 전체를 다시 수행한 결과로 표시하지 않습니다. 전체 시험의 절차·예상 응답·실제 결과는 [TEST_GUIDE.md](testing/TEST_GUIDE.md)에 있습니다. 성공한 검사뿐 아니라 실패와 미실행 범위도 보고서에 남깁니다.
+이번 수정 후 보존형 DB의 현재 34단계 전체를 다시 수행한 결과로 표시하지 않습니다. 전체 시험의 절차·예상 응답·실제 결과는 [TEST_GUIDE.md](testing/TEST_GUIDE.md)에 있습니다. 성공한 검사뿐 아니라 실패와 미실행 범위도 보고서에 남깁니다.
+
+탐지 규칙도 승인 정책 지문에 포함해 규칙 변경 후 기존 허용·반복 승인·완료 결과 재조회를 거부합니다. 이번 버전 적용 전 승인은 새로 요청·검토해야 합니다. 동시 요청 시험은 통신 실패와 정책 차단을 구분하고 실패를 보고서·종료값에 반영합니다. [높은 우선순위 수정과 검증 절차](docs/PRIORITY_FIXES_F30CA5C.md)를 확인하세요.
+
+추가로 요청 길이·제한시간·연결 수 방어, 보존 요청의 재시작 복원, 한국어 보안 업무 문장의 검토 분리, 서로 다른 주체의 DB 조회와 상태 점검 독립 처리를 적용했습니다. [1~4번 수정·예상 결과·실제 검증](docs/FIXES_1_TO_4.md)에 상세히 정리했습니다.
 
 ## 주요 구현과 문서
 

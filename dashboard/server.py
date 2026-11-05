@@ -1,11 +1,11 @@
 """Shared static UI and authenticated Gateway proxy for local and Compose modes."""
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import json
 import os
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
+from security_agent.http_safety import SafeHTTPHandler, BoundedHTTPServer, read_json_body
 
 ROOT = Path(__file__).resolve().parent
 STATIC = {"/": ("index.html", "text/html"), "/index.html": ("index.html", "text/html"), "/soc_dashboard.html": ("index.html", "text/html"), "/app.css": ("app.css", "text/css"), "/app.js": ("app.js", "text/javascript")}
@@ -13,7 +13,7 @@ for route in ('/approvals','/audit','/tests'):
     STATIC[route]=('index.html','text/html')
 
 
-class Handler(BaseHTTPRequestHandler):
+class Handler(SafeHTTPHandler):
     gateway_url = None
 
     def log_message(self, fmt, *args):
@@ -32,16 +32,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def body(self):
-        try:
-            length = int(self.headers.get("Content-Length", "0"))
-            if length < 0 or length > 24000:
-                raise ValueError("size")
-            obj = json.loads(self.rfile.read(length) if length else b"{}")
-            if not isinstance(obj, dict):
-                raise ValueError("object")
-            return obj
-        except (ValueError, UnicodeError):
-            return None
+        return read_json_body(self, 24000)
 
     def mutation_allowed(self):
         origin = self.headers.get("Origin")
@@ -89,4 +80,4 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    ThreadingHTTPServer(("0.0.0.0", int(os.environ.get("DASHBOARD_PORT", "8501"))), Handler).serve_forever()
+    BoundedHTTPServer(("0.0.0.0", int(os.environ.get("DASHBOARD_PORT", "8501"))), Handler).serve_forever()

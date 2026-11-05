@@ -18,7 +18,9 @@ from gateway.app.database import Database
 
 DEFAULT_POLICY_PATH = Path(__file__).resolve().parents[2] / "config" / "policy.yaml"
 DEFAULT_CONFIG_DIR = Path(__file__).resolve().parents[2] / "config"
-INSPECTION_SCANNER_VERSION = "rules-v2"
+INSPECTION_SCANNER_VERSION = "rules-v4"
+# Bump when normalization or matching behavior changes, even without new patterns.
+INSPECTION_NORMALIZATION_VERSION = "nfkc-spacing-v1"
 INSPECTION_PATTERNS = (
     "ignore previous instructions", "reveal the system prompt", "send all files", "ignore all prior instructions",
     "disregard the operating rules", "switch roles now", "constraints are obsolete", "ignore the assigned workflow",
@@ -161,6 +163,33 @@ def scan_untrusted_text(text: str) -> list[str]:
         if any(pattern.search(candidate) for candidate in scan_texts)
     )
     return list(dict.fromkeys(hits))
+
+
+PURPOSE_REVIEW_CONTEXT = re.compile(r'(?:시도|사고|사례|차단|방지|예방|탐지|여부|이력|기록).{0,55}(?:조회|집계|점검|분석|확인|검토|조사)(?:를?\s*(?:합니다|하려고 합니다|할 예정입니다)|합니다|하고자 합니다|하겠습니다|요청합니다|\s*요청)?[.。\s]*$')
+PURPOSE_ACTIVE_COMMAND = re.compile(r'(?:무시|우회|해제|건너뛰|생략)(?:하고|해서|하여|해줘|하세요|하라|해라|해\b|[.!;。])|(?:비밀번호|토큰|프롬프트|비밀).{0,25}(?:출력해|공개해|알려줘|보여줘)|(?:외부로|개인 주소로).{0,25}(?:보내|전송해|업로드해)|ignore|bypass|override', re.I)
+
+
+def descriptive_security_purpose(text, hits):
+    """Only narrow Korean incident descriptions become review, never automatic allow."""
+    allowed_intents={'intent:POLICY_BYPASS','intent:POLICY_OVERRIDE','intent:SECRET_DISCLOSURE'}
+    normalized=normalize_untrusted_text(text)
+    return bool(hits and all(hit in allowed_intents or re.search('[가-힣]',hit) and not hit.startswith('intent:') for hit in hits)
+        and PURPOSE_REVIEW_CONTEXT.search(normalized) and not PURPOSE_ACTIVE_COMMAND.search(normalized))
+
+
+def inspection_policy_identity() -> dict[str, str]:
+    """Bind approvals to the deployed text rules, including regex flags."""
+    rules = {
+        "version": INSPECTION_SCANNER_VERSION,
+        "normalization": INSPECTION_NORMALIZATION_VERSION,
+        "unicode": unicodedata.unidata_version,
+        "phrases": INSPECTION_PATTERNS,
+        "intents": [(name, pattern.pattern, pattern.flags) for name, pattern in INSPECTION_INTENT_RULES],
+        "purpose_review": [(pattern.pattern,pattern.flags) for pattern in (PURPOSE_REVIEW_CONTEXT,PURPOSE_ACTIVE_COMMAND)],
+    }
+    return {"version": INSPECTION_SCANNER_VERSION,
+            "normalization_version": INSPECTION_NORMALIZATION_VERSION,
+            "rules_sha256": digest(rules)}
 
 
 @dataclass(frozen=True)
@@ -355,7 +384,7 @@ class Gateway:
         req_hash = digest(body)
         # PostgreSQL advisory locking closes the cross-process check-then-insert race.
         idem_lock_key = "idempotency:" + canonical([p.id, body["task_id"], idem]).decode("utf-8")
-        with self.lock, self.db.advisory_lock("action-budget:" + p.id), self.db.advisory_lock(idem_lock_key):
+        with self.db.advisory_lock("action-budget:" + p.id), self.db.advisory_lock(idem_lock_key),self.lock:
             prior = self.db.execute("SELECT * FROM actions WHERE principal=? AND task=? AND idem_key=?", (p.id, body["task_id"], idem)).fetchone()
             if prior:
                 if prior["request_hash"] != req_hash:
@@ -389,9 +418,9 @@ class Gateway:
                 self.db.execute("ROLLBACK")
                 raise
             row = self.db.execute("SELECT * FROM actions WHERE id=?", (aid,)).fetchone()
-            if decision == "ALLOW":
-                return self.execute(p, aid)
-            return self._action_json(row)
+        if decision == "ALLOW":
+            return self.execute(p, aid)
+        return self._action_json(row)
 
     def _approval_snapshot(self, p: Principal, task_id: str, tool: str, args: dict[str, str]) -> dict[str, Any]:
         return {"principal": p.id, "user": p.user, "tenant": p.tenant, "task_id": task_id, "tool": tool,

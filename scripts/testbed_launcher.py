@@ -10,15 +10,15 @@ import sys
 import threading
 import time
 import webbrowser
-from http.server import ThreadingHTTPServer
 from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+from security_agent.http_safety import BoundedHTTPServer
 
 
-class LoopbackHTTPServer(ThreadingHTTPServer):
+class LoopbackHTTPServer(BoundedHTTPServer):
     allow_reuse_address = False
     daemon_threads = False
 

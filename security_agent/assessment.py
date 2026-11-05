@@ -2,8 +2,9 @@
 from __future__ import annotations
 import time
 from security_agent.catalog import CATALOG, validate_query
+from gateway.app.core import descriptive_security_purpose
 
-AGENT_VERSION='db-security-rules-v2'
+AGENT_VERSION='db-security-rules-v3'
 
 
 class SecurityAgent:
@@ -20,17 +21,20 @@ class SecurityAgent:
         row_limit=arguments.get('row_limit')
         bulk=type(row_limit) is int and row_limit>=1000
         purpose=arguments.get('purpose','')
-        suspicious=bool(isinstance(purpose,str) and self.scanner(purpose))
+        hits=self.scanner(purpose) if isinstance(purpose,str) else []
+        descriptive=bool(hits and descriptive_security_purpose(purpose,hits))
+        suspicious=bool(hits) and not descriptive
         if suspicious:
             errors.append('SUSPICIOUS_INSTRUCTIONS')
         if recent_requests>=block:
             errors.append('ABNORMAL_REQUEST_RATE')
-        abnormal=bool(errors) or recent_requests>=warning
+        abnormal=bool(errors) or recent_requests>=warning or descriptive
         reasons=[]
         if sensitive:reasons.append('민감·고위험 열의 정보 조회를 요청했습니다.')
         if bulk:reasons.append(f'한 번에 {row_limit:,}행을 요청해 대량 조회 기준(1,000행)에 해당합니다.')
         if recent_requests>=warning:reasons.append(f'동일 에이전트의 최근 1분 요청이 {recent_requests}건으로 증가했습니다.')
         if errors:reasons.append('필수 정책 위반: '+', '.join(dict.fromkeys(errors)))
+        if descriptive:reasons.append('보안 사고·차단 이력을 설명하는 목적입니다. 자동 허용하지 않고 업무 필요성을 사람이 검토합니다.')
         if not reasons:reasons.append('등록된 데이터와 열, 조회량 범위 안의 읽기 요청입니다.')
         score=min(100,15+(55 if restricted else 35*int(sensitive))+25*int(bulk)+40*int(abnormal))
         decision='DENY' if errors else 'REQUIRE_APPROVAL'
@@ -40,7 +44,7 @@ class SecurityAgent:
         self.last_analysis_at=time.time()
         return {'engine':AGENT_VERSION,'method':'policy_and_behavior_rules','risk_score':score,
             'risk_level':'critical' if score>=80 else 'high' if score>=60 else 'medium' if score>=30 else 'low',
-            'sensitive':sensitive,'bulk':bulk,'abnormal':abnormal,'reason_codes':list(dict.fromkeys(errors)),
+            'sensitive':sensitive,'bulk':bulk,'abnormal':abnormal,'reason_codes':list(dict.fromkeys(errors))+(['SECURITY_PURPOSE_REVIEW'] if descriptive else []),
             'reasons':reasons,'recommendation':recommendation,'decision':decision,
             'limitations':'정책·행위 규칙 분석이며 위험 점수는 침해 확률이 아닙니다.'}
 

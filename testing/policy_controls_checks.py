@@ -1,9 +1,13 @@
 """Real PostgreSQL checks using two independent Gateway connections and a live tool service."""
 from concurrent.futures import ThreadPoolExecutor
+import threading
 import time
 import uuid
+from unittest.mock import patch
 
 from gateway.app.core import Gateway,GatewayError
+from gateway.app import core
+from tool_sandbox import protected_db
 
 
 def run_policy_checks(lab,record):
@@ -56,6 +60,47 @@ def run_policy_checks(lab,record):
         with ThreadPoolExecutor(8) as pool:outcomes=list(pool.map(execute,pairs))
         elapsed=time.perf_counter()-start
         record('자동 허용 40건을 사람 검토 없이 실행',all(c==200 for c,_ in outcomes) and all(p[2]['authorization']['mode']=='automatic' for p in pairs),{'requests':40,'success':sum(c==200 for c,_ in outcomes),'elapsed_seconds':round(elapsed,3),'concurrency':8,'note':'기능 검증 부하이며 운영 처리량 보증이 아닙니다.'})
+        old=create(first,a)
+        scoped=create(first,a,args(columns=['description']))
+        approved=first.db_access.decide(r,scoped['id'],'approve','규칙 변경 시 반복 승인 무효화를 검증합니다.',{'ttl_seconds':600,'max_calls':1,'max_total_rows':2})
+        before=first.db_access.policy.budget(a)['used_calls']
+        with patch.object(core,'INSPECTION_PATTERNS',core.INSPECTION_PATTERNS+(args()['purpose'],)):
+            blocked=[execute((second,a,item)) for item in (old,scoped,request)]
+            fresh=create(first,a)
+            grant_state=first.db_access.policy.describe_grant(first.db_access.policy.for_request(first.db_access._row(a,scoped['id'])))['effective_status']
+            after=first.db_access.policy.budget(a)['used_calls']
+            record('탐지 규칙 변경 시 다른 연결의 허용·반복 승인·결과 재조회 차단',
+                all(code==403 and result.get('error')=='DB_POLICY_CHANGED' for code,result in blocked)
+                and fresh['state']=='DENIED' and grant_state=='POLICY_CHANGED' and before==after,
+                {'statuses':[code for code,_ in blocked],'errors':[result.get('error') for _,result in blocked],
+                 'new_request_state':fresh['state'],'grant_status':grant_state,'additional_charges':after-before})
+        parallel_args=args(purpose='Independent business query concurrency probe')
+        slow_request=create(first,a,parallel_args)
+        independent=create(second,b,parallel_args)
+        entered=threading.Event();release=threading.Event()
+        original_query=protected_db.execute_query
+        def slow_query(c,arguments,tenant,role,target):
+            if tenant=='north' and arguments['purpose']==parallel_args['purpose']:
+                entered.set();release.wait(5)
+            return original_query(c,arguments,tenant,role,target)
+        independent_status=0;ready=False;early=False
+        with patch.object(protected_db,'execute_query',side_effect=slow_query),ThreadPoolExecutor(3) as pool:
+            slow=pool.submit(execute,(first,a,slow_request))
+            try:
+                if entered.wait(2):
+                    separate=pool.submit(execute,(second,b,independent))
+                    health=pool.submit(first.ready)
+                    independent_status=separate.result(1)[0]
+                    ready=health.result(1)['status']=='ready'
+                    early=not release.is_set()
+            except TimeoutError:
+                pass
+            finally:release.set()
+            slow_status=slow.result(5)[0]
+        record('느린 PostgreSQL 조회 중 다른 주체와 상태 점검 독립 처리',
+            independent_status==200 and slow_status==200 and ready and early,
+            {'slow_status':slow_status,'other_principal_status':independent_status,'ready_before_release':ready and early,
+             'scope':'통제된 지연 주입에 대한 기능 검사, 운영 처리량 측정 아님'})
         chain=first.verify_audit_chain(r)
         record('다중 연결 처리 후 감사 해시 체인',chain['status']=='VALID',{'status':chain['status'],'records':chain['chained_records']})
     finally:second.db.close()

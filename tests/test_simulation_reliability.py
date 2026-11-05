@@ -120,6 +120,95 @@ class SimulationContractTests(unittest.TestCase):
         self.assertEqual(len(data['scenarios']),5)
         self.assertTrue(all(not r['ok'] for r in data['scenarios']))
 
+    def test_burst_all_transport_failures_are_failures(self):
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            results=sim.run_concurrency_test('http://local','a'*40,10,lambda *a,**k:(503,{'error':'offline'}))
+        self.assertEqual(len(results),10)
+        self.assertTrue(all(not r.ok for r in results))
+        self.assertIn('확인 실패 10건 · FAIL',output.getvalue())
+
+    def test_burst_keeps_each_partial_failure_and_business_denial_separate(self):
+        def transport(url,method,headers,body):
+            if '#1]' in body['purpose']:return 503,{'error':'offline'}
+            return 403,{'id':str(body['purpose']),'state':'DENIED'}
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            results=sim.run_concurrency_test('http://local','a'*40,10,transport)
+        self.assertEqual(sum(not r.ok for r in results),1)
+        self.assertEqual(sum(r.create_state=='DENIED' and r.ok for r in results),9)
+        self.assertIn('확인 실패 1건 · FAIL',output.getvalue())
+
+    def test_burst_rejects_malformed_or_inconsistent_creation_responses(self):
+        for code,body in ((200,{'state':'APPROVED'}),(200,{'id':'r','state':'DENIED'}),
+                          (503,{'id':'r','state':'APPROVED'}),(200,None),(200,[]),
+                          (403,{'id':[],'state':'DENIED'}),(201,{'id':'r'})):
+            with self.subTest(code=code,body=body),contextlib.redirect_stdout(io.StringIO()) as output:
+                result=sim.run_concurrency_test('http://local','a'*40,1,lambda *a,**k:(code,body))[0]
+                self.assertFalse(result.ok)
+                self.assertIn('정책 허용 0건 · 승인 대기 0건 · 정책 차단 0건',output.getvalue())
+                monitor=sim.ReviewMonitor('http://local','a'*40,'r'*40)
+                monitor.register(result)
+                self.assertFalse(monitor.jobs)
+
+    def test_burst_checks_execution_http_and_receipt(self):
+        for code,body in ((503,{'state':'SUCCEEDED','receipt_id':'r','result_count':1}),
+                          (200,{'state':'SUCCEEDED','result_count':1}),
+                          (200,{'state':'SUCCEEDED','receipt_id':'r','result_count':-1}),
+                          (200,None),(200,[])):
+            def transport(url,*a,**k):
+                return (code,body) if url.endswith('/execute') else (200,{'id':'r','state':'APPROVED'})
+            with self.subTest(code=code,body=body),contextlib.redirect_stdout(io.StringIO()):
+                result=sim.run_concurrency_test('http://local','a'*40,1,transport)[0]
+                self.assertFalse(result.ok)
+                self.assertEqual(result.execution_http,code)
+
+    def test_burst_preserves_worker_and_transport_exceptions(self):
+        def timeout(*a,**k):raise TimeoutError('test timeout')
+        with contextlib.redirect_stdout(io.StringIO()):
+            results=sim.run_concurrency_test('http://local','a'*40,10,timeout)
+        self.assertEqual(len(results),10)
+        self.assertTrue(all(not r.ok and 'TimeoutError' in r.error for r in results))
+        with patch.object(sim,'run_scenario',side_effect=RuntimeError('worker failed')),contextlib.redirect_stdout(io.StringIO()):
+            results=sim.run_concurrency_test('http://local','a'*40,10)
+        self.assertEqual(len(results),10)
+        self.assertTrue(all(not r.ok and 'RuntimeError' in r.error for r in results))
+
+    def test_valid_policy_denials_are_confirmed_not_transport_failures(self):
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            results=sim.run_concurrency_test('http://local','a'*40,10,
+                lambda *a,**k:(403,{'id':'policy-denied','state':'DENIED'}))
+        self.assertTrue(all(r.ok for r in results))
+        self.assertIn('정책 차단 10건',output.getvalue())
+        self.assertIn('확인 실패 0건 · PASS',output.getvalue())
+
+    def test_failed_burst_makes_interactive_report_and_exit_fail(self):
+        class FakeLab:
+            url=gateway_url='http://local'
+            tokens={'agent-alice':'a'*40,'reviewer-demo':'r'*40}
+            def start(self):return self
+            def stop(self):pass
+        def valid_scenario(number,*a,**k):
+            code,state=sim.SCENARIOS[number][5:]
+            return sim.ScenarioResult(number,code,state,{'id':'r'+str(number),
+                'state':'SUCCEEDED' if number==1 else state,'receipt_id':'receipt' if number==1 else None,
+                'result_count':20 if number==1 else None})
+        original_scenario=sim.run_scenario
+        real_burst=sim.run_concurrency_test
+        def fail_burst(url,token,count):
+            return real_burst(url,token,count,lambda *a,**k:(503,{'error':'offline'}))
+        def select_burst(run,show,monitor,url,run_burst=None):run_burst(10)
+        with tempfile.TemporaryDirectory() as tmp,patch.object(sim,'LocalLab',return_value=FakeLab()),patch.object(sim,'run_scenario',side_effect=valid_scenario),patch.object(sim,'print_overview',return_value={}),patch.object(sim.ReviewMonitor,'start'),patch.object(sim,'run_interactive_cli',select_burst),contextlib.redirect_stdout(io.StringIO()):
+            # Initial scenarios succeed; use the real validator for the failed burst.
+            def burst_without_mock(url,token,count):
+                with patch.object(sim,'run_scenario',original_scenario):return fail_burst(url,token,count)
+            path=Path(tmp)/'burst.json'
+            with patch.object(sim,'run_concurrency_test',burst_without_mock):
+                code=sim.run_simulation(no_browser=True,report_file=path)
+            report=json.loads(path.read_text(encoding='utf-8'))
+        self.assertEqual(code,1)
+        self.assertEqual(report['result'],'FAIL')
+        self.assertEqual(report['summary'],{'total':15,'confirmed':5,'failed':10})
+        self.assertEqual(sum(s['create_http']==503 and not s['ok'] for s in report['scenarios']),10)
+
 
 class SimulationReceiptIntegrationTests(unittest.TestCase):
     def test_real_lost_response_recovery_keeps_one_query_and_one_charge(self):

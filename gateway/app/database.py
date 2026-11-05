@@ -3,6 +3,7 @@ from __future__ import annotations
 import sqlite3
 import re
 import threading
+import queue
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -45,6 +46,11 @@ class Database:
         self.is_postgres = database.startswith(("postgresql://", "postgres://")) or bool(
             re.search(r'(?:^|\s)(?:host|hostaddr|dbname|user|service)\s*=', database))
         self._lock = threading.RLock()
+        self._key_guard=threading.Lock()
+        self._keys={}
+        self._advisory_idle=queue.LifoQueue()
+        self._advisory_slots=threading.BoundedSemaphore(16)
+        self._advisory_session=threading.local()
         if self.is_postgres:
             import psycopg
             self._psycopg = psycopg
@@ -98,16 +104,63 @@ class Database:
 
     @contextmanager
     def advisory_lock(self, key: str):
-        """Serialize a PostgreSQL operation across Gateway processes by stable key."""
-        if not self.is_postgres:
-            yield
-            return
-        self.execute("SELECT pg_advisory_lock(hashtextextended(?, 0))", (key,))
+        """Per-key mutex; PG session locks use a bounded, dedicated connection pool."""
+        with self._key_guard:
+            entry=self._keys.setdefault(key,[threading.RLock(),0])
+            entry[1]+=1
+        acquired=False
         try:
-            yield
+            acquired=entry[0].acquire(timeout=10)
+            if not acquired:raise TimeoutError('Operation lock deadline exceeded')
+            if not self.is_postgres:
+                yield
+                return
+            with self._advisory_connection() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute('SELECT pg_advisory_lock(hashtextextended(%s,0))',(key,))
+                try:
+                    yield
+                finally:
+                    if not connection.closed and not connection.broken:
+                        with connection.cursor() as cursor:
+                            cursor.execute('SELECT pg_advisory_unlock(hashtextextended(%s,0))',(key,))
         finally:
-            self.execute("SELECT pg_advisory_unlock(hashtextextended(?, 0))", (key,))
+            if acquired:entry[0].release()
+            with self._key_guard:
+                entry[1]-=1
+                if not entry[1]:self._keys.pop(key,None)
+
+    @contextmanager
+    def _advisory_connection(self):
+        existing=getattr(self._advisory_session,'connection',None)
+        if existing is not None:
+            yield existing
+            return
+        if not self._advisory_slots.acquire(timeout=10):raise TimeoutError('Lock connection pool is full')
+        connection=None
+        try:
+            try:connection=self._advisory_idle.get_nowait()
+            except queue.Empty:connection=self._connect_postgres()
+            if connection.closed or connection.broken:
+                connection.close()
+                connection=self._connect_postgres()
+            with connection.cursor() as cursor:cursor.execute("SET statement_timeout='10000ms'")
+            self._advisory_session.connection=connection
+            yield connection
+        finally:
+            self._advisory_session.connection=None
+            if connection is not None:
+                try:
+                    if connection.closed or connection.broken:connection.close()
+                    else:
+                        with connection.cursor() as cursor:cursor.execute('SELECT pg_advisory_unlock_all()')
+                        self._advisory_idle.put(connection)
+                except Exception:connection.close()
+            self._advisory_slots.release()
 
     def close(self) -> None:
         with self._lock:
             self.connection.close()
+            while True:
+                try:self._advisory_idle.get_nowait().close()
+                except queue.Empty:break

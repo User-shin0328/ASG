@@ -58,7 +58,7 @@ $env:AGENT_ALICE_TOKEN = (Get-Content 'testing/.runtime/postgresql-validation/ag
 .\.venv\Scripts\python.exe -m testing.postgresql_checks --keep-db --reuse --policy-controls
 ```
 
-예상 결과는 로컬·실행파일 32단계(회귀 테스트 포함), 보존형 PostgreSQL 32단계 PASS입니다. 가상 데이터를 재시드하거나 기존 감사 기록을 삭제하지 않습니다. 상세 예상값·실제 보고서·문제 해결은 [TEST_GUIDE.md](TEST_GUIDE.md)와 [VALIDATION_DB_GUIDE.md](VALIDATION_DB_GUIDE.md)를 따릅니다.
+예상 결과는 로컬·실행파일 32단계(회귀 테스트 포함), 보존형 PostgreSQL 34단계 PASS입니다. 가상 데이터를 재시드하거나 기존 감사 기록을 삭제하지 않습니다. 상세 예상값·실제 보고서·문제 해결은 [TEST_GUIDE.md](TEST_GUIDE.md)와 [VALIDATION_DB_GUIDE.md](VALIDATION_DB_GUIDE.md)를 따릅니다.
 
 ## 5. 중지와 다시 시작
 

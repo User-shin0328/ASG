@@ -1,21 +1,21 @@
 {
-  "id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
+  "id": "0ae95910-76b8-41a4-ad39-887a6fa44d7c",
   "principal": "agent-alice",
   "user_name": "alice",
   "tenant": "north",
   "task_id": "task-alice-001",
-  "requested_at": 1793774376.3800018,
+  "requested_at": 1793841090.6942308,
   "source_ip": "127.0.0.1",
   "client": "Python-urllib/3.12",
   "risk_score": 15,
   "decision": "REQUIRE_APPROVAL",
-  "expires_at": 1793775276.3800018,
+  "expires_at": 1793841990.6942308,
   "reviewer": "reviewer-demo",
   "review_reason": "업무 범위와 열·조회량을 확인했습니다.",
-  "decided_at": 1793774376.40969,
+  "decided_at": 1793841090.7051811,
   "result_count": 25,
-  "trace_id": "5fcf18ec-bf2d-42a2-8977-427b34709afb",
-  "request_id": "9fb786ca-8cdb-4fab-ab82-c195958a02ff",
+  "trace_id": "59b02e2a-24f9-4854-a155-de9f59865092",
+  "request_id": "0ae95910-76b8-41a4-ad39-887a6fa44d7c",
   "state": "SUCCEEDED",
   "arguments": {
     "dataset_id": "operations",
@@ -29,7 +29,7 @@
     "purpose": "승인 기반 DB 조회 통합 검증입니다."
   },
   "analysis": {
-    "engine": "db-security-rules-v2",
+    "engine": "db-security-rules-v3",
     "method": "policy_and_behavior_rules",
     "risk_score": 15,
     "risk_level": "low",
@@ -47,6 +47,11 @@
       "backend": "sqlite",
       "id": "sqlite-lab-v1"
     },
+    "inspection_policy": {
+      "version": "rules-v4",
+      "normalization_version": "nfkc-spacing-v1",
+      "rules_sha256": "7d07cf35d6e3efedd67a183e52e718eff00fa4007d706e594271aa0952390397"
+    },
     "authorization": {
       "mode": "human",
       "role": "report-submitter"
@@ -55,20 +60,20 @@
   "dataset_name": "운영 지원 이력",
   "database_name": "사내 검증 DB",
   "mode": "sqlite",
-  "execution_id": "08a52494-b2f1-4380-8c96-e8731ee2f3d3",
-  "receipt_id": "receipt-bf50761d-315e-4079-9197-7085e729f802",
+  "execution_id": "b77ce128-55af-4b2f-a50c-667bfe591ad9",
+  "receipt_id": "receipt-a0c98c90-6166-4e46-975f-e685ca969cb6",
   "authorization": {
     "mode": "human",
     "role": "report-submitter"
   },
   "approval_binding": {
     "request_hash": "a81c3f9b4544daf9eb283da019917fc95dba708d457c4ec6ba2150af22aedf1a",
-    "snapshot_hash": "8442085d0d6001055d1ec95da36cf24712a8714af9d4523e2c2266be023c0911",
-    "policy_hash": "8cc415fe226f517737c91a807dda9075187b8d1440bf33c16e8c4db2267b36d4"
+    "snapshot_hash": "99e6d534b49f0c9a4402f28ad7b2751d0830b811b83055f43bc7bfb2e46598c3",
+    "policy_hash": "869fd004698684cbe6ccd9d47c70966e0ffcb4ef8cf991143ec129563da1ebbc"
   },
   "timeline": [
     {
-      "at": 1793774376.3816223,
+      "at": 1793841090.69623,
       "actor": "agent-alice",
       "event": "DB_REQUESTED",
       "details": {
@@ -77,24 +82,24 @@
         "risk_score": 15,
         "source_ip": "127.0.0.1",
         "request_hash": "a81c3f9b4544daf9eb283da019917fc95dba708d457c4ec6ba2150af22aedf1a",
-        "snapshot_hash": "8442085d0d6001055d1ec95da36cf24712a8714af9d4523e2c2266be023c0911"
+        "snapshot_hash": "99e6d534b49f0c9a4402f28ad7b2751d0830b811b83055f43bc7bfb2e46598c3"
       }
     },
     {
-      "at": 1793774376.4108763,
+      "at": 1793841090.7061813,
       "actor": "reviewer-demo",
       "event": "DB_APPROVED",
       "details": {
         "reason": "업무 범위와 열·조회량을 확인했습니다.",
-        "snapshot_hash": "8442085d0d6001055d1ec95da36cf24712a8714af9d4523e2c2266be023c0911"
+        "snapshot_hash": "99e6d534b49f0c9a4402f28ad7b2751d0830b811b83055f43bc7bfb2e46598c3"
       }
     },
     {
-      "at": 1793774376.4402406,
+      "at": 1793841090.7121832,
       "actor": "agent-alice",
       "event": "DB_EXECUTION_STARTED",
       "details": {
-        "execution_id": "08a52494-b2f1-4380-8c96-e8731ee2f3d3",
+        "execution_id": "b77ce128-55af-4b2f-a50c-667bfe591ad9",
         "authorization": {
           "mode": "human",
           "role": "report-submitter"
@@ -102,12 +107,12 @@
       }
     },
     {
-      "at": 1793774376.46301,
+      "at": 1793841090.7253363,
       "actor": "agent-alice",
       "event": "DB_EXECUTION_SUCCEEDED",
       "details": {
         "row_count": 25,
-        "receipt_id": "receipt-bf50761d-315e-4079-9197-7085e729f802"
+        "receipt_id": "receipt-a0c98c90-6166-4e46-975f-e685ca969cb6"
       }
     }
   ]

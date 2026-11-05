@@ -5,7 +5,7 @@ import json
 import math
 import time
 import uuid
-from gateway.app.core import GatewayError, digest, scan_untrusted_text
+from gateway.app.core import GatewayError, digest, scan_untrusted_text, inspection_policy_identity
 from security_agent.assessment import SecurityAgent, AGENT_VERSION
 from security_agent.catalog import CATALOG, validate_query
 from security_agent.db_target import target_config
@@ -65,7 +65,7 @@ class DBAccessService:
 
     def request_state(self,row,grant=None):
         state=effective_state(row,time.time())
-        if state=='APPROVED':
+        if state in {'PENDING_APPROVAL','APPROVED'}:
             if row['policy_hash']!=self.policy_hash():return 'DENIED'
             if grant:
                 if grant['status']=='REVOKED' or grant['policy_hash']!=self.policy_hash():return 'DENIED'
@@ -73,7 +73,24 @@ class DBAccessService:
         return state
 
     def policy_hash(self):
-        return digest({'policy':self.gateway.policy,'catalog':CATALOG,'engine':AGENT_VERSION,'db_policy':self.policy.config,'target':self.target})
+        return digest({'policy':self.gateway.policy,'catalog':CATALOG,'engine':AGENT_VERSION,
+            'inspection_policy':inspection_policy_identity(),'db_policy':self.policy.config,'target':self.target})
+
+    def check_policy_binding(self,p,row,phase):
+        current=self.policy_hash()
+        if row['policy_hash']==current:return
+        self.db.execute('BEGIN IMMEDIATE')
+        try:
+            self._event(row,p.id,'DB_POLICY_REVALIDATION_DENIED',{'phase':phase,'reason':'DB_POLICY_CHANGED',
+                'approved_policy_hash':row['policy_hash'],'current_policy_hash':current,
+                'inspection_policy':inspection_policy_identity()})
+            self.db.execute('COMMIT')
+        except Exception:
+            self.db.execute('ROLLBACK')
+            raise
+        raise GatewayError(409 if phase=='decision' else 403,
+            'POLICY_CHANGED' if phase=='decision' else 'DB_POLICY_CHANGED',
+            '보안 정책 또는 탐지 규칙이 바뀌었습니다. 새 요청을 접수하세요.')
 
     def reviewer(self,p):
         if p.kind!='reviewer':raise GatewayError(403,'REVIEWER_REQUIRED','검토자 권한이 필요합니다.')
@@ -116,7 +133,7 @@ class DBAccessService:
         if not idem or len(idem)>128:raise GatewayError(422,'INVALID_IDEMPOTENCY_KEY','Idempotency-Key가 필요합니다.')
         if not isinstance(body,dict):raise GatewayError(422,'INVALID_REQUEST','요청은 JSON 객체여야 합니다.')
         request_hash=digest(body)
-        with self.lock,self.db.advisory_lock('db-request:'+p.id):
+        with self.db.advisory_lock('db-request:'+p.id),self.lock:
             prior=self.db.execute('SELECT * FROM db_access_requests WHERE principal=? AND idem_key=?',(p.id,idem)).fetchone()
             if prior:
                 if prior['request_hash']!=request_hash:raise GatewayError(409,'IDEMPOTENCY_CONFLICT','같은 키의 요청 내용이 다릅니다.')
@@ -134,19 +151,20 @@ class DBAccessService:
                     'reasons':['보안 분석에 실패하여 요청을 차단했습니다.'],'recommendation':'분석 서비스를 복구한 뒤 새로 요청하세요.','decision':'DENY'}
             decision=analysis['decision']
             analysis['db_target']=dict(self.target)
+            analysis['inspection_policy']=inspection_policy_identity()
             authorization=self.policy.choose(p,args,analysis)
             analysis['authorization']=authorization
             if authorization['mode'] in {'automatic','scope_grant'}:
                 decision=analysis['decision']='ALLOW'
                 analysis['reasons'].append('명시적 자동 허용 정책에 부합합니다.' if authorization['mode']=='automatic' else '검토자가 발급한 반복 업무 승인 범위에 부합합니다.')
-            pending=self.db.execute("SELECT COUNT(*) AS count FROM db_access_requests WHERE principal=? AND (authorization_mode='human' OR authorization_mode IS NULL) AND state IN ('PENDING_APPROVAL','APPROVED') AND expires_at>?",(p.id,now)).fetchone()['count']
+            policy=self.policy_hash()
+            pending=self.db.execute("SELECT COUNT(*) AS count FROM db_access_requests WHERE principal=? AND policy_hash=? AND (authorization_mode='human' OR authorization_mode IS NULL) AND state IN ('PENDING_APPROVAL','APPROVED') AND expires_at>?",(p.id,policy,now)).fetchone()['count']
             if decision=='REQUIRE_APPROVAL' and pending>=self.gateway.policy['limits']['pending_approvals_per_principal']:
                 analysis.update({'decision':'DENY','abnormal':True,'risk_score':max(80,analysis['risk_score']),'risk_level':'critical',
                     'reason_codes':analysis['reason_codes']+['PENDING_DB_REQUEST_LIMIT'],
                     'reasons':analysis['reasons']+['미처리 승인 요청 한도를 초과했습니다.'],'recommendation':'기존 요청을 검토·정리한 뒤 새로 요청하세요.'})
                 decision='DENY'
             state='DENIED' if decision=='DENY' else 'APPROVED' if decision=='ALLOW' else 'PENDING_APPROVAL'
-            policy=self.policy_hash()
             binding=digest({'principal':p.id,'tenant':p.tenant,'task':p.task,'arguments':args,'analysis':analysis,'policy':policy})
             values={'id':str(uuid.uuid4()),'principal':p.id,'user_name':p.user,'tenant':p.tenant,'task_id':p.task,
                 'requested_at':now,'source_ip':str(source_ip)[:80],'client':str(client)[:160],
@@ -175,10 +193,10 @@ class DBAccessService:
         self.reviewer(p)
         if decision not in {'approve','reject'} or not isinstance(reason,str) or not 3<=len(reason.strip())<=1000:
             raise GatewayError(422,'REVIEW_REASON_REQUIRED','승인·거절과 3~1,000자의 판단 근거를 입력하세요.')
-        with self.lock,self.db.advisory_lock('db-decision:'+request_id):
+        with self.db.advisory_lock('db-decision:'+request_id),self.lock:
             row=self._row(p,request_id)
             if effective_state(row,time.time())!='PENDING_APPROVAL':raise GatewayError(409,'NOT_PENDING','결정되었거나 만료된 요청입니다.')
-            if row['policy_hash']!=self.policy_hash():raise GatewayError(409,'POLICY_CHANGED','정책이 바뀌었습니다. 새 요청을 검토하세요.')
+            self.check_policy_binding(p,row,'decision')
             binding=digest({'principal':row['principal'],'tenant':row['tenant'],'task':row['task_id'],'arguments':json.loads(row['arguments']),'analysis':json.loads(row['analysis']),'policy':self.policy_hash()})
             if binding!=row['snapshot_hash']:raise GatewayError(409,'DB_SNAPSHOT_CHANGED','검토할 요청 정보가 접수 이후 바뀌었습니다.')
             state='APPROVED' if decision=='approve' else 'REJECTED'
@@ -198,50 +216,70 @@ class DBAccessService:
                 raise
             return self.serialize(self._row(p,request_id),True)
 
+    def execution_context(self,p,request_id):
+        row=self._row(p,request_id)
+        args=json.loads(row['arguments'])
+        if row['expires_at']<=time.time() or effective_state(row,time.time()) not in {'APPROVED','UNKNOWN','EXECUTING','SUCCEEDED'}:
+            raise GatewayError(409,'DB_APPROVAL_REQUIRED','유효한 정책 허용 또는 승인 없이는 DB를 조회할 수 없습니다.')
+        self.check_policy_binding(p,row,'execute')
+        if validate_query(args,{'tenant':p.tenant,'role':p.role}):
+            raise GatewayError(403,'DB_POLICY_CHANGED','현재 정책이 요청을 허용하지 않습니다.')
+        binding=digest({'principal':p.id,'tenant':p.tenant,'task':p.task,'arguments':args,'analysis':json.loads(row['analysis']),'policy':self.policy_hash()})
+        auth=json.loads(row['analysis']).get('authorization',{})
+        if binding!=row['snapshot_hash'] or auth.get('role')!=p.role or (auth.get('mode')=='human' and not row['reviewer']) or auth.get('mode') not in {'automatic','human','scope_grant'}:
+            raise GatewayError(403,'DB_SNAPSHOT_CHANGED','승인 이후 요청이나 분석 정보가 바뀌었습니다.')
+        grant=self.policy.for_request(row)
+        if auth.get('mode')=='scope_grant' and not grant:raise GatewayError(403,'SCOPE_GRANT_INVALID','범위 승인을 찾을 수 없습니다.')
+        if grant:self.policy.validate_grant(p,row,args,grant)
+        return row,args,auth,grant
+
     def execute(self,p,request_id):
         if p.kind!='agent':raise GatewayError(403,'AGENT_REQUIRED','실행은 원래 요청한 에이전트만 할 수 있습니다.')
-        with self.lock,self.db.advisory_lock('db-budget:'+p.id),self.db.advisory_lock('db-execute:'+request_id):
-            row=self._row(p,request_id)
-            args=json.loads(row['arguments'])
-            if row['expires_at']<=time.time() or effective_state(row,time.time()) not in {'APPROVED','UNKNOWN','EXECUTING','SUCCEEDED'}:
-                raise GatewayError(409,'DB_APPROVAL_REQUIRED','유효한 정책 허용 또는 승인 없이는 DB를 조회할 수 없습니다.')
-            if row['policy_hash']!=self.policy_hash() or validate_query(args,{'tenant':p.tenant,'role':p.role}):
-                raise GatewayError(403,'DB_POLICY_CHANGED','현재 정책이 요청을 허용하지 않습니다.')
-            binding=digest({'principal':p.id,'tenant':p.tenant,'task':p.task,'arguments':args,'analysis':json.loads(row['analysis']),'policy':self.policy_hash()})
-            auth=json.loads(row['analysis']).get('authorization',{})
-            if binding!=row['snapshot_hash'] or auth.get('role')!=p.role or (auth.get('mode')=='human' and not row['reviewer']) or auth.get('mode') not in {'automatic','human','scope_grant'}:
-                raise GatewayError(403,'DB_SNAPSHOT_CHANGED','승인 이후 요청이나 분석 정보가 바뀌었습니다.')
-            grant=self.policy.for_request(row)
-            if auth.get('mode')=='scope_grant' and not grant:raise GatewayError(403,'SCOPE_GRANT_INVALID','범위 승인을 찾을 수 없습니다.')
-            if grant:self.policy.validate_grant(p,row,args,grant)
-            if row['state']=='SUCCEEDED':
+        with self.db.advisory_lock('db-budget:'+p.id),self.db.advisory_lock('db-execute:'+request_id):
+            with self.lock:
+                row,args,auth,grant=self.execution_context(p,request_id)
+                replay=row['state']=='SUCCEEDED'
+                if not replay:
+                    self.db.execute('BEGIN IMMEDIATE')
+                    try:
+                        self.policy.reserve(p,row,args,grant)
+                        self.db.execute("UPDATE db_access_requests SET state='EXECUTING' WHERE id=?",(request_id,))
+                        self._event(row,p.id,'DB_EXECUTION_STARTED',{'execution_id':row['execution_id'],'authorization':auth})
+                        self.db.execute('COMMIT')
+                    except Exception as error:
+                        self.db.execute('ROLLBACK')
+                        if isinstance(error,GatewayError) and error.code in {'DB_BUDGET_EXCEEDED','SCOPE_GRANT_EXHAUSTED'}:
+                            self.db.execute("UPDATE db_access_requests SET state='DENIED',decision='DENY',abnormal=1 WHERE id=?",(request_id,))
+                            self._event(row,'policy-engine','DB_BUDGET_BLOCKED',{'reason':error.code})
+                        raise
+            # No global metadata lock is held across tool or business DB I/O.
+            if replay:
                 receipt=self.gateway._tool_request('GET','/internal/executions/'+row['execution_id'])
-                return self.serialize(row,True)|{'result':receipt,'replayed':True}
-            self.db.execute('BEGIN IMMEDIATE')
-            try:
-                self.policy.reserve(p,row,args,grant)
-                self.db.execute("UPDATE db_access_requests SET state='EXECUTING' WHERE id=?",(request_id,))
-                self._event(row,p.id,'DB_EXECUTION_STARTED',{'execution_id':row['execution_id'],'authorization':auth})
-                self.db.execute('COMMIT')
-            except Exception as error:
-                self.db.execute('ROLLBACK')
-                if isinstance(error,GatewayError) and error.code in {'DB_BUDGET_EXCEEDED','SCOPE_GRANT_EXHAUSTED'}:
-                    self.db.execute("UPDATE db_access_requests SET state='DENIED',decision='DENY',abnormal=1 WHERE id=?",(request_id,))
-                    self._event(row,'policy-engine','DB_BUDGET_BLOCKED',{'reason':error.code})
-                raise
+                with self.lock:
+                    row,_,_,_=self.execution_context(p,request_id)
+                    return self.serialize(row,True)|{'result':receipt,'replayed':True}
             try:
                 result=self.gateway._tool_request('POST','/internal/execute',{'execution_id':row['execution_id'],'action_id':request_id,
                     'principal':p.id,'user':p.user,'tenant':p.tenant,'task_id':p.task,'tool':'query_database',
                     'arguments':args|{'_asg_target_id':self.target['id']},'request_hash':row['request_hash']})
-                self.policy.settle(row,result)
-            except GatewayError:
-                self.db.execute("UPDATE db_access_requests SET state='UNKNOWN' WHERE id=?",(request_id,))
-                self._event(row,p.id,'DB_EXECUTION_UNKNOWN',{'execution_id':row['execution_id']})
+                with self.lock:
+                    self.execution_context(p,request_id)
+                    self.db.execute('BEGIN IMMEDIATE')
+                    try:
+                        self.policy.settle(row,result)
+                        count=result['result']['row_count']
+                        self.db.execute("UPDATE db_access_requests SET state='SUCCEEDED',receipt_id=?,result_count=? WHERE id=?",(result['receipt_id'],count,request_id))
+                        self._event(row,p.id,'DB_EXECUTION_SUCCEEDED',{'row_count':count,'receipt_id':result['receipt_id']})
+                        self.db.execute('COMMIT')
+                    except Exception:
+                        self.db.execute('ROLLBACK')
+                        raise
+                    return self.serialize(self._row(p,request_id),True)|{'result':result,'replayed':False}
+            except Exception:
+                with self.lock:
+                    self.db.execute("UPDATE db_access_requests SET state='UNKNOWN' WHERE id=?",(request_id,))
+                    self._event(row,p.id,'DB_EXECUTION_UNKNOWN',{'execution_id':row['execution_id']})
                 raise
-            count=result['result']['row_count']
-            self.db.execute("UPDATE db_access_requests SET state='SUCCEEDED',receipt_id=?,result_count=? WHERE id=?",(result['receipt_id'],count,request_id))
-            self._event(row,p.id,'DB_EXECUTION_SUCCEEDED',{'row_count':count,'receipt_id':result['receipt_id']})
-            return self.serialize(self._row(p,request_id),True)|{'result':result,'replayed':False}
 
     def grants(self,p):
         self.reviewer(p)
@@ -253,12 +291,14 @@ class DBAccessService:
         self.reviewer(p)
         with self.lock:
             row=self._row(p,request_id)
-            with self.db.advisory_lock('db-budget:'+row['principal']),self.db.advisory_lock('db-execute:'+request_id):
+        with self.db.advisory_lock('db-budget:'+row['principal']),self.db.advisory_lock('db-execute:'+request_id):
+            with self.lock:
                 row=self._row(p,request_id)
                 if row['state'] not in {'UNKNOWN','EXECUTING'}:raise GatewayError(409,'NOT_UNCERTAIN','결과 확인이 필요한 실행만 대조할 수 있습니다.')
-                receipt=self.gateway._tool_request('GET','/internal/executions/'+row['execution_id'])
-                if receipt.get('execution_id')!=row['execution_id'] or receipt.get('action_id')!=row['id']:
-                    raise GatewayError(503,'DB_RECEIPT_INVALID','일치하는 실행 영수증이 없습니다.')
+            receipt=self.gateway._tool_request('GET','/internal/executions/'+row['execution_id'])
+            if receipt.get('execution_id')!=row['execution_id'] or receipt.get('action_id')!=row['id']:
+                raise GatewayError(503,'DB_RECEIPT_INVALID','일치하는 실행 영수증이 없습니다.')
+            with self.lock:
                 self.db.execute('BEGIN IMMEDIATE')
                 try:
                     self.policy.settle(row,receipt)
@@ -282,7 +322,8 @@ class DBAccessService:
         with self.lock:
             grant=self.db.execute('SELECT * FROM db_scope_grants WHERE id=? AND tenant=?',(grant_id,p.tenant)).fetchone()
             if not grant:raise GatewayError(404,'NOT_FOUND','범위 승인을 찾을 수 없습니다.')
-            with self.db.advisory_lock('db-budget:'+grant['principal']):
+        with self.db.advisory_lock('db-budget:'+grant['principal']):
+            with self.lock:
                 self.db.execute('BEGIN IMMEDIATE')
                 try:
                     self.db.execute("UPDATE db_scope_grants SET status='REVOKED',revoked_by=?,revoked_reason=?,revoked_at=? WHERE id=?",(p.id,reason.strip(),time.time(),grant_id))
@@ -298,7 +339,7 @@ class DBAccessService:
         if type(page) is not int or not 1<=page<=100000:raise GatewayError(422,'INVALID_PAGE','페이지가 올바르지 않습니다.')
         clauses=['tenant=?'];params=[p.tenant]
         if pending:
-            clauses+= ["state='PENDING_APPROVAL'",'expires_at>?'];params.append(time.time())
+            clauses+= ["state='PENDING_APPROVAL'",'expires_at>?','policy_hash=?'];params.extend((time.time(),self.policy_hash()))
         else:
             start,end=day_bounds(date);clauses+=['requested_at>=?','requested_at<?'];params.extend((start,end))
         where=' AND '.join(clauses)
@@ -307,6 +348,16 @@ class DBAccessService:
             total=self.db.execute('SELECT COUNT(*) AS count FROM db_access_requests WHERE '+where,params).fetchone()['count']
             rows=self.db.execute('SELECT * FROM db_access_requests WHERE '+where+' ORDER BY '+order+' LIMIT ? OFFSET ?',params+[50,(page-1)*50]).fetchall()
         return {'items':[self.serialize(r) for r in rows],'total':total,'page':page,'page_size':50,'timezone':'Asia/Seoul'}
+
+    def recovery(self,p,page=1):
+        if p.kind!='agent':raise GatewayError(403,'AGENT_REQUIRED','원래 요청한 에이전트만 미완료 요청을 복원할 수 있습니다.')
+        if type(page) is not int or not 1<=page<=100000:raise GatewayError(422,'INVALID_PAGE','페이지가 올바르지 않습니다.')
+        where="principal=? AND tenant=? AND (state IN ('UNKNOWN','EXECUTING') OR (state IN ('PENDING_APPROVAL','APPROVED') AND expires_at>? AND policy_hash=?))"
+        params=[p.id,p.tenant,time.time(),self.policy_hash()]
+        with self.lock:
+            total=self.db.execute('SELECT COUNT(*) AS count FROM db_access_requests WHERE '+where,params).fetchone()['count']
+            rows=self.db.execute('SELECT * FROM db_access_requests WHERE '+where+' ORDER BY requested_at,id LIMIT ? OFFSET ?',params+[50,(page-1)*50]).fetchall()
+            return {'items':[self.serialize(row) for row in rows],'total':total,'page':page,'page_size':50}
 
     def risk_at(self,rows,at):
         factors={key:0 for key in RISK_WEIGHTS};components={key:0.0 for key in RISK_WEIGHTS}
@@ -362,8 +413,8 @@ class DBAccessService:
             'deployment':'PostgreSQL 연결 모드' if self.target['backend']=='postgresql' else '로컬 검증 DB · 가상 데이터 · 실제 사내 DB 미연결', 'target':self.target}
 
     def diagnostics(self,p):
+        status=self.status(p)
         with self.lock:
-            status=self.status(p)
             integrity=self.gateway.verify_audit_chain(p)
         checks=[{'name':item['name'],'passed':item['status']=='up','detail':item['detail'],'latency_ms':item.get('latency_ms')} for item in status['items']]
         checks.append({'name':'감사 로그 무결성','passed':integrity['status']=='VALID','detail':f"{integrity['chained_records']}개 해시 연결 검증, 변조 의심 {len(integrity['tampered_record_ids'])}건"})

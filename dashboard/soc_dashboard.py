@@ -2,9 +2,9 @@
 from __future__ import annotations
 import threading
 import uuid
-from http.server import ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 from dashboard.server import Handler
+from security_agent.http_safety import BoundedHTTPServer
 
 
 class SocDashboardHandler(Handler):
@@ -58,4 +58,4 @@ class SocDashboardHandler(Handler):
 
 
 def run_soc_dashboard(host="127.0.0.1", port=8501):
-    ThreadingHTTPServer((host, port), SocDashboardHandler).serve_forever()
+    BoundedHTTPServer((host, port), SocDashboardHandler).serve_forever()

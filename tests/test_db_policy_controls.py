@@ -3,8 +3,12 @@ import json
 import time
 import unittest
 import uuid
+import re
+from unittest.mock import patch
 
 from gateway.app.core import Gateway,GatewayError
+from gateway.app import core
+from security_agent.catalog import CATALOG
 
 
 def query(**changes):
@@ -199,3 +203,94 @@ class PolicyControlTests(unittest.TestCase):
         self.assertNotIn('result',report)
         self.assertEqual(len(self.queries),1)
         self.assertEqual(self.s.policy.budget(self.a)['used_rows'],100)
+
+    def test_new_text_rule_invalidates_old_automatic_allow_and_records_rejection(self):
+        args=query(purpose='Scheduled operations review')
+        old=self.create(args)
+        before=self.s.policy_hash()
+        with patch.object(core,'INSPECTION_PATTERNS',core.INSPECTION_PATTERNS+('scheduled operations review',)):
+            self.assertNotEqual(self.s.policy_hash(),before)
+            self.assertEqual(self.create(args)['state'],'DENIED')
+            with self.assertRaises(GatewayError) as error:self.s.execute(self.a,old['id'])
+            self.assertEqual((error.exception.status,error.exception.code),(403,'DB_POLICY_CHANGED'))
+            self.assertFalse(self.queries)
+            self.assertEqual(self.s.policy.budget(self.a)['used_calls'],0)
+            event=self.s.detail(self.r,old['id'])['timeline'][-1]
+            self.assertEqual(event['event'],'DB_POLICY_REVALIDATION_DENIED')
+            self.assertEqual(event['details']['phase'],'execute')
+            self.assertEqual(event['details']['approved_policy_hash'],before)
+            self.assertEqual(event['details']['current_policy_hash'],self.s.policy_hash())
+            self.assertEqual(self.g.verify_audit_chain(self.r)['status'],'VALID')
+
+    def test_rule_change_blocks_cached_result_and_does_not_fetch_it(self):
+        row=self.create();self.s.execute(self.a,row['id'])
+        with patch.object(core,'INSPECTION_PATTERNS',core.INSPECTION_PATTERNS+('new unrelated rule',)),patch.object(self.g,'_tool_request') as tool:
+            with self.assertRaises(GatewayError):self.s.execute(self.a,row['id'])
+            tool.assert_not_called()
+        self.assertEqual(len(self.queries),1)
+
+    def test_rule_change_invalidates_original_grant_and_future_reuse(self):
+        old,grant=self.grant()
+        with patch.object(core,'INSPECTION_PATTERNS',core.INSPECTION_PATTERNS+('new unrelated rule',)):
+            with self.assertRaises(GatewayError):self.s.execute(self.a,old['id'])
+            new=self.create(query(columns=['description'],row_limit=100))
+            self.assertEqual(new['state'],'PENDING_APPROVAL')
+            self.assertNotEqual(new['authorization'].get('grant_id'),grant['id'])
+            self.assertEqual(self.s.grants(self.r)['items'][0]['effective_status'],'POLICY_CHANGED')
+
+    def test_pending_decision_is_rejected_after_scanner_version_change(self):
+        row=self.create(query(columns=['description']))
+        with patch.object(core,'INSPECTION_SCANNER_VERSION','rules-future'):
+            with self.assertRaises(GatewayError) as error:self.s.decide(self.r,row['id'],'approve','업무 범위를 확인했습니다.')
+            self.assertEqual((error.exception.status,error.exception.code),(409,'POLICY_CHANGED'))
+            event=self.s.detail(self.r,row['id'])['timeline'][-1]
+            self.assertEqual(event['details']['phase'],'decision')
+            self.assertIsNone(self.s.detail(self.r,row['id'])['reviewer'])
+
+    def test_regex_flags_and_normalization_version_change_policy_identity(self):
+        old=self.s.policy_hash()
+        name,pattern=core.INSPECTION_INTENT_RULES[0]
+        changed=((name,re.compile(pattern.pattern,pattern.flags ^ re.I)),)+core.INSPECTION_INTENT_RULES[1:]
+        with patch.object(core,'INSPECTION_INTENT_RULES',changed):self.assertNotEqual(old,self.s.policy_hash())
+        with patch.object(core,'INSPECTION_NORMALIZATION_VERSION','future-normalization'):
+            self.assertNotEqual(old,self.s.policy_hash())
+
+    def test_legacy_request_without_scanner_binding_fails_closed(self):
+        row=self.create()
+        legacy=core.digest({'policy':self.g.policy,'catalog':CATALOG,
+            'engine':'db-security-rules-v2','db_policy':self.s.policy.config,'target':self.s.target})
+        self.g.db.execute('UPDATE db_access_requests SET policy_hash=? WHERE id=?',(legacy,row['id']))
+        with self.assertRaises(GatewayError) as error:self.s.execute(self.a,row['id'])
+        self.assertEqual(error.exception.code,'DB_POLICY_CHANGED')
+        self.assertFalse(self.queries)
+
+    def test_rule_change_still_allows_metadata_only_receipt_reconciliation(self):
+        row=self.create()
+        def lost(method,path,body=None):
+            self.tool(method,path,body)
+            raise GatewayError(503,'TOOL_UNAVAILABLE','response lost')
+        self.g._tool_request=lost
+        with self.assertRaises(GatewayError):self.s.execute(self.a,row['id'])
+        self.g._tool_request=self.tool
+        with patch.object(core,'INSPECTION_PATTERNS',core.INSPECTION_PATTERNS+('new unrelated rule',)):
+            with self.assertRaises(GatewayError):self.s.execute(self.a,row['id'])
+            report=self.s.reconcile(self.r,row['id'])
+            self.assertEqual(report['state'],'SUCCEEDED')
+            self.assertNotIn('result',report)
+            self.assertEqual(len(self.queries),1)
+            self.assertEqual(self.s.policy.budget(self.a)['used_rows'],100)
+
+    def test_obsolete_policy_requests_do_not_occupy_review_queue(self):
+        limit=self.g.policy['limits']['pending_approvals_per_principal']
+        old=[self.create(query(columns=['description'])) for _ in range(limit)]
+        self.s.decide(self.r,old[0]['id'],'approve','업무 필요성을 확인했습니다.')
+        with patch.object(core,'INSPECTION_PATTERNS',core.INSPECTION_PATTERNS+('new unrelated rule',)):
+            self.assertEqual(self.s.listing(self.r,pending=True)['total'],0)
+            self.assertTrue(all(self.s.detail(self.r,row['id'])['state']=='DENIED' for row in old))
+            fresh=self.create(query(columns=['description']))
+            self.assertEqual(fresh['state'],'PENDING_APPROVAL')
+            current=self.s.listing(self.r,pending=True)
+            self.assertEqual([item['id'] for item in current['items']],[fresh['id']])
+            self.assertEqual(self.s.listing(self.r)['total'],limit+1)
+            metrics=self.s.overview(self.r)['metrics']
+            self.assertEqual((metrics['blocked'],metrics['pending']),(limit,1))

@@ -7,11 +7,12 @@ import sqlite3
 import threading
 import time
 import uuid
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 from security_agent.catalog import initialize_demo_database
 from tool_sandbox import protected_db
+from security_agent.http_safety import SafeHTTPHandler, BoundedHTTPServer, HTTPBodyError, read_json_body
 
 DATA = Path(__file__).resolve().parent.parent / "fixtures" / "documents"
 DATABASE = os.environ.get("TOOL_DATABASE_PATH", "/data/tool.sqlite3")
@@ -24,6 +25,68 @@ DOCS = {
 TASK_DOCS = {"task-alice-001": ("alice", "north", {"report-alice-001", "report-alice-attack"}), "task-bob-001": ("bob", "south", {"report-bob-001"})}
 _SCHEMA_LOCK = threading.Lock()
 _INITIALIZED = set()
+_QUERY_GUARD=threading.Lock()
+_QUERY_LOCKS={}
+
+
+@contextmanager
+def query_lock(execution_id):
+    with _QUERY_GUARD:
+        entry=_QUERY_LOCKS.setdefault(execution_id,[threading.Lock(),0])
+        entry[1]+=1
+    acquired=entry[0].acquire(timeout=10)
+    try:
+        if not acquired:raise TimeoutError('Execution is busy')
+        yield
+    finally:
+        if acquired:entry[0].release()
+        with _QUERY_GUARD:
+            entry[1]-=1
+            if not entry[1]:_QUERY_LOCKS.pop(execution_id,None)
+
+
+def database_execution(c,req):
+    """Claim once, query without a SQLite writer lock, then persist the receipt."""
+    from security_agent.catalog import validate_query
+    roles={'agent-alice':'report-submitter','agent-bob':'report-writer'}
+    if (req['principal'],req['user']) not in {('agent-alice','alice'),('agent-bob','bob')}:
+        return 403,{'error':'DB_PRINCIPAL_FORBIDDEN'}
+    args=dict(req['arguments'])
+    target=args.pop('_asg_target_id',None)
+    role=roles[req['principal']]
+    if validate_query(args,{'tenant':req['tenant'],'role':role}) or target!=protected_db.target_config()['id']:
+        return 403,{'error':'DB_QUERY_FORBIDDEN'}
+    binding=hashlib.sha256(json.dumps(req,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+    with query_lock(req['execution_id']):
+        c.execute('BEGIN IMMEDIATE')
+        try:
+            old=c.execute('SELECT * FROM receipts WHERE execution_id=?',(req['execution_id'],)).fetchone()
+            claim=c.execute('SELECT * FROM db_execution_claims WHERE execution_id=?',(req['execution_id'],)).fetchone()
+            if claim and claim['binding']!=binding:
+                c.execute('ROLLBACK')
+                return 409,{'error':'EXECUTION_ID_CONFLICT'}
+            if old:
+                c.execute('COMMIT')
+                return 200,{'receipt_id':old['receipt_id'],'execution_id':req['execution_id'],'result':json.loads(old['result'])}
+            if claim:
+                c.execute('COMMIT')
+                return 503,{'error':'DB_EXECUTION_UNCERTAIN'}
+            c.execute('INSERT INTO db_execution_claims VALUES(?,?,?)',(req['execution_id'],binding,time.time()))
+            c.execute('COMMIT')
+        except Exception:
+            if c.in_transaction:c.execute('ROLLBACK')
+            raise
+        # An interrupted claim without a receipt stays uncertain; never run its SQL twice.
+        result=protected_db.execute_query(c,args,req['tenant'],role,target)
+        receipt='receipt-'+str(uuid.uuid4())
+        c.execute('BEGIN IMMEDIATE')
+        try:
+            c.execute('INSERT INTO receipts VALUES(?,?,?,?,?,?)',(req['execution_id'],req['action_id'],req['request_hash'],receipt,json.dumps(result,ensure_ascii=False),time.time()))
+            c.execute('COMMIT')
+        except Exception:
+            c.execute('ROLLBACK')
+            raise
+        return 200,{'receipt_id':receipt,'execution_id':req['execution_id'],'result':result}
 
 
 def connect():
@@ -38,6 +101,9 @@ def connect():
     CREATE TABLE IF NOT EXISTS artifacts(id TEXT PRIMARY KEY,owner TEXT NOT NULL,tenant TEXT NOT NULL,document_id TEXT NOT NULL,content TEXT NOT NULL,content_hash TEXT NOT NULL,created REAL NOT NULL);
     CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY,execution_id TEXT UNIQUE NOT NULL,artifact_id TEXT NOT NULL,destination_id TEXT NOT NULL,content_hash TEXT NOT NULL,created REAL NOT NULL);
     CREATE TABLE IF NOT EXISTS receipts(execution_id TEXT PRIMARY KEY,action_id TEXT NOT NULL,request_hash TEXT NOT NULL,receipt_id TEXT NOT NULL,result TEXT NOT NULL,created REAL NOT NULL);
+    CREATE TABLE IF NOT EXISTS db_execution_claims(execution_id TEXT PRIMARY KEY,binding TEXT NOT NULL,created REAL NOT NULL);
+    CREATE TRIGGER IF NOT EXISTS db_claims_no_update BEFORE UPDATE ON db_execution_claims BEGIN SELECT RAISE(ABORT,'execution claims are immutable'); END;
+    CREATE TRIGGER IF NOT EXISTS db_claims_no_delete BEFORE DELETE ON db_execution_claims BEGIN SELECT RAISE(ABORT,'execution claims are immutable'); END;
     CREATE TRIGGER IF NOT EXISTS artifacts_no_update BEFORE UPDATE ON artifacts BEGIN SELECT RAISE(ABORT,'artifacts are immutable'); END;
     CREATE TRIGGER IF NOT EXISTS artifacts_no_delete BEFORE DELETE ON artifacts BEGIN SELECT RAISE(ABORT,'artifacts are immutable'); END;
     CREATE TRIGGER IF NOT EXISTS receipts_no_update BEFORE UPDATE ON receipts BEGIN SELECT RAISE(ABORT,'receipts are append only'); END;
@@ -51,7 +117,7 @@ def connect():
     return c
 
 
-class Handler(BaseHTTPRequestHandler):
+class Handler(SafeHTTPHandler):
     server_version = "ToolSandbox/0.1"
 
     def log_message(self, fmt, *args):
@@ -75,13 +141,7 @@ class Handler(BaseHTTPRequestHandler):
         return self.headers.get("Authorization") == "Bearer " + TOKEN
 
     def read_body(self):
-        n = int(self.headers.get("Content-Length", "0"))
-        if n > 20000:
-            raise ValueError("request too large")
-        obj = json.loads(self.rfile.read(n))
-        if not isinstance(obj, dict):
-            raise ValueError("object expected")
-        return obj
+        return read_json_body(self, 20000)
 
     def do_GET(self):
         if self.path == "/health/live":
@@ -129,20 +189,11 @@ class Handler(BaseHTTPRequestHandler):
                 if not task or (req["user"], req["tenant"]) != task[:2]:
                     return self.send_json(403, {"error": "TASK_FORBIDDEN"})
                 args = req["arguments"]
+                if req['tool']=='query_database':
+                    code,result=database_execution(c,req)
+                    return self.send_json(code,result)
                 c.execute("BEGIN IMMEDIATE")
-                if req['tool'] == 'query_database':
-                    roles={'agent-alice':'report-submitter','agent-bob':'report-writer'}
-                    if (req['principal'],req['user']) not in {('agent-alice','alice'),('agent-bob','bob')}:
-                        c.execute('ROLLBACK')
-                        return self.send_json(403,{'error':'DB_PRINCIPAL_FORBIDDEN'})
-                    try:
-                        query_args=dict(args)
-                        target=query_args.pop('_asg_target_id',None)
-                        result=protected_db.execute_query(c,query_args,req['tenant'],roles[req['principal']],target)
-                    except ValueError:
-                        c.execute('ROLLBACK')
-                        return self.send_json(403,{'error':'DB_QUERY_FORBIDDEN'})
-                elif req["tool"] == "read_document" and set(args) == {"document_id"}:
+                if req["tool"] == "read_document" and set(args) == {"document_id"}:
                     doc_id = args["document_id"]
                     doc = DOCS.get(doc_id)
                     if not doc or doc_id not in task[2] or (doc[0], doc[1]) != task[:2]:
@@ -182,6 +233,8 @@ class Handler(BaseHTTPRequestHandler):
                 raise
             finally:
                 c.close()
+        except HTTPBodyError as error:
+            return self.body_error(error)
         except (ValueError, json.JSONDecodeError):
             return self.send_json(400, {"error": "INVALID_JSON"})
         except Exception:
@@ -192,4 +245,4 @@ if __name__ == "__main__":
     if not TOKEN:
         raise SystemExit("TOOL_SERVICE_TOKEN must be configured")
     connect().close()
-    ThreadingHTTPServer(("0.0.0.0", 8001), Handler).serve_forever()
+    BoundedHTTPServer(("0.0.0.0", 8001), Handler).serve_forever()

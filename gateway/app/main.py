@@ -4,10 +4,10 @@ import json
 import os
 import re
 from pathlib import Path
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 from gateway.app.core import Gateway, GatewayError
+from security_agent.http_safety import SafeHTTPHandler, BoundedHTTPServer, HTTPBodyError, read_json_body
 
 
 def build_gateway():
@@ -35,7 +35,7 @@ def build_gateway():
     return Gateway(database, vals, os.environ.get("TOOL_URL", "http://tool-sandbox:8001"), os.environ.get("TOOL_SERVICE_TOKEN", ""), os.environ.get("POLICY_FILE", "/app/config/policy.yaml"))
 
 
-class Handler(BaseHTTPRequestHandler):
+class Handler(SafeHTTPHandler):
     server_version = "ASG/2.0"
     gateway: Gateway
 
@@ -53,19 +53,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def body(self):
-        try:
-            n = int(self.headers.get("Content-Length", "0"))
-            limit = self.gateway.policy["limits"]["request_bytes"]
-            if n > limit:
-                raise GatewayError(413, "REQUEST_TOO_LARGE", f"Request body exceeds {limit} bytes")
-            obj = json.loads(self.rfile.read(n))
-            if not isinstance(obj, dict):
-                raise ValueError()
-            return obj
-        except GatewayError:
-            raise
-        except Exception:
-            raise GatewayError(400, "INVALID_JSON", "A JSON object is required")
+        return read_json_body(self, self.gateway.policy['limits']['request_bytes'])
 
     def principal(self):
         auth = self.headers.get("Authorization", "")
@@ -86,6 +74,10 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith('/v1/db/'):
             service = self.gateway.db_access
             query = parse_qs(urlparse(self.path).query)
+            if path == '/v1/db/recovery' and self.command=='GET':
+                try:page=int(query.get('page',['1'])[0])
+                except ValueError:raise GatewayError(422,'INVALID_PAGE','페이지 번호가 올바르지 않습니다.')
+                return 200,service.recovery(p,page)
             if path == '/v1/db/requests' and self.command == 'POST':
                 result = service.create(p,self.body(),self.headers.get('Idempotency-Key',''),self.client_address[0],self.headers.get('User-Agent',''))
                 return (403 if result['decision']=='DENY' else 200 if result['decision']=='ALLOW' else 202),result
@@ -165,6 +157,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(status, obj)
         except GatewayError as e:
             self.send_json(e.status, {"error": e.code, "message": e.message})
+        except HTTPBodyError as error:
+            self.body_error(error)
         except Exception:
             self.send_json(503, {"error": "INTERNAL_ERROR", "message": "Request could not be completed"})
 
@@ -173,7 +167,7 @@ def serve():
     Handler.gateway = build_gateway()
     host = os.environ.get("GATEWAY_HOST", "0.0.0.0")
     port = int(os.environ.get("GATEWAY_PORT", "8000"))
-    ThreadingHTTPServer((host, port), Handler).serve_forever()
+    BoundedHTTPServer((host, port), Handler).serve_forever()
 
 
 if __name__ == "__main__":

@@ -42,7 +42,7 @@ Docker Desktop을 켜고 프로젝트 폴더에서 실행합니다.
 .\.venv\Scripts\python.exe -m testing.postgresql_checks --keep-db --reuse --policy-controls
 ```
 
-기본 예상 결과는 25단계 전부 PASS이며 `--policy-controls`를 붙이면 7개 정책 검사가 추가되어 32단계입니다. 보고서는 실행 때 갱신되므로 실패 시 FAIL과 실패 위치를 그대로 확인합니다. 기존의 자동 삭제되는 4행 최소 검증(`python -m testing.postgresql_checks`)과는 별도 환경입니다.
+기본 예상 결과는 25단계 전부 PASS이며 `--policy-controls`를 붙이면 9개 정책 검사가 추가되어 34단계입니다. 보고서는 실행 때 갱신되므로 실패 시 FAIL과 실패 위치를 그대로 확인합니다. 기존의 자동 삭제되는 4행 최소 검증(`python -m testing.postgresql_checks`)과는 별도 환경입니다.
 
 ## 3. 순서별 테스트와 예상 결과
 

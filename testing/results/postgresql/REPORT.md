@@ -1,7 +1,7 @@
 # PostgreSQL 연결 실제 검증 결과
 
 - 판정: **PASS**
-- 시작: 2026-11-04T00:03:24.017027+09:00
+- 시작: 2026-11-05T10:12:00.854153+09:00
 - 임시 PostgreSQL 17.11, 게이트웨이 감사 DB와 보호 DB 분리. 운영 DB 미접속.
 
 | 검증 | 결과 |
@@ -25,6 +25,8 @@
 | 다른 게이트웨이 연결에서도 취소가 즉시 적용 | PASS |
 | 응답 유실 예약과 만료 후 영수증 대조 | PASS |
 | 자동 허용 40건을 사람 검토 없이 실행 | PASS |
+| 탐지 규칙 변경 시 다른 연결의 허용·반복 승인·결과 재조회 차단 | PASS |
+| 느린 PostgreSQL 조회 중 다른 주체와 상태 점검 독립 처리 | PASS |
 | 다중 연결 처리 후 감사 해시 체인 | PASS |
 | 보호 DB 행 보존 | PASS |
 
@@ -46,17 +48,17 @@
       "name": "게이트웨이",
       "status": "up",
       "detail": "ready",
-      "checked_at": 1793718207.1046708,
-      "latency_ms": 2.38
+      "checked_at": 1793841123.4065528,
+      "latency_ms": 2.55
     },
     {
       "key": "security_agent",
       "name": "보안 에이전트",
       "status": "up",
-      "engine": "db-security-rules-v2",
-      "checked_at": 1793718207.105208,
+      "engine": "db-security-rules-v3",
+      "checked_at": 1793841123.407077,
       "last_analysis_at": null,
-      "latency_ms": 0.5,
+      "latency_ms": 0.47,
       "detail": "정상·정책 위반 입력 분석 자체 점검 통과"
     },
     {
@@ -64,16 +66,16 @@
       "name": "보호 DB",
       "status": "up",
       "detail": "PostgreSQL 읽기 전용 연결·등록 대상 권한 정상",
-      "checked_at": 1793718207.1658163,
-      "latency_ms": 60.73
+      "checked_at": 1793841123.4667172,
+      "latency_ms": 59.97
     },
     {
       "key": "audit_db",
       "name": "감사 DB",
       "status": "up",
       "detail": "감사 기록 저장소 연결됨",
-      "checked_at": 1793718207.1677842,
-      "latency_ms": 1.97
+      "checked_at": 1793841123.4683416,
+      "latency_ms": 1.46
     }
   ]
 }
@@ -218,30 +220,30 @@
       "name": "게이트웨이",
       "passed": true,
       "detail": "ready",
-      "latency_ms": 1.69
+      "latency_ms": 13.81
     },
     {
       "name": "보안 에이전트",
       "passed": true,
       "detail": "정상·정책 위반 입력 분석 자체 점검 통과",
-      "latency_ms": 0.22
+      "latency_ms": 0.27
     },
     {
       "name": "보호 DB",
       "passed": true,
       "detail": "PostgreSQL 읽기 전용 연결·등록 대상 권한 정상",
-      "latency_ms": 44.11
+      "latency_ms": 21.27
     },
     {
       "name": "감사 DB",
       "passed": true,
       "detail": "감사 기록 저장소 연결됨",
-      "latency_ms": 1.02
+      "latency_ms": 0.73
     },
     {
       "name": "감사 로그 무결성",
       "passed": true,
-      "detail": "11개 해시 연결 검증, 변조 의심 0건"
+      "detail": "12개 해시 연결 검증, 변조 의심 0건"
     }
   ]
 }
@@ -337,13 +339,50 @@
 {
   "requests": 40,
   "success": 40,
-  "elapsed_seconds": 3.244,
+  "elapsed_seconds": 3.309,
   "concurrency": 8,
   "note": "기능 검증 부하이며 운영 처리량 보증이 아닙니다."
 }
 ```
 
-## 20. 다중 연결 처리 후 감사 해시 체인
+## 20. 탐지 규칙 변경 시 다른 연결의 허용·반복 승인·결과 재조회 차단
+
+- 실제 판정: **PASS**
+- 실제 관찰값:
+
+```json
+{
+  "statuses": [
+    403,
+    403,
+    403
+  ],
+  "errors": [
+    "DB_POLICY_CHANGED",
+    "DB_POLICY_CHANGED",
+    "DB_POLICY_CHANGED"
+  ],
+  "new_request_state": "DENIED",
+  "grant_status": "POLICY_CHANGED",
+  "additional_charges": 0
+}
+```
+
+## 21. 느린 PostgreSQL 조회 중 다른 주체와 상태 점검 독립 처리
+
+- 실제 판정: **PASS**
+- 실제 관찰값:
+
+```json
+{
+  "slow_status": 200,
+  "other_principal_status": 200,
+  "ready_before_release": true,
+  "scope": "통제된 지연 주입에 대한 기능 검사, 운영 처리량 측정 아님"
+}
+```
+
+## 22. 다중 연결 처리 후 감사 해시 체인
 
 - 실제 판정: **PASS**
 - 실제 관찰값:
@@ -351,11 +390,11 @@
 ```json
 {
   "status": "VALID",
-  "records": 196
+  "records": 214
 }
 ```
 
-## 21. 보호 DB 행 보존
+## 23. 보호 DB 행 보존
 
 - 실제 판정: **PASS**
 - 실제 관찰값:

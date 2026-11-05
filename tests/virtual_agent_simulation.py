@@ -36,6 +36,7 @@ SCENARIOS = {
 STATES = {"APPROVED": "허용 · 실행 대기", "PENDING_APPROVAL": "사람 승인 대기",
           "DENIED": "정책 차단", "REJECTED": "검토자 거절", "EXPIRED": "승인 만료",
           "UNKNOWN": "실행 결과 확인 필요", "EXECUTING": "조회 중", "SUCCEEDED": "조회 완료"}
+CREATE_STATES = {200: "APPROVED", 202: "PENDING_APPROVAL", 403: "DENIED"}
 
 
 def make_headers(token):
@@ -45,36 +46,44 @@ def make_headers(token):
 
 @dataclass
 class ScenarioResult:
-    number: int
+    number: int | None
     create_http: int
     create_state: str | None
     request: dict
     error: str = ""
     execution_http: int | None = None
     confirmation: str = ""
+    restored: bool = False
+
+    @property
+    def accepted(self):
+        return (self.create_http in CREATE_STATES and self.create_state==CREATE_STATES[self.create_http]
+                and isinstance(self.request.get('id'),str) and bool(self.request['id'].strip()))
 
     @property
     def ok(self):
-        return not self.error
+        return self.accepted and not self.error
 
     @property
     def baseline_matches(self):
+        if self.number not in SCENARIOS:return False
         spec = SCENARIOS[self.number]
         return ((self.create_http, self.create_state) == (spec[5], spec[6])
                 and (self.number != 1 or self.request.get("state") == "SUCCEEDED"))
 
     def evidence(self):
-        return {"scenario": self.number, "title": SCENARIOS[self.number][0],
+        spec=SCENARIOS.get(self.number)
+        return {"scenario": self.number, "title": spec[0] if spec else '보존된 DB 접근 요청', "restored":self.restored,
                 "create_http": self.create_http, "create_state": self.create_state,
-                "expected_create_http": SCENARIOS[self.number][5],
-                "expected_create_state": SCENARIOS[self.number][6],
+                "expected_create_http": spec[5] if spec else None,
+                "expected_create_state": spec[6] if spec else None,
                 "state": self.request.get("state"), "request_id": self.request.get("id"),
                 "execution_http": self.execution_http, "confirmation":self.confirmation,"rows": self.request.get("result_count"),
                 "ok": self.ok, "error": self.error, "baseline_matches": self.baseline_matches}
 
 
 def completed(result, response, confirmation="execute_response"):
-    if (response.get("state") != "SUCCEEDED" or not response.get("receipt_id")
+    if (not isinstance(response,dict) or response.get("state") != "SUCCEEDED" or not response.get("receipt_id")
             or type(response.get("result_count")) is not int or response["result_count"] < 0):
         result.error = "성공한 실행의 영수증·반환량을 확인할 수 없습니다."
         return False
@@ -85,25 +94,35 @@ def completed(result, response, confirmation="execute_response"):
     return True
 
 
-def run_scenario(number, gateway_url, alice_token, transport=None):
+def run_scenario(number, gateway_url, alice_token, transport=None, *, purpose=None):
     transport = transport or send_request
-    title, dataset, columns, rows, purpose, _, _ = SCENARIOS[number]
+    title, dataset, columns, rows, default_purpose, _, _ = SCENARIOS[number]
+    purpose = default_purpose if purpose is None else purpose
     print(f"\n--- 시나리오 {number}: {title} ---")
-    status, response = transport(gateway_url + "/v1/db/requests", "POST", make_headers(alice_token),
-        {"dataset_id": dataset, "columns": columns, "filters": {}, "row_limit": rows, "purpose": purpose})
+    try:
+        status, response = transport(gateway_url + "/v1/db/requests", "POST", make_headers(alice_token),
+            {"dataset_id": dataset, "columns": columns, "filters": {}, "row_limit": rows, "purpose": purpose})
+    except Exception as error:
+        return ScenarioResult(number,0,None,{},error="요청 통신 실패: "+type(error).__name__)
+    if not isinstance(response,dict):
+        return ScenarioResult(number,status,None,{},error="요청 접수 확인 실패: JSON 객체 응답이 아닙니다.")
     state = response.get("state")
     result = ScenarioResult(number, status, state, response)
-    expected_states = {200: "APPROVED", 202: "PENDING_APPROVAL", 403: "DENIED"}
-    if not response.get("id") or expected_states.get(status) != state:
+    if not result.accepted:
         result.error = f"요청 접수 확인 실패: HTTP {status} · {response.get('error', '잘못된 응답')}"
         print("  -> " + result.error)
         return result
     print(f"  -> HTTP {status} · {STATES[state]} · 요청 위험도 {response.get('risk_score', '확인 불가')}")
-    for reason in response.get("analysis", {}).get("reasons", []):
-        print("     " + reason)
+    analysis=response.get("analysis")
+    if isinstance(analysis,dict):
+        for reason in analysis.get("reasons", []):print("     " + str(reason))
     if state == "APPROVED":
-        code, executed = transport(gateway_url + "/v1/db/requests/" + response["id"] + "/execute",
-                                   "POST", make_headers(alice_token), {})
+        try:
+            code, executed = transport(gateway_url + "/v1/db/requests/" + response["id"] + "/execute",
+                                       "POST", make_headers(alice_token), {})
+        except Exception as error:
+            result.error="조회 통신 실패: "+type(error).__name__+" · 상태/영수증 확인을 계속합니다."
+            return result
         result.execution_http = code
         if code != 200:
             result.error = f"조회 결과 확인 필요: HTTP {code} · 상태/영수증 확인을 계속합니다."
@@ -122,6 +141,8 @@ def run_scenario_5(url, token): return run_scenario(5, url, token)
 
 def run_concurrency_test(gateway_url, alice_token, count=10, transport=None):
     transport = transport or send_request
+    if type(count) is not int or not 1<=count<=1000:
+        raise ValueError('동시 요청 건수는 1~1,000의 정수여야 합니다.')
     print(f"\n--- 다중 에이전트 동시 부하 테스트 ({count}개 동시 요청 발사) ---")
     scenario_keys = list(SCENARIOS.keys())
     tasks = [(i + 1, scenario_keys[i % len(scenario_keys)]) for i in range(count)]
@@ -130,41 +151,30 @@ def run_concurrency_test(gateway_url, alice_token, count=10, transport=None):
 
     def worker(item):
         req_idx, s_num = item
-        title, dataset, columns, rows, purpose, exp_http, exp_state = SCENARIOS[s_num]
-        hdrs = make_headers(alice_token)
-        status, response = transport(
-            gateway_url + "/v1/db/requests",
-            "POST",
-            hdrs,
-            {"dataset_id": dataset, "columns": columns, "filters": {}, "row_limit": rows,
-             "purpose": f"[동시 부하 테스트 #{req_idx}] {purpose}"}
-        )
-        state = response.get("state")
-        res = ScenarioResult(s_num, status, state, response)
-        if state == "APPROVED":
-            code, executed = transport(
-                gateway_url + "/v1/db/requests/" + response["id"] + "/execute",
-                "POST",
-                make_headers(alice_token),
-                {}
-            )
-            res.execution_http = code
-            completed(res, executed)
+        res=run_scenario(s_num,gateway_url,alice_token,transport,
+            purpose=f"[동시 부하 테스트 #{req_idx}] {SCENARIOS[s_num][4]}")
         return req_idx, s_num, res
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=min(count, 8)) as executor:
-        futures = [executor.submit(worker, t) for t in tasks]
+        futures = {executor.submit(worker, t):t for t in tasks}
         for f in concurrent.futures.as_completed(futures):
-            results.append(f.result())
+            try:
+                results.append(f.result())
+            except Exception as error:
+                req_idx,s_num=futures[f]
+                results.append((req_idx,s_num,ScenarioResult(s_num,0,None,{},
+                    error='동시 작업 실패: '+type(error).__name__)))
 
     elapsed = max(time.monotonic() - start_time, 0.001)
     results.sort(key=lambda x: x[0])
-    allowed = sum(1 for _, _, r in results if r.create_state == "APPROVED")
-    pending = sum(1 for _, _, r in results if r.create_state == "PENDING_APPROVAL")
-    denied = sum(1 for _, _, r in results if r.create_state == "DENIED")
+    allowed = sum(1 for _, _, r in results if r.accepted and r.create_state == "APPROVED")
+    pending = sum(1 for _, _, r in results if r.accepted and r.create_state == "PENDING_APPROVAL")
+    denied = sum(1 for _, _, r in results if r.accepted and r.create_state == "DENIED")
+    failed = sum(1 for _, _, r in results if not r.ok)
 
     print(f"  -> 동시 요청 완료: 총 {count}건 처리 ({elapsed:.2f}초, {count / elapsed:.1f} req/s)")
-    print(f"  -> 처리 결과: 정책 허용 {allowed}건 · 승인 대기 {pending}건 · 정책 차단 {denied}건")
+    print(f"  -> 접수 결과: 정책 허용 {allowed}건 · 승인 대기 {pending}건 · 정책 차단 {denied}건")
+    print(f"  -> 확인 실패 {failed}건 · {'FAIL' if failed else 'PASS'} (정책 차단은 통신 실패와 별도 집계)")
     return [r for _, _, r in results]
 
 
@@ -190,9 +200,29 @@ class ReviewMonitor:
         self.thread = None
 
     def register(self, result):
-        if result.request.get("id") and result.request.get("state") in {"PENDING_APPROVAL", "APPROVED", "UNKNOWN", "EXECUTING"}:
+        if result.accepted and result.request.get("state") in {"PENDING_APPROVAL", "APPROVED", "UNKNOWN", "EXECUTING"}:
             with self.lock:
                 self.jobs[result.request["id"]] = ReviewJob(result)
+
+    def restore(self):
+        restored=[]
+        page=1
+        while True:
+            code,data=self.transport(self.url+f'/v1/db/recovery?page={page}',headers=make_headers(self.alice))
+            if code!=200 or not isinstance(data,dict) or not isinstance(data.get('items'),list):
+                raise RuntimeError('보존된 요청 복원 실패: HTTP '+str(code))
+            for row in data['items']:
+                args=row['arguments']
+                number=next((n for n,spec in SCENARIOS.items() if args.get('dataset_id')==spec[1] and args.get('columns')==spec[2]),None)
+                automatic=row['decision']=='ALLOW'
+                result=ScenarioResult(number,200 if automatic else 202,'APPROVED' if automatic else 'PENDING_APPROVAL',row,restored=True)
+                if row['state'] in {'APPROVED','UNKNOWN','EXECUTING'}:result.error='재시작 후 실행 상태·영수증 확인이 필요합니다.'
+                self.register(result)
+                restored.append(result)
+            if page*data['page_size']>=data['total']:break
+            if not data['items']:raise RuntimeError('보존된 요청 복원 페이지가 비어 있습니다.')
+            page+=1
+        return restored
 
     def defer(self, job, message):
         job.failures += 1
@@ -336,6 +366,10 @@ def run_simulation(no_browser=False, keep_alive=True, report_file=None, persist_
             lab = LocalLab(work_dir, 0, 0, 0).start()
             print("대시보드: " + lab.url)
             monitor = ReviewMonitor(lab.gateway_url, lab.tokens["agent-alice"], lab.tokens["reviewer-demo"])
+            if persist_data:
+                restored=monitor.restore()
+                results.extend(restored)
+                print(f'보존된 미완료 요청 {len(restored)}건의 상태 확인을 복원했습니다.')
             if not no_browser:
                 webbrowser.open(lab.url)
             def run(number):
@@ -379,9 +413,11 @@ def run_simulation(no_browser=False, keep_alive=True, report_file=None, persist_
         with tempfile.TemporaryDirectory(prefix="asg-sim-") as temp:
             execute_in_dir(Path(temp))
 
-    passed = bool(results) and not errors and all(r.ok and (keep_alive or r.baseline_matches) for r in results)
+    passed = bool(results) and not errors and all(r.ok and (keep_alive or r.restored or r.baseline_matches) for r in results)
     evidence = {"run_id": str(uuid.uuid4()), "checked_at": datetime.now(timezone.utc).isoformat(),
                 "result": "PASS" if passed else "FAIL", "backend": "sqlite", "fictional": True,
+                "summary":{"total":len(results),"confirmed":sum(r.ok for r in results),
+                           "failed":sum(not r.ok for r in results)},
                 "scope": "정상 실제 조회, 예외 접수·차단 확인. 자동 모드는 사람 승인 후 조회 완료를 검증하지 않습니다.",
                 "scenarios": [r.evidence() for r in results], "errors": errors}
     path = Path(report_file) if report_file else ROOT / "testing/results/simulation-latest.json"
